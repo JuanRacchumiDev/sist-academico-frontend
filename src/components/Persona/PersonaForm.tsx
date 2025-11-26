@@ -38,7 +38,7 @@ import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Persona, PersonaResponse } from "@/interfaces/IPersona";
 import { ArrowLeft } from "lucide-react";
-import { createPersona } from "../../services/personaService";
+import { createPersona, getPersonaById } from "../../services/personaService";
 
 interface PersonaFormProps {
   nombreGrupo?: string;
@@ -62,9 +62,6 @@ const formSchema = z.object({
   apellidoMaterno: z.string().min(2, {
     message: "El apellido materno es requerido.",
   }),
-  // fechaNacimiento: z.string().min(2, {
-  //   message: "El apellido paterno es requerido.",
-  // }),
   fechaNacimiento: z
     .date({
       message: "La fecha de nacimiento es requerida",
@@ -79,6 +76,9 @@ const formSchema = z.object({
   sexo: z.string().min(1, {
     message: "El sexo es obligatorio",
   }),
+  telefono: z.string().min(2, {
+    message: "El teléfono es requerido.",
+  }),
 });
 
 type TPersona = {
@@ -90,12 +90,7 @@ type TPersona = {
   fechaNacimiento?: Date | null;
   email?: string;
   sexo?: string;
-};
-
-type TTipoDocumento = {
-  id: string;
-  nombre: string;
-  abreviatura: string;
+  telefono?: string;
 };
 
 export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
@@ -115,7 +110,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      idTipoDocumento: "",
+      idTipoDocumento: "1",
       numeroDocumento: "",
       nombres: "",
       apellidoPaterno: "",
@@ -123,12 +118,13 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
       fechaNacimiento: null,
       email: "",
       sexo: "",
+      telefono: "",
     },
   });
 
   const resetForm = () => {
     const dataForm: TPersona = {
-      idTipoDocumento: "",
+      idTipoDocumento: "1",
       numeroDocumento: "",
       nombres: "",
       apellidoPaterno: "",
@@ -136,6 +132,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
       fechaNacimiento: null,
       email: "",
       sexo: "",
+      telefono: "",
     };
 
     form.reset(dataForm);
@@ -145,6 +142,8 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log({ values });
+
       const {
         idTipoDocumento,
         numeroDocumento,
@@ -154,6 +153,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         fechaNacimiento,
         email,
         sexo,
+        telefono,
       } = values;
 
       const nombreCompleto: string = `${nombres} ${apellidoPaterno} ${apellidoMaterno}`;
@@ -162,7 +162,8 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         ? fechaNacimiento.toISOString()
         : null;
 
-      const partsFechaNacimiento: string[] = fechaNacimientoToString!.split("");
+      const partsFechaNacimiento: string[] =
+        fechaNacimientoToString!.split("T");
 
       const fechaNacimientoStr: string = partsFechaNacimiento[0];
 
@@ -179,6 +180,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         origen: "WEB",
         nombre_grupo: `grupo-${nombreGrupo}`,
         estado_civil: "SOLTERO",
+        telefono,
         estado: true,
       };
 
@@ -189,22 +191,26 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
 
       console.log("response create", response);
 
-      const { result, message, data } = response as PersonaResponse;
+      const { result, message, code } = response as PersonaResponse;
 
-      console.log({ result });
+      const messageStr = message as string;
 
-      console.log({ message });
+      console.log({ messageStr });
 
-      console.log({ data });
+      console.log({ code });
 
-      if (result && data) {
-        const messageCreate = nombreGrupo
-          ? `${nombreGrupo.toUpperCase()} REGISTRADO (A) EXITOSAMENTE`
-          : (message as string).toUpperCase();
+      if (result) {
+        if (code === "PREVIOUSLY_REGISTERED") {
+          showToast("warning", messageStr);
+          return;
+        } else {
+          const messageCreate = nombreGrupo
+            ? `${nombreGrupo.toUpperCase()} REGISTRADO (A) EXITOSAMENTE`
+            : (message as string).toUpperCase();
 
-        showToast("success", messageCreate);
-
-        navigate(`/personas/${nombreGrupo}`);
+          showToast("success", messageCreate);
+          navigate(`/personas/${nombreGrupo}`);
+        }
       } else {
         showToast(
           "error",
@@ -214,7 +220,6 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
       }
     } catch (error) {
       console.error("Error al registrar trabajador social", error);
-      // showToast("error", error);
       showToast("error", "Error al registrar el trabajador social");
     }
   };
@@ -244,6 +249,30 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         }
 
         setTipoDocumentos(listTipoDocumentos);
+
+        if (isEditMode) {
+          const responsePersona = await getPersonaById(+id);
+          console.log({ responsePersona });
+
+          const { result, data } = responsePersona;
+
+          if (result && data) {
+            const persona = data as Persona;
+            console.log({ persona });
+
+            form.reset({
+              idTipoDocumento: String(persona.id_tipodocumento),
+              numeroDocumento: persona.numero_documento,
+              nombres: persona.nombres,
+              apellidoPaterno: persona.apellido_paterno,
+              apellidoMaterno: persona.apellido_materno,
+              email: persona.email,
+              sexo: persona.sexo,
+              fechaNacimiento: new Date(persona.fecha_nacimiento as string),
+              telefono: persona.telefono || "",
+            });
+          }
+        }
       } catch (error) {
         console.error("Error al obtener datos", error);
         showToast("error", "Error al cargar los datos del formulario.");
@@ -319,14 +348,14 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                               <SelectValue placeholder="Seleccionar tipo de documento" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-gray-400">
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
                             {tipoDocumentos.map((tipo) => (
                               <SelectItem
                                 value={tipo.codigo!.toString()}
                                 key={tipo.codigo!.toString()}
                                 className="cursor-pointer hover:bg-gray-100 transition-colors"
                               >
-                                {tipo.abreviatura} - {tipo.nombre}
+                                {tipo.descripcion}
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -354,7 +383,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                   ? "border-red-500 focus:ring-red-500"
                                   : "focus:ring-blue-500"
                               }
-                                transition-all duration-300
+                                transition-all duration-300 placeholder-gray-400
                             `}
                           />
                         </FormControl>
@@ -382,7 +411,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                   ? "border-red-500 focus:ring-red-500"
                                   : "focus:ring-blue-500"
                               }
-                                transition-all duration-300
+                                transition-all duration-300 placeholder-gray-400
                             `}
                           />
                         </FormControl>
@@ -410,7 +439,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                   ? "border-red-500 focus:ring-red-500"
                                   : "focus:ring-blue-500"
                               }
-                                transition-all duration-300
+                                transition-all duration-300 placeholder-gray-400
                             `}
                           />
                         </FormControl>
@@ -438,7 +467,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                   ? "border-red-500 focus:ring-red-500"
                                   : "focus:ring-blue-500"
                               }
-                                transition-all duration-300
+                                transition-all duration-300 placeholder-gray-400
                             `}
                           />
                         </FormControl>
@@ -500,7 +529,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                   ? "border-red-500 focus:ring-red-500"
                                   : "focus:ring-blue-500"
                               }
-                                transition-all duration-300
+                                transition-all duration-300 placeholder-gray-400
                             `}
                           />
                         </FormControl>
@@ -533,7 +562,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                               <SelectValue placeholder="Seleccionar un sexo" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-gray-400">
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
                             <SelectItem
                               value={"F"}
                               key={"F"}
@@ -559,6 +588,33 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                             ))} */}
                           </SelectContent>
                         </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="telefono"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Teléfono</RequiredLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="997755662"
+                            autoComplete="off"
+                            maxLength={9}
+                            {...field}
+                            className={`
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "focus:ring-blue-500"
+                              }
+                                transition-all duration-300 placeholder-gray-400
+                            `}
+                          />
+                        </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}

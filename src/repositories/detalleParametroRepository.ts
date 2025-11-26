@@ -1,13 +1,14 @@
 import {
     DetalleParametro,
     DetalleParametroFilters,
-    DetalleParametroResponse
+    DetalleParametroResponse,
+    DetalleParametroPaginateResponse
 } from "@/interfaces/IDetalleParametro"
 import apiClient from "./apiClient"
 
-export const getAll = async (clase: string): Promise<DetalleParametroResponse> => {
+export const getAll = async (clase: string, queryParams: string): Promise<DetalleParametroPaginateResponse> => {
     try {
-        const urlApi = `/catalogos/${clase}`
+        const urlApi = `/catalogos/${clase}?${queryParams}`
 
         console.log({ urlApi })
 
@@ -17,11 +18,29 @@ export const getAll = async (clase: string): Promise<DetalleParametroResponse> =
 
         const { result, data, message } = dataDetalle
 
+        const listaItems = data.data
+
+        const paginationInfo = {
+            currentPage: data.current_page,
+            limit: data.per_page,
+            totalPages: data.last_page,
+            totalItems: data.total,
+            nextPage: data.next_page_url,
+            previousPage: data.prev_page_url
+        };
+
         return {
             result,
-            data,
-            message
+            data: listaItems,
+            message,
+            pagination: paginationInfo
         }
+
+        // return {
+        //     result,
+        //     data,
+        //     message
+        // }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
@@ -85,17 +104,23 @@ export const create = async (clase: string, payload: DetalleParametro): Promise<
 
         const response = await apiClient.post(urlApi, payload)
 
-        const { data: { result, message, status } } = response
+        const { data: { result, message, status, code } } = response
 
         return {
             result,
             message,
-            status
+            status,
+            code
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
-        return { result: false, data: [], error: errorMessage, status: 500 }
+        return {
+            result: false,
+            data: [],
+            error: errorMessage,
+            status: 500
+        }
     }
 }
 
@@ -107,14 +132,15 @@ export const update = async (clase: string, codigo: number, payload: DetallePara
 
         const response = await apiClient.patch(urlApi, payload)
 
-        const { data: { result, data, message, error, status } } = response
+        const { data: { result, data, message, error, status, code } } = response
 
         return {
             result,
             data,
             message,
             error,
-            status
+            status,
+            code
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

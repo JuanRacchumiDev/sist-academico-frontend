@@ -13,6 +13,10 @@ import { SedeList } from "./Sede/SedeList";
 import { SedeForm } from "./Sede/SedeForm";
 import { UniversidadList } from "./Universidad/UniversidadList";
 import { UniversidadForm } from "./Universidad/UniversidadForm";
+import { MetodoPagoList } from "./MetodoPago/MetodoPagoList";
+import { MetodoPagoForm } from "./MetodoPago/MetodoPagoForm";
+import { BancoCuentaList } from "./BancoCuenta/BancoCuentaList";
+import { BancoCuentaForm } from "./BancoCuenta/BancoCuentaForm";
 
 export const MantenimientoPage = () => {
   return (
@@ -60,6 +64,14 @@ export const MantenimientoPage = () => {
         <Route path="/segmento" element={<SegmentoList />} />
         <Route path="/segmento/nuevo" element={<SegmentoForm />} />
         <Route path="/segmento/editar/:id" element={<SegmentoForm />} />
+
+        <Route path="/metodo-pago" element={<MetodoPagoList />} />
+        <Route path="/metodo-pago/nuevo" element={<MetodoPagoForm />} />
+        <Route path="/metodo-pago/editar/:id" element={<MetodoPagoForm />} />
+
+        <Route path="/banco-cuenta" element={<BancoCuentaList />} />
+        <Route path="/banco-cuenta/nuevo" element={<BancoCuentaForm />} />
+        <Route path="/banco-cuenta/editar/:id" element={<BancoCuentaForm />} />
       </Routes>
     </div>
   );

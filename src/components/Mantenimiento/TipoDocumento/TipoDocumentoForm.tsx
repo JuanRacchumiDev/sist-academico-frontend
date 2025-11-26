@@ -37,8 +37,10 @@ const formSchema = z.object({
   nombre: z.string().min(2, {
     message: "El nombre es requerido.",
   }),
-  descripcion: z.string().optional(),
-  abreviatura: z.string().optional(),
+  descripcion: z.string().nullable().optional(),
+  abreviatura: z.string().min(2, {
+    message: "La abreviatura es obligatoria",
+  }),
 });
 
 export const TipoDocumentoForm = () => {
@@ -50,7 +52,7 @@ export const TipoDocumentoForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       nombre: "",
-      descripcion: "",
+      descripcion: null,
       abreviatura: "",
     },
   });
@@ -66,17 +68,20 @@ export const TipoDocumentoForm = () => {
   const resetForm = () => {
     form.reset({
       nombre: "",
+      descripcion: null,
+      abreviatura: "",
     });
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log({ values });
+
       let messageError: string = "";
       let response: DetalleParametroResponse;
 
       const payloadData: DetalleParametro = {
         ...values,
-        estado: true,
       };
 
       if (isEditMode && id) {
@@ -87,18 +92,36 @@ export const TipoDocumentoForm = () => {
         response = await createDetalle("tipo-documento", payloadData);
       }
 
-      const { result, message, error } = response;
+      console.log({ response });
+
+      const { result, message, error, code } = response;
+
+      const messageStr = message as string;
+
+      console.log({ messageStr });
+
+      console.log({ code });
 
       if (result) {
-        const messageStr = message as string;
-
-        showToast("success", messageStr);
-
-        navigate("/mantenimiento/tipo-documento");
+        if (code === "PREVIOUSLY_REGISTERED") {
+          showToast("warning", messageStr);
+          return;
+        } else {
+          showToast("success", messageStr);
+          navigate("/mantenimiento/tipo-documento");
+        }
       } else {
         showToast("error", error || messageError);
         return;
       }
+
+      // if (result) {
+      //   showToast("success", messageStr);
+      //   navigate("/mantenimiento/tipo-documento");
+      // } else {
+      //   showToast("error", error || messageError);
+      //   return;
+      // }
     } catch (error) {
       console.error("Error al registrar el tipo de documento", error);
       showToast("error", "Error al registrar el tipo de documento");
@@ -121,6 +144,8 @@ export const TipoDocumentoForm = () => {
 
             form.reset({
               nombre: tipoDocumento.nombre,
+              descripcion: tipoDocumento.descripcion,
+              abreviatura: tipoDocumento.abreviatura,
             });
           } else {
             showToast("error", message || "Tipo de documento no encontrado");
@@ -186,13 +211,14 @@ export const TipoDocumentoForm = () => {
                         autoComplete="off"
                         maxLength={100}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>
@@ -213,13 +239,14 @@ export const TipoDocumentoForm = () => {
                         autoComplete="off"
                         maxLength={120}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>
@@ -240,13 +267,14 @@ export const TipoDocumentoForm = () => {
                         autoComplete="off"
                         maxLength={100}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>

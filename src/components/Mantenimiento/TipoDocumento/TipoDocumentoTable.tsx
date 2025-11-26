@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { JSX, useCallback, useEffect, useState } from "react";
 import { getDetalle } from "../../../services/detalleParametroService";
 import {
   Pagination,
@@ -19,35 +19,81 @@ import {
 } from "../../ui/table";
 import { TipoDocumentoRow } from "./TipoDocumentoRow";
 import { TableSpinner } from "../../../components/Common/TableSpinner";
-import { DetalleParametro } from "@/interfaces/IDetalleParametro";
+import {
+  DetalleParametro,
+  PaginationType,
+} from "@/interfaces/IDetalleParametro";
 
 export const TipoDocumentoTable: React.FC = () => {
   const [tipoDocumentos, setTipoDocumentos] = useState<DetalleParametro[]>([]);
-  //   const [pagination, setPagination] = useState<PaginationType>({
-  //     currentPage: 1,
-  //     limit: 10,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     nextPage: null,
-  //     previousPage: null,
-  //   });
+  const [pagination, setPagination] = useState<PaginationType>({
+    currentPage: 1,
+    limit: 10,
+    totalPages: 1,
+    totalItems: 0,
+    nextPage: null,
+    previousPage: null,
+  });
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const handlePageChange = (page: number) => {
+    console.log("---- page handlePageChange ----");
+    console.log({ page });
+
+    const validatePage = page > 0 && page <= pagination.totalPages;
+
+    console.log({ validatePage });
+
+    if (validatePage) {
+      setPagination((prev) => ({ ...prev, currentPage: page }));
+    }
+  };
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
+
+    const { currentPage, limit } = pagination;
+
+    console.log({ currentPage });
+
+    console.log({ limit });
+
+    const filters = {
+      parametro_clase: 1000,
+    };
+
+    console.log({ filters });
+
     try {
-      const response = await getDetalle("tipo-documento");
+      const response = await getDetalle(
+        currentPage,
+        limit,
+        "tipo-documento",
+        filters
+      );
 
       console.log("response tipodocumentos", response);
 
-      const { result, data } = response;
+      const { result, data, pagination: newPagination } = response;
 
       if (result && data) {
         const dataTipoDocumentos = data as DetalleParametro[];
         setTipoDocumentos(dataTipoDocumentos);
+
+        if (newPagination) {
+          setPagination(newPagination);
+        }
       } else {
         setTipoDocumentos([]);
+        setPagination({
+          currentPage: 1,
+          limit: 10,
+          totalPages: 1,
+          totalItems: 0,
+          nextPage: null,
+          previousPage: null,
+        });
       }
     } catch (error) {
       console.error(
@@ -57,11 +103,54 @@ export const TipoDocumentoTable: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [pagination.currentPage, pagination.limit]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const renderPaginationItems = (): JSX.Element[] => {
+    const items: JSX.Element[] = [];
+    const startPage = Math.max(1, pagination.currentPage - 2);
+    const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+
+    if (startPage > 1) {
+      items.push(
+        <PaginationItem key="ellipsis-start">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            onClick={() => handlePageChange(i)}
+            isActive={i === pagination.currentPage}
+            className={`
+              ${
+                i === pagination.currentPage
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-200 transition-colors"
+              }
+            `}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    if (endPage < pagination.totalPages) {
+      items.push(
+        <PaginationItem key="ellipsis-end">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+    return items;
+  };
 
   return (
     <div className="w-full space-y-4 pt-4">
@@ -110,6 +199,31 @@ export const TipoDocumentoTable: React.FC = () => {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="mt-4 flex justify-end">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                className="hover:bg-gray-200 transition-colors"
+              >
+                Anterior
+              </PaginationPrevious>
+            </PaginationItem>
+
+            {renderPaginationItems()}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                className="hover:bg-gray-200 transition-colors"
+              >
+                Siguiente
+              </PaginationNext>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );

@@ -8,8 +8,31 @@ import {
     updateEstado
 } from '../repositories/detalleParametroRepository'
 
-export const getDetalle = async (clase: string) => {
-    const response = await getAll(clase)
+export const getDetalle = async (
+    page: number,
+    limit: number,
+    clase: string,
+    filters: {}
+) => {
+    console.log({ page })
+    console.log({ limit })
+    console.log({ clase })
+    console.log({ filters })
+
+    // Construir la cadena de query parameters
+    const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value)
+        )
+    }).toString()
+
+    console.log({ queryParams })
+
+    const response = await getAll(clase, queryParams)
+
+    console.log({ response })
 
     return {
         ...response
@@ -36,6 +59,8 @@ export const getDetalleById = async (clase: string, id: number) => {
 
 export const createDetalle = async (clase: string, payload: DetalleParametro) => {
     const response = await create(clase, payload)
+    console.log('response createDetalle')
+    console.log({ response })
 
     return {
         ...response

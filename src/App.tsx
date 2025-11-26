@@ -15,6 +15,15 @@ import { EventoFormPage } from "./components/Evento/Page/EventoFormPage";
 
 import { MantenimientoPage } from "./components/Mantenimiento/MantenimientoPage";
 
+import { ProgramaListPage } from "./components/Programa/Page/ProgramaListPage";
+import { ProgramaFormPage } from "./components/Programa/Page/ProgramaFormPage";
+
+import { ModuloListPage } from "./components/Modulo/Page/ModuloListPage";
+import { ModuloFormPage } from "./components/Modulo/Page/ModuloFormPage";
+
+import { MatriculaListPage } from "./components/Matricula/Page/MatriculaListPage";
+import { MatriculaFormPage } from "./components/Matricula/Page/MatriculaFormPage";
+
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -87,7 +96,7 @@ function App() {
                       element={<PersonaFormPage />}
                     ></Route>
                     <Route
-                      path="/persona/:nombreGrupo/editar/:id"
+                      path="/personas/:nombreGrupo/editar/:id"
                       element={<PersonaFormPage />}
                     ></Route>
 
@@ -101,6 +110,41 @@ function App() {
                       element={<EventoFormPage />}
                     ></Route>
 
+                    <Route
+                      path="/programa-academico"
+                      element={<ProgramaListPage />}
+                    ></Route>
+                    <Route
+                      path="/programa-academico/nuevo"
+                      element={<ProgramaFormPage />}
+                    ></Route>
+                    <Route
+                      path="/programa-academico/editar/:id"
+                      element={<ProgramaFormPage />}
+                    ></Route>
+
+                    <Route path="/modulo" element={<ModuloListPage />}></Route>
+                    <Route
+                      path="/modulo/nuevo"
+                      element={<ModuloFormPage />}
+                    ></Route>
+                    <Route
+                      path="/modulo/editar/:id"
+                      element={<ModuloFormPage />}
+                    ></Route>
+
+                    <Route
+                      path="/matricula"
+                      element={<MatriculaListPage />}
+                    ></Route>
+                    <Route
+                      path="/matricula/nuevo"
+                      element={<MatriculaFormPage />}
+                    ></Route>
+                    <Route
+                      path="/matricula/editar/:id"
+                      element={<MatriculaFormPage />}
+                    ></Route>
                     <Route
                       path="/mantenimiento/*"
                       element={<MantenimientoPage />}

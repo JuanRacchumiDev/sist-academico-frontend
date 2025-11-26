@@ -10,5 +10,12 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src")
     }
+  },
+  server: {
+    host: true,
+    hmr: {
+      host: 'rigidly-unloving-faith.ngrok-free.dev',
+      protocol: 'wss'
+    }
   }
 })

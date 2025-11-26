@@ -156,7 +156,7 @@ export const EventoForm = () => {
       fechaInicio: null,
       fechaFinal: null,
       duracion: "",
-      modalidad: "",
+      modalidad: "VIRTUAL",
       precio: "",
       capacidadMinima: "",
       capacidadMaxima: "",
@@ -173,7 +173,7 @@ export const EventoForm = () => {
       fechaInicio: null,
       fechaFinal: null,
       duracion: "",
-      modalidad: "",
+      modalidad: "VIRTUAL",
       precio: "",
       capacidadMinima: "",
       capacidadMaxima: "",
@@ -458,7 +458,7 @@ export const EventoForm = () => {
                               <SelectValue placeholder="Seleccionar tipo de evento" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-gray-400">
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
                             {tipoEventos.map((tipoEvento) => (
                               <SelectItem
                                 value={tipoEvento.codigo!.toString()}
@@ -499,7 +499,7 @@ export const EventoForm = () => {
                               <SelectValue placeholder="Seleccionar categoría de evento" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-gray-400">
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
                             {categoriaEventos.map((categoriaEvento) => (
                               <SelectItem
                                 value={categoriaEvento.codigo!.toString()}
@@ -696,24 +696,24 @@ export const EventoForm = () => {
                               <SelectValue placeholder="Seleccionar una modalidad" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="bg-gray-400">
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
                             <SelectItem
-                              value={"Virtual"}
-                              key={"Virtual"}
+                              value={"VIRTUAL"}
+                              key={"VIRTUAL"}
                               className="cursor-pointer hover:bg-gray-100 transition-colors"
                             >
                               VIRTUAL
                             </SelectItem>
                             <SelectItem
-                              value={"Presencial"}
-                              key={"Presencial"}
+                              value={"PRESENCIAL"}
+                              key={"PRESENCIAL"}
                               className="cursor-pointer hover:bg-gray-100 transition-colors"
                             >
                               PRESENCIAL
                             </SelectItem>
                             <SelectItem
-                              value={"Mixto"}
-                              key={"Mixto"}
+                              value={"MIXTO"}
+                              key={"MIXTO"}
                               className="cursor-pointer hover:bg-gray-100 transition-colors"
                             >
                               MIXTO

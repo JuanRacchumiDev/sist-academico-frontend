@@ -1,4 +1,4 @@
-import { DetalleParametro } from "./IDetalleParametro"
+import { DetalleParametro } from './IDetalleParametro';
 
 export interface Persona {
     id?: number
@@ -34,9 +34,11 @@ export interface PersonaResponse {
     data?: Persona | Persona[]
     error?: string
     status?: number
+    pagination?: PaginationType
+    code?: string
 }
 
-export interface Pagination {
+export interface PaginationType {
     currentPage: number
     limit: number
     totalPages: number
@@ -47,8 +49,9 @@ export interface Pagination {
 
 export interface PersonaPaginateResponse {
     result: boolean
+    message?: string
     data?: Persona[]
-    pagination?: Pagination
     errors?: string
     status?: number
+    pagination?: PaginationType
 }

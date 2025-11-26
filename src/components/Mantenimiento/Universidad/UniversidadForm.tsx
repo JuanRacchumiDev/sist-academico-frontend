@@ -72,13 +72,17 @@ export const UniversidadForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log("--- values universidad ----");
+      console.log({ values });
+
       let messageError: string = "";
       let response: DetalleParametroResponse;
 
       const payloadData: DetalleParametro = {
         ...values,
-        estado: true,
       };
+
+      console.log({ payloadData });
 
       if (isEditMode && id) {
         messageError = "Error al actualizar la universidad";
@@ -88,18 +92,35 @@ export const UniversidadForm = () => {
         response = await createDetalle("universidad", payloadData);
       }
 
-      const { result, message, error } = response;
+      const { result, message, error, code } = response;
+
+      const messageStr = message as string;
+
+      console.log({ messageStr });
+
+      console.log({ code });
 
       if (result) {
-        const messageStr = message as string;
-
-        showToast("success", messageStr);
-
-        navigate("/mantenimiento/universidad");
+        if (code === "PREVIOUSLY_REGISTERED") {
+          showToast("warning", messageStr);
+          return;
+        } else {
+          showToast("success", messageStr);
+          navigate("/mantenimiento/universidad");
+        }
       } else {
         showToast("error", error || messageError);
         return;
       }
+
+      // if (result) {
+      //   showToast("success", messageStr);
+
+      //   navigate("/mantenimiento/universidad");
+      // } else {
+      //   showToast("error", error || messageError);
+      //   return;
+      // }
     } catch (error) {
       console.error("Error al registrar la universidad", error);
       showToast("error", "Error al registrar la universidad");
@@ -119,7 +140,7 @@ export const UniversidadForm = () => {
 
             form.reset({
               nombre: universidad.nombre,
-              abreviatura: universidad.descripcion,
+              abreviatura: universidad.abreviatura,
             });
           } else {
             showToast("error", message || "universidad no encontrada");
@@ -182,13 +203,14 @@ export const UniversidadForm = () => {
                         autoComplete="off"
                         maxLength={100}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>
@@ -209,13 +231,14 @@ export const UniversidadForm = () => {
                         autoComplete="off"
                         maxLength={10}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>

@@ -25,10 +25,15 @@ import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 
 interface Props {
   persona: Persona;
-  onStatusChange?: (personaId: number) => void;
+  grupo: string;
+  // onStatusChange?: (personaId: number) => void;
 }
 
-export const PersonaRow: React.FC<Props> = ({ persona, onStatusChange }) => {
+export const PersonaRow: React.FC<Props> = ({
+  persona,
+  grupo,
+  // onStatusChange,
+}) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -46,8 +51,10 @@ export const PersonaRow: React.FC<Props> = ({ persona, onStatusChange }) => {
 
   console.log({ persona });
 
+  console.log({ grupo });
+
   const handleShowDetail = () => {
-    navigate(`/persona/editar/${persona.id}`);
+    navigate(`/personas/${grupo}/editar/${persona.id}`);
   };
 
   // Abre el modal

@@ -1,13 +1,43 @@
 import { Persona } from "../interfaces/IPersona"
 import {
     getAll,
+    getAllPaginate,
     getById,
     create,
     update
 } from "../repositories/personaRepository"
 
-export const getPersona = async (nombreGrupo: string) => {
+export const getPersonas = async (nombreGrupo: string) => {
     const response = await getAll(nombreGrupo)
+
+    return {
+        ...response
+    }
+}
+
+export const getPersonasPaginate = async (
+    page: number,
+    limit: number,
+    nombreGrupo: string,
+    filters: {}
+) => {
+    console.log({ page })
+    console.log({ limit })
+    console.log({ nombreGrupo })
+    console.log({ filters })
+
+    // Construir la cadena de query parameters
+    const queryParams = new URLSearchParams({
+        page: page.toString(),
+        limit: limit.toString(),
+        ...Object.fromEntries(
+            Object.entries(filters).filter(([, value]) => value)
+        )
+    }).toString()
+
+    console.log({ queryParams })
+
+    const response = await getAllPaginate(nombreGrupo, queryParams)
 
     return {
         ...response
@@ -24,6 +54,8 @@ export const getPersonaById = async (id: number) => {
 
 export const createPersona = async (payload: Persona) => {
     const response = await create(payload)
+    console.log('response createPersona')
+    console.log({ response })
 
     return {
         ...response

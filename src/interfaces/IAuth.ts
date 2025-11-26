@@ -1,9 +1,11 @@
 export interface UserAuthenticated {
-    id_usuario?: number
+    id?: number
     id_persona?: number
     id_perfil?: number
-    nombre_completo?: string
+    name?: string
+    email?: string
     nombre_perfil?: string
+    nombre_completo?: string
     slug_perfil?: string
 }
 

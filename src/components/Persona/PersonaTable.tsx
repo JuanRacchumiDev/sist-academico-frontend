@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
-import { getPersona } from "../../services/personaService";
+import { JSX, useCallback, useEffect, useState } from "react";
+import { getPersonasPaginate } from "../../services/personaService";
 import {
   Pagination,
   PaginationContent,
@@ -19,7 +19,7 @@ import {
 } from "../ui/table";
 import { PersonaRow } from "./PersonaRow";
 import { TableSpinner } from "../../components/Common/TableSpinner";
-import { Persona } from "@/interfaces/IPersona";
+import { Persona, PaginationType } from "@/interfaces/IPersona";
 
 interface PersonaTableProps {
   nombreGrupo?: string;
@@ -27,46 +27,130 @@ interface PersonaTableProps {
 
 export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
   const [personas, setPersonas] = useState<Persona[]>([]);
-  //   const [pagination, setPagination] = useState<PaginationType>({
-  //     currentPage: 1,
-  //     limit: 10,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     nextPage: null,
-  //     previousPage: null,
-  //   });
+  const [pagination, setPagination] = useState<PaginationType>({
+    currentPage: 1,
+    limit: 10,
+    totalPages: 1,
+    totalItems: 0,
+    nextPage: null,
+    previousPage: null,
+  });
+
+  console.log({ pagination });
 
   const [isLoading, setIsLoading] = useState(true);
 
+  const handlePageChange = (page: number) => {
+    console.log("---- page handlePageChange ----");
+    console.log({ page });
+
+    const validatePage = page > 0 && page <= pagination.totalPages;
+
+    console.log({ validatePage });
+
+    if (validatePage) {
+      setPagination((prev) => ({ ...prev, currentPage: page }));
+    }
+  };
+
   const fetchData = useCallback(async () => {
-    setIsLoading(true);
+    const { currentPage, limit } = pagination;
+
+    console.log({ currentPage });
+
+    console.log({ limit });
+
+    const filters = {
+      parametro_clase: 1005,
+    };
+
+    console.log({ filters });
+
+    const tipoPersona = `grupo-${nombreGrupo || ""}`;
+
+    console.log({ tipoPersona });
+
     try {
-      //   const tipoPersona = nombreGrupo || "";
+      const response = await getPersonasPaginate(
+        currentPage,
+        limit,
+        tipoPersona,
+        filters
+      );
 
-      const tipoPersona = `grupo-${nombreGrupo || ""}`;
-
-      console.log({ tipoPersona });
-
-      const response = await getPersona(tipoPersona);
-
-      const { result, data } = response;
+      const { result, data, pagination: newPagination } = response;
 
       if (result && data) {
         const dataPersonas = data as Persona[];
         setPersonas(dataPersonas);
+
+        if (newPagination) {
+          setPagination(newPagination);
+        }
       } else {
         setPersonas([]);
+        setPagination({
+          currentPage: 1,
+          limit: 10,
+          totalPages: 1,
+          totalItems: 0,
+          nextPage: null,
+          previousPage: null,
+        });
       }
     } catch (error) {
       console.error("Error al obtener personas", error);
     } finally {
       setIsLoading(false);
     }
-  }, [nombreGrupo]);
+  }, [nombreGrupo, pagination.currentPage, pagination.limit]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  const renderPaginationItems = (): JSX.Element[] => {
+    const items: JSX.Element[] = [];
+    const startPage = Math.max(1, pagination.currentPage - 2);
+    const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+
+    if (startPage > 1) {
+      items.push(
+        <PaginationItem key="ellipsis-start">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
+      items.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            onClick={() => handlePageChange(i)}
+            isActive={i === pagination.currentPage}
+            className={`
+                ${
+                  i === pagination.currentPage
+                    ? "bg-blue-500 text-white"
+                    : "hover:bg-gray-200 transition-colors"
+                }
+              `}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    if (endPage < pagination.totalPages) {
+      items.push(
+        <PaginationItem key="ellipsis-end">
+          <PaginationEllipsis />
+        </PaginationItem>
+      );
+    }
+    return items;
+  };
 
   return (
     <div className="w-full space-y-4 pt-4">
@@ -100,6 +184,7 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
                 <PersonaRow
                   key={persona.id}
                   persona={persona}
+                  grupo={nombreGrupo || ""}
                   //   onStatusChange={handleDocumentoStatusChange}
                 />
               ))
@@ -115,6 +200,31 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="mt-4 flex justify-end">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                className="hover:bg-gray-200 transition-colors"
+              >
+                Anterior
+              </PaginationPrevious>
+            </PaginationItem>
+
+            {renderPaginationItems()}
+
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                className="hover:bg-gray-200 transition-colors"
+              >
+                Siguiente
+              </PaginationNext>
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ const formSchema = z.object({
   nombre: z.string().min(2, {
     message: "El nombre es requerido.",
   }),
-  descripcion: z.string().optional(),
+  descripcion: z.string().nullable().optional(),
 });
 
 export const SedeForm = () => {
@@ -49,7 +49,7 @@ export const SedeForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       nombre: "",
-      descripcion: "",
+      descripcion: null,
     },
   });
 
@@ -64,19 +64,24 @@ export const SedeForm = () => {
   const resetForm = () => {
     form.reset({
       nombre: "",
-      descripcion: "",
+      descripcion: null,
     });
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log({ values });
+
       let messageError: string = "";
       let response: DetalleParametroResponse;
 
       const payloadData: DetalleParametro = {
-        ...values,
-        estado: true,
+        nombre: values.nombre,
       };
+
+      if (values.descripcion && values.descripcion.length > 0) {
+        payloadData["descripcion"] = values.descripcion;
+      }
 
       if (isEditMode && id) {
         messageError = "Error al actualizar la sede";
@@ -86,14 +91,24 @@ export const SedeForm = () => {
         response = await createDetalle("sede", payloadData);
       }
 
-      const { result, message, error } = response;
+      console.log("response create sede", response);
+
+      const { result, message, error, code } = response;
+
+      const messageStr = message as string;
+
+      console.log({ messageStr });
+
+      console.log({ code });
 
       if (result) {
-        const messageStr = message as string;
-
-        showToast("success", messageStr);
-
-        navigate("/mantenimiento/sede");
+        if (code === "PREVIOUSLY_REGISTERED") {
+          showToast("warning", messageStr);
+          return;
+        } else {
+          showToast("success", messageStr);
+          navigate("/mantenimiento/sede");
+        }
       } else {
         showToast("error", error || messageError);
         return;
@@ -178,13 +193,14 @@ export const SedeForm = () => {
                         autoComplete="off"
                         maxLength={100}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>
@@ -201,17 +217,18 @@ export const SedeForm = () => {
                     <RequiredLabel>Descripción</RequiredLabel>
                     <FormControl>
                       <Input
-                        placeholder="Descripción dla sede"
+                        placeholder="Descripción de la sede"
                         autoComplete="off"
                         maxLength={120}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>

@@ -27,9 +27,55 @@ export const getAll = async (nombreGrupo: string): Promise<PersonaResponse> => {
     }
 }
 
+export const getAllPaginate = async (nombreGrupo: string, queryParams: string): Promise<PersonaResponse> => {
+    try {
+        const urlApi = `/personas/grupo/${nombreGrupo}/paginate?${queryParams}`
+
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi)
+
+        console.log({ response })
+
+        const { data: dataPersonas } = response
+
+        console.log({ dataPersonas })
+
+        const { result, data, message } = dataPersonas
+
+        const listaItems = data.data
+
+        const paginationInfo = {
+            currentPage: data.current_page,
+            limit: data.per_page,
+            totalPages: data.last_page,
+            totalItems: data.total,
+            nextPage: data.next_page_url,
+            previousPage: data.prev_page_url
+        };
+
+        return {
+            result,
+            data: listaItems,
+            message,
+            pagination: paginationInfo
+        }
+
+        // return {
+        //     result,
+        //     data,
+        //     message
+        // }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
 export const getById = async (id: number): Promise<PersonaResponse> => {
     try {
-        const urlApi = `${'/persona/'}${id}`
+        const urlApi = `${'/personas/'}${id}`
 
         console.log({ urlApi })
 
@@ -57,12 +103,13 @@ export const create = async (payload: Persona): Promise<PersonaResponse> => {
 
         console.log({ response })
 
-        const { data: { result, message, data } } = response
+        const { data: { result, message, status, code } } = response
 
         return {
             result,
             message,
-            data
+            status,
+            code
         }
 
     } catch (error) {

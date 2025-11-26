@@ -37,7 +37,7 @@ const formSchema = z.object({
   nombre: z.string().min(2, {
     message: "El nombre es requerido.",
   }),
-  descripcion: z.string().optional(),
+  descripcion: z.string().nullable().optional(),
 });
 
 export const SegmentoForm = () => {
@@ -49,7 +49,7 @@ export const SegmentoForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       nombre: "",
-      descripcion: "",
+      descripcion: null,
     },
   });
 
@@ -64,19 +64,29 @@ export const SegmentoForm = () => {
   const resetForm = () => {
     form.reset({
       nombre: "",
-      descripcion: "",
+      descripcion: null,
     });
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      console.log({ values });
+
       let messageError: string = "";
       let response: DetalleParametroResponse;
 
+      // const payloadData: DetalleParametro = {
+      //   ...values,
+      //   estado: true,
+      // };
+
       const payloadData: DetalleParametro = {
-        ...values,
-        estado: true,
+        nombre: values.nombre,
       };
+
+      if (values.descripcion && values.descripcion.length > 0) {
+        payloadData["descripcion"] = values.descripcion;
+      }
 
       if (isEditMode && id) {
         messageError = "Error al actualizar el segmento";
@@ -86,14 +96,22 @@ export const SegmentoForm = () => {
         response = await createDetalle("segmento", payloadData);
       }
 
-      const { result, message, error } = response;
+      console.log({ response });
+
+      const { result, message, error, code } = response;
+
+      const messageStr = message as string;
 
       if (result) {
-        const messageStr = message as string;
-
-        showToast("success", messageStr);
-
-        navigate("/mantenimiento/segmento");
+        if (code === "PREVIOUSLY_REGISTERED") {
+          showToast("warning", messageStr);
+          return;
+        } else {
+          showToast("success", messageStr);
+          navigate("/mantenimiento/segmento");
+        }
+        // showToast("success", messageStr);
+        // navigate("/mantenimiento/segmento");
       } else {
         showToast("error", error || messageError);
         return;
@@ -186,7 +204,7 @@ export const SegmentoForm = () => {
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>
@@ -207,13 +225,14 @@ export const SegmentoForm = () => {
                         autoComplete="off"
                         maxLength={120}
                         {...field}
+                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>

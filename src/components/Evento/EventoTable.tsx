@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getEvento } from "../../services/eventoService";
+import { getEventos } from "../../services/eventoService";
 import {
   Pagination,
   PaginationContent,
@@ -37,7 +37,7 @@ export const EventoTable = () => {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await getEvento();
+      const response = await getEventos();
 
       const { result, data } = response;
 

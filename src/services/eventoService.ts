@@ -6,7 +6,7 @@ import {
     update
 } from "../repositories/eventoRepository"
 
-export const getEvento = async () => {
+export const getEventos = async () => {
     const response = await getAll()
 
     return {

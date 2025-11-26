@@ -192,7 +192,7 @@ export const CategoriaEventoForm = () => {
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>
@@ -219,7 +219,7 @@ export const CategoriaEventoForm = () => {
                               ? "border-red-500 focus:ring-red-500"
                               : "focus:ring-blue-500"
                           }
-                            transition-all duration-300 w-full
+                            transition-all duration-300 w-full placeholder-gray-400
                           `}
                       />
                     </FormControl>

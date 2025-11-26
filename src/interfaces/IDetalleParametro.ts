@@ -2,22 +2,20 @@ export interface DetalleParametro {
     codigo?: number
     nombre?: string
     nombre_url?: string
-    descripcion?: string
+    descripcion?: string | null
+    valor?: string
     abreviatura?: string
     longitud?: number
+    en_persona?: boolean
+    en_empresa?: boolean
+    compra?: boolean
+    venta?: boolean
+    visible?: boolean
     sistema?: boolean
     estado?: boolean
 }
 
-export interface DetalleParametroResponse {
-    result?: boolean
-    message?: string
-    data?: DetalleParametro | DetalleParametro[]
-    error?: string
-    status?: number
-}
-
-export interface Pagination {
+export interface PaginationType {
     currentPage: number
     limit: number
     totalPages: number
@@ -26,12 +24,22 @@ export interface Pagination {
     previousPage: number | null
 }
 
+export interface DetalleParametroResponse {
+    result?: boolean
+    message?: string
+    data?: DetalleParametro | DetalleParametro[]
+    error?: string
+    status?: number,
+    code?: string
+}
+
 export interface DetalleParametroPaginateResponse {
     result: boolean
+    message?: string
     data?: DetalleParametro[]
-    pagination?: Pagination
-    errors?: string
-    status?: number
+    error?: string
+    status?: number,
+    pagination?: PaginationType
 }
 
 export interface DetalleParametroFilters {
