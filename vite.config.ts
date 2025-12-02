@@ -11,11 +11,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src")
     }
   },
-  server: {
-    host: true,
-    hmr: {
-      host: 'rigidly-unloving-faith.ngrok-free.dev',
-      protocol: 'wss'
-    }
-  }
+  // server: {
+  //   host: true,
+  //   hmr: {
+  //     host: 'rigidly-unloving-faith.ngrok-free.dev',
+  //     protocol: 'wss'
+  //   }
+  // }
 })

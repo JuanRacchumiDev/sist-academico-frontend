@@ -38,7 +38,12 @@ import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Persona, PersonaResponse } from "@/interfaces/IPersona";
 import { ArrowLeft } from "lucide-react";
-import { createPersona, getPersonaById } from "../../services/personaService";
+import {
+  createPersona,
+  getPersonaById,
+  updatePersona,
+} from "../../services/personaService";
+import { getPersonaByApi } from "../../services/personaApiService";
 
 interface PersonaFormProps {
   nombreGrupo?: string;
@@ -98,6 +103,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
   const [tipoDocumentos, setTipoDocumentos] = useState<DetalleParametro[]>([]);
+
+  const [camposHabilitados, setCamposHabilitados] = useState(false);
+
+  const [idPersona, setIdPersona] = useState(0);
 
   const isEditMode = !!id;
 
@@ -177,7 +186,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         fecha_nacimiento: fechaNacimientoStr,
         email,
         sexo,
-        origen: "WEB",
+        // origen: "WEB",
         nombre_grupo: `grupo-${nombreGrupo}`,
         estado_civil: "SOLTERO",
         telefono,
@@ -187,40 +196,81 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
       console.log("payload new persona");
       console.log({ payload });
 
-      const response = await createPersona(payload);
+      let resultOperation: boolean = false;
+      let messageOperation: string = "";
+      let codeOperation: string = "";
 
-      console.log("response create", response);
+      if (!isEditMode) {
+        console.log("---- no actualizar ----");
 
-      const { result, message, code } = response as PersonaResponse;
+        if (idPersona) {
+          console.log("update desde form");
+          const response = await updatePersona(idPersona, payload);
+          console.log("---- response update ----");
+          console.log({ response });
 
-      const messageStr = message as string;
+          const { result, message, code } = response as PersonaResponse;
 
-      console.log({ messageStr });
+          resultOperation = result as boolean;
 
-      console.log({ code });
+          messageOperation = message as string;
 
-      if (result) {
-        if (code === "PREVIOUSLY_REGISTERED") {
-          showToast("warning", messageStr);
+          codeOperation = code as string;
+        } else {
+          console.log("create desde form");
+
+          // Nueva persona
+          const response = await createPersona(payload);
+
+          console.log("--- response create ----");
+          console.log({ response });
+
+          const { result, message, code } = response as PersonaResponse;
+
+          resultOperation = result as boolean;
+
+          messageOperation = message as string;
+
+          codeOperation = code as string;
+
+          // const messageStr = message as string;
+          // console.log({ messageStr });
+          // console.log({ code });
+        }
+      } else {
+        console.log("update desde ");
+        const response = await updatePersona(idPersona, payload);
+        console.log("---- response update ----");
+        console.log({ response });
+
+        const { result, message, code } = response as PersonaResponse;
+
+        resultOperation = result as boolean;
+
+        messageOperation = message as string;
+
+        codeOperation = code as string;
+      }
+
+      if (resultOperation) {
+        if (codeOperation === "PREVIOUSLY_REGISTERED") {
+          showToast("warning", messageOperation);
           return;
         } else {
           const messageCreate = nombreGrupo
             ? `${nombreGrupo.toUpperCase()} REGISTRADO (A) EXITOSAMENTE`
-            : (message as string).toUpperCase();
+            : messageOperation.toUpperCase();
 
           showToast("success", messageCreate);
           navigate(`/personas/${nombreGrupo}`);
         }
       } else {
-        showToast(
-          "error",
-          message || "Error al registrar al trabajador social"
-        );
+        showToast("error", messageOperation || "Error al registrar la persona");
         return;
       }
     } catch (error) {
-      console.error("Error al registrar trabajador social", error);
-      showToast("error", "Error al registrar el trabajador social");
+      console.error("Error al registrar la persona", error);
+      showToast("error", "Error al registrar la persona");
     }
   };
 
@@ -377,6 +427,83 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                             autoComplete="off"
                             maxLength={8}
                             {...field}
+                            onKeyDown={async (e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                try {
+                                  showToast("success", "Buscando datos");
+
+                                  const idTipoDocumento =
+                                    form.getValues("idTipoDocumento");
+                                  console.log({ idTipoDocumento });
+
+                                  const tipoDocumento =
+                                    idTipoDocumento === "1" ? "DNI" : "CE";
+                                  console.log({ tipoDocumento });
+
+                                  const descGrupo = `grupo-${nombreGrupo}`;
+                                  console.log({ descGrupo });
+
+                                  const responsePersona = await getPersonaByApi(
+                                    tipoDocumento,
+                                    field.value,
+                                    descGrupo
+                                  );
+
+                                  console.log(
+                                    "---- responsePersona PersonaForm ----"
+                                  );
+                                  console.log({ responsePersona });
+
+                                  const { result, data, message } =
+                                    responsePersona;
+
+                                  if (result && data) {
+                                    const persona = data as Persona;
+                                    console.log("---- data persona ----");
+                                    console.log({ persona });
+
+                                    const {
+                                      id,
+                                      nombres,
+                                      apellido_paterno,
+                                      apellido_materno,
+                                      fecha_nacimiento,
+                                    } = persona;
+
+                                    setIdPersona(id as number);
+
+                                    form.setValue("nombres", nombres as string);
+                                    form.setValue(
+                                      "apellidoPaterno",
+                                      apellido_paterno as string
+                                    );
+                                    form.setValue(
+                                      "apellidoMaterno",
+                                      apellido_materno as string
+                                    );
+
+                                    if (fecha_nacimiento) {
+                                      const fechaNacimientoParsed =
+                                        parseISO(fecha_nacimiento);
+                                      form.setValue(
+                                        "fechaNacimiento",
+                                        fechaNacimientoParsed
+                                      );
+                                    }
+
+                                    setCamposHabilitados(false);
+                                    showToast("success", message as string);
+                                  } else {
+                                    setCamposHabilitados(true);
+                                    showToast("warning", "No se encontraron ");
+                                  }
+                                } catch (error) {
+                                  setCamposHabilitados(true);
+                                  showToast("error", "Error al crear persona");
+                                }
+                              }
+                            }}
                             className={`
                               ${
                                 fieldState.invalid
@@ -404,7 +531,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                             autoComplete="off"
                             maxLength={40}
                             {...field}
-                            // disabled={!camposHabilitadosPersona}
+                            disabled={!camposHabilitados}
                             className={`
                               ${
                                 fieldState.invalid
@@ -432,7 +559,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                             autoComplete="off"
                             maxLength={40}
                             {...field}
-                            // disabled={!camposHabilitadosPersona}
+                            disabled={!camposHabilitados}
                             className={`
                               ${
                                 fieldState.invalid
@@ -460,7 +587,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                             autoComplete="off"
                             maxLength={40}
                             {...field}
-                            // disabled={!camposHabilitadosPersona}
+                            disabled={!camposHabilitados}
                             className={`
                               ${
                                 fieldState.invalid
@@ -503,7 +630,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                               }
                                 transition-all duration-300
                             `}
-                            // disabled={!camposHabilitadosPersona}
+                            disabled={!camposHabilitados}
                           />
                         </FormControl>
                         <FormMessage />
