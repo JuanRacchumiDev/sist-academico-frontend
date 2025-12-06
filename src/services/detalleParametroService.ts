@@ -9,10 +9,10 @@ import {
 } from '../repositories/detalleParametroRepository'
 
 export const getDetalle = async (
-    page: number,
-    limit: number,
-    clase: string,
-    filters: {}
+    page?: number,
+    limit?: number,
+    clase?: string,
+    filters?: {}
 ) => {
     console.log({ page })
     console.log({ limit })

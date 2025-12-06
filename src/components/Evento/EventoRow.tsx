@@ -28,7 +28,7 @@ interface Props {
   onStatusChange?: (eventoId: number) => void;
 }
 
-export const EventoRow: React.FC<Props> = ({ evento, onStatusChange }) => {
+export const EventoRow: React.FC<Props> = ({ evento }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

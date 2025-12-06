@@ -1,14 +1,4 @@
 import { useCallback, useEffect, useState } from "react";
-import { getDetalle } from "../../../services/detalleParametroService";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../../ui/pagination";
 import {
   Table,
   TableBody,
@@ -25,21 +15,16 @@ export const CategoriaEventoTable: React.FC = () => {
   const [categoriaEventos, setCategoriaEventos] = useState<DetalleParametro[]>(
     []
   );
-  //   const [pagination, setPagination] = useState<PaginationType>({
-  //     currentPage: 1,
-  //     limit: 10,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     nextPage: null,
-  //     previousPage: null,
-  //   });
 
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await getDetalle("categoria-evento");
+      const response = {
+        result: null,
+        data: null,
+      };
 
       console.log("response categoriaEventos", response);
 
@@ -91,7 +76,6 @@ export const CategoriaEventoTable: React.FC = () => {
                 <CategoriaEventoRow
                   key={categoriaEvento.codigo}
                   categoriaEvento={categoriaEvento}
-                  //   onStatusChange={handleDocumentoStatusChange}
                 />
               ))
             ) : (

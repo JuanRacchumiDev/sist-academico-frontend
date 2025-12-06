@@ -29,10 +29,7 @@ interface Props {
   onStatusChange?: (categoriaEventoId: number) => void;
 }
 
-export const CategoriaEventoRow: React.FC<Props> = ({
-  categoriaEvento,
-  onStatusChange,
-}) => {
+export const CategoriaEventoRow: React.FC<Props> = ({ categoriaEvento }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

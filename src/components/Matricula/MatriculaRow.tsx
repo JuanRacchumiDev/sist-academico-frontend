@@ -28,10 +28,7 @@ interface Props {
   onStatusChange?: (matriculaId: number) => void;
 }
 
-export const MatriculaRow: React.FC<Props> = ({
-  matricula,
-  onStatusChange,
-}) => {
+export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

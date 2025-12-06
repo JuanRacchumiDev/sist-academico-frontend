@@ -20,7 +20,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import { useToast } from "../../../context/ToastContext";
-// import { ConfirmDialog } from "../../Common/ConfirmDialog";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 
@@ -29,10 +28,7 @@ interface Props {
   onStatusChange?: (universidadId: number) => void;
 }
 
-export const UniversidadRow: React.FC<Props> = ({
-  universidad,
-  onStatusChange,
-}) => {
+export const UniversidadRow: React.FC<Props> = ({ universidad }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

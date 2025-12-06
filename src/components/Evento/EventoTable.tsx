@@ -1,15 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { getEventos } from "../../services/eventoService";
 import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../ui/pagination";
-import {
   Table,
   TableBody,
   TableCell,
@@ -23,14 +14,6 @@ import { Evento } from "@/interfaces/IEvento";
 
 export const EventoTable = () => {
   const [eventos, setEventos] = useState<Evento[]>([]);
-  //   const [pagination, setPagination] = useState<PaginationType>({
-  //     currentPage: 1,
-  //     limit: 10,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     nextPage: null,
-  //     previousPage: null,
-  //   });
 
   const [isLoading, setIsLoading] = useState(true);
 
@@ -85,11 +68,7 @@ export const EventoTable = () => {
               <TableSpinner colSpan={5} />
             ) : eventos.length > 0 ? (
               eventos.map((evento) => (
-                <EventoRow
-                  key={evento.id}
-                  evento={evento}
-                  //   onStatusChange={handleDocumentoStatusChange}
-                />
+                <EventoRow key={evento.id} evento={evento} />
               ))
             ) : (
               <TableRow>

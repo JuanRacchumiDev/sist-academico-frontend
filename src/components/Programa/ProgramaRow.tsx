@@ -31,7 +31,7 @@ interface Props {
   onStatusChange?: (programaId: number) => void;
 }
 
-export const ProgramaRow: React.FC<Props> = ({ programa, onStatusChange }) => {
+export const ProgramaRow: React.FC<Props> = ({ programa }) => {
   const { showToast } = useToast();
 
   const navigate = useNavigate();

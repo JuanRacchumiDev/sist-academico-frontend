@@ -19,13 +19,6 @@ import {
   FormItem,
   FormMessage,
 } from "../ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
 import { createModulo, getModuloById } from "../../services/moduloService";
 import { getProgramas } from "../../services/programaService";
 import { Input } from "../ui/input";

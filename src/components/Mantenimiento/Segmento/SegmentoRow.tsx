@@ -20,7 +20,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../ui/button";
 import { useToast } from "../../../context/ToastContext";
-// import { ConfirmDialog } from "../../Common/ConfirmDialog";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 
@@ -29,7 +28,7 @@ interface Props {
   onStatusChange?: (segmentoId: number) => void;
 }
 
-export const SegmentoRow: React.FC<Props> = ({ segmento, onStatusChange }) => {
+export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

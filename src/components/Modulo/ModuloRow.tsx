@@ -28,7 +28,7 @@ interface Props {
   onStatusChange?: (moduloId: number) => void;
 }
 
-export const ModuloRow: React.FC<Props> = ({ modulo, onStatusChange }) => {
+export const ModuloRow: React.FC<Props> = ({ modulo }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

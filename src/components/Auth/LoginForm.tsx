@@ -47,7 +47,7 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
 
       console.log("response login", response);
 
-      const { result, status, message, error } = response as TAuthResponse;
+      const { result, status, message } = response as TAuthResponse;
 
       const messageStr = message as string;
 

@@ -29,10 +29,7 @@ interface Props {
   onStatusChange?: (tipoDocumentoId: number) => void;
 }
 
-export const TipoDocumentoRow: React.FC<Props> = ({
-  tipoDocumento,
-  onStatusChange,
-}) => {
+export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

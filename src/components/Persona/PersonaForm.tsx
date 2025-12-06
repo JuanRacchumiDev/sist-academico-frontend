@@ -188,7 +188,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         sexo,
         // origen: "WEB",
         nombre_grupo: `grupo-${nombreGrupo}`,
-        estado_civil: "SOLTERO",
+        // estado_civil: "SOLTERO",
         telefono,
         estado: true,
       };

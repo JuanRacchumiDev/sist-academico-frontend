@@ -1,14 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { getDetalle } from "../../../services/detalleParametroService";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "../../ui/pagination";
+// import { getDetalle } from "../../../services/detalleParametroService";
 import {
   Table,
   TableBody,
@@ -25,21 +16,14 @@ export const TipoCertificadoTable: React.FC = () => {
   const [tipoCertificados, setTipoCertificados] = useState<DetalleParametro[]>(
     []
   );
-  //   const [pagination, setPagination] = useState<PaginationType>({
-  //     currentPage: 1,
-  //     limit: 10,
-  //     totalPages: 1,
-  //     totalItems: 0,
-  //     nextPage: null,
-  //     previousPage: null,
-  //   });
 
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const response = await getDetalle("tipo-certificado");
+      // const response = await getDetalle("tipo-certificado");
+      const response = { result: null, data: null };
 
       console.log("response tipoCertificados", response);
 
