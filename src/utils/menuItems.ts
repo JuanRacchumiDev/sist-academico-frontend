@@ -1,15 +1,23 @@
 import {
-    Briefcase,
-    LayoutDashboard,
+    ChevronDown,
+    GraduationCap,
+    Home,
+    Users,
+    UserIcon,
+    BookOpen,
+    DollarSign,
+    Calendar,
     Settings,
+    Zap,
+    Briefcase,
     User2Icon,
-    UserCheck
-} from "lucide-react"
+    UserCheck,
+} from "lucide-react";
 
 export const MENU_ITEMS = [
     {
         id: "dashboard",
-        icon: LayoutDashboard,
+        icon: Home,
         label: "Dashboard",
         active: true,
         badge: "New",
@@ -17,28 +25,28 @@ export const MENU_ITEMS = [
     },
     {
         id: "alumno",
-        icon: User2Icon,
+        icon: UserIcon,
         label: "Alumno",
         active: false,
         path: "/personas/alumno"
     },
     {
         id: "programa-academico",
-        icon: User2Icon,
+        icon: BookOpen,
         label: "Programa",
         active: false,
         path: "/programa-academico"
     },
     {
         id: "modulo",
-        icon: User2Icon,
+        icon: Zap,
         label: "Módulo",
         active: false,
         path: "/modulo"
     },
     {
         id: "matricula",
-        icon: User2Icon,
+        icon: GraduationCap,
         label: "Matrícula",
         active: false,
         path: "/matricula"
@@ -128,7 +136,7 @@ export const MENU_ITEMS = [
             {
                 id: "metodo-pago",
                 label: "Método de pago",
-                icon: Briefcase,
+                icon: DollarSign,
                 path: "/mantenimiento/metodo-pago"
             },
             // {

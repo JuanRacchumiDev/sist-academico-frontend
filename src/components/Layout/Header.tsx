@@ -32,53 +32,79 @@ export const Header = ({ sidebarCollapsed, onToggleSidebar }) => {
   };
 
   return (
-    <div className="border-b px-6 py-5 border-slate-400/50">
-      <div className="flex items-center justify-between">
+    <div className="bg-white px-6 py-5 border-b border-gray-200 shadow-sm z-10 sticky top-0">
+      <div className="flex items-center justify-between h-8">
+        {/* Botón de Menú (Toggle Sidebar) */}
         <div className="flex items-center space-x-4">
           <button
-            className="p-2 rounded-lg text-slate-600 transition-colors cursor-pointer"
+            className={`p-2 rounded-full transition-all duration-200 
+                ${
+                  // Estilo si el sidebar está colapsado (para enfatizar el botón)
+                  sidebarCollapsed
+                    ? "bg-blue-600 text-white hover:bg-blue-700 shadow-md"
+                    : // Estilo si el sidebar está expandido
+                      "text-gray-600 hover:bg-gray-100"
+                }
+            `}
             onClick={onToggleSidebar}
+            aria-label="Toggle Sidebar"
           >
             <Menu className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Dropdown de Usuario */}
         <div className="flex items-center space-x-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <div className="flex items-center space-x-3 pl-3 border-l border-slate-200 cursor-pointer">
-                <div className="hidden md:block">
-                  <p className="text-sm font-medium text-slate-500">
-                    {userProfile?.nombre_completo
-                      ? userProfile.nombre_completo
-                      : "Usuario"}
+              <div className="flex items-center space-x-3 pl-3 border-l border-gray-200 cursor-pointer hover:bg-gray-50 p-2 rounded-lg transition-colors">
+                <div className="hidden md:block text-right">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {userProfile?.nombre_completo || "Usuario"}
                   </p>
-                  <p className="text-xs text-slate-500">
-                    {userProfile?.nombre_perfil
-                      ? userProfile.nombre_perfil
-                      : "PERFIL"}
+                  <p className="text-xs text-blue-600 font-medium">
+                    {userProfile?.nombre_perfil || "PERFIL"}
                   </p>
                 </div>
-                <ChevronDown className="w-4 h-4 text-slate-400" />
+                {/* Icono Avatar/Iniciales */}
+                <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-sm shrink-0">
+                  {userProfile?.nombre_completo
+                    ? userProfile.nombre_completo.charAt(0)
+                    : "U"}
+                </div>
+                <ChevronDown className="w-4 h-4 text-gray-400" />
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              className="w-56 bg-linear-to-r from-blue-300 to-purple-400 border-purple-300"
+              className="w-60 bg-white shadow-xl border border-gray-100" // Fondo blanco y sombra limpia
               align="end"
             >
-              <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
-              <DropdownMenuSeparator className="border-slate-500/50 border-b" />
+              {/* Estilo Label: Usando el degradado para el título del menú */}
+              <DropdownMenuLabel className="p-3 bg-linear-to-r from-blue-600 to-indigo-700 text-white rounded-t-md">
+                Mi Cuenta
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator className="border-gray-200 my-1" />
+
+              {/* Ítem Perfil */}
               <DropdownMenuItem
                 asChild
-                className="cursor-pointer hover:bg-purple-600 hover:text-white"
+                // Hover: Usamos el hover azul corporativo
+                className="cursor-pointer text-gray-700 hover:bg-blue-50 hover:text-blue-700 transition-colors"
               >
-                <Link to="/profile" className="flex items-center">
-                  <User className="mr-2 h-4 w-4" />
+                <Link to="/profile" className="flex items-center p-2">
+                  <User className="mr-2 h-4 w-4 text-blue-500" />
                   <span>Perfil</span>
                 </Link>
               </DropdownMenuItem>
+
+              {/* Separador antes de cerrar sesión */}
+              <DropdownMenuSeparator className="border-gray-200 my-1" />
+
+              {/* Ítem Cerrar Sesión */}
               <DropdownMenuItem
                 onClick={handleLogout}
-                className="text-red-500 cursor-pointer hover:bg-purple-600 hover:text-white"
+                // Estilo Cerrar Sesión: Destacado en rojo con hover azul sutil
+                className="text-red-500 cursor-pointer hover:bg-red-50 hover:text-red-700 transition-colors"
               >
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Cerrar Sesión</span>
@@ -89,4 +115,63 @@ export const Header = ({ sidebarCollapsed, onToggleSidebar }) => {
       </div>
     </div>
   );
+
+  // return (
+  //   <div className="border-b px-6 py-5 border-slate-400/50">
+  //     <div className="flex items-center justify-between">
+  //       <div className="flex items-center space-x-4">
+  //         <button
+  //           className="p-2 rounded-lg text-slate-600 transition-colors cursor-pointer"
+  //           onClick={onToggleSidebar}
+  //         >
+  //           <Menu className="w-5 h-5" />
+  //         </button>
+  //       </div>
+  //       <div className="flex items-center space-x-3">
+  //         <DropdownMenu>
+  //           <DropdownMenuTrigger asChild>
+  //             <div className="flex items-center space-x-3 pl-3 border-l border-slate-200 cursor-pointer">
+  //               <div className="hidden md:block">
+  //                 <p className="text-sm font-medium text-slate-500">
+  //                   {userProfile?.nombre_completo
+  //                     ? userProfile.nombre_completo
+  //                     : "Usuario"}
+  //                 </p>
+  //                 <p className="text-xs text-slate-500">
+  //                   {userProfile?.nombre_perfil
+  //                     ? userProfile.nombre_perfil
+  //                     : "PERFIL"}
+  //                 </p>
+  //               </div>
+  //               <ChevronDown className="w-4 h-4 text-slate-400" />
+  //             </div>
+  //           </DropdownMenuTrigger>
+  //           <DropdownMenuContent
+  //             className="w-56 bg-linear-to-r from-blue-300 to-purple-400 border-purple-300"
+  //             align="end"
+  //           >
+  //             <DropdownMenuLabel>Mi Cuenta</DropdownMenuLabel>
+  //             <DropdownMenuSeparator className="border-slate-500/50 border-b" />
+  //             <DropdownMenuItem
+  //               asChild
+  //               className="cursor-pointer hover:bg-purple-600 hover:text-white"
+  //             >
+  //               <Link to="/profile" className="flex items-center">
+  //                 <User className="mr-2 h-4 w-4" />
+  //                 <span>Perfil</span>
+  //               </Link>
+  //             </DropdownMenuItem>
+  //             <DropdownMenuItem
+  //               onClick={handleLogout}
+  //               className="text-red-500 cursor-pointer hover:bg-purple-600 hover:text-white"
+  //             >
+  //               <LogOut className="mr-2 h-4 w-4" />
+  //               <span>Cerrar Sesión</span>
+  //             </DropdownMenuItem>
+  //           </DropdownMenuContent>
+  //         </DropdownMenu>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
 };
