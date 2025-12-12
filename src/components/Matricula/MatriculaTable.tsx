@@ -148,9 +148,6 @@ export const MatriculaTable = () => {
                 Alumno
               </TableHead>
               <TableHead className="text-gray-600 font-medium">Sede</TableHead>
-              <TableHead className="text-gray-600 font-medium">
-                Programa
-              </TableHead>
               <TableHead className="text-gray-600 font-medium">Fecha</TableHead>
               <TableHead className="text-gray-600 font-medium">
                 Estado
@@ -162,7 +159,7 @@ export const MatriculaTable = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSpinner colSpan={6} />
+              <TableSpinner colSpan={5} />
             ) : matriculas.length > 0 ? (
               matriculas.map((matricula) => (
                 <MatriculaRow
@@ -174,7 +171,7 @@ export const MatriculaTable = () => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="text-center text-gray-500 py-6"
                 >
                   No se encontraron matrículas registradas

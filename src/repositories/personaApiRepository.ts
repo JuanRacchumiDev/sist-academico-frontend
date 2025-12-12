@@ -7,7 +7,7 @@ export const getByApi = async (
     nombreGrupo: string
 ): Promise<PersonaResponse> => {
     try {
-        const urlApi = `/personas/consulta-documento`
+        const urlApi = `/personas/store-api`
 
         const payload = {
             tipo_documento: tipoDocumento,

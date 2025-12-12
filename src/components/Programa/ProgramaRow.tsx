@@ -116,6 +116,8 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
         </TableCell>
         <TableCell className="py-3">{programa.sigla}</TableCell>
         <TableCell className="py-3">{programa.nombre}</TableCell>
+        <TableCell className="py-3">{programa.tipo_programa.nombre}</TableCell>
+        <TableCell className="py-3">{programa.segmento.nombre}</TableCell>
         <TableCell className="py-3">{programa.duracion}</TableCell>
         <TableCell className="py-3">{programa.modulos}</TableCell>
         <TableCell className="py-3">{programa.creditos}</TableCell>

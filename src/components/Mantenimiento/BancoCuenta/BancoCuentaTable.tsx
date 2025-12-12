@@ -62,7 +62,7 @@ export const BancoCuentaTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1013,
+      parametro_clase: 1012,
     };
 
     console.log({ filters });

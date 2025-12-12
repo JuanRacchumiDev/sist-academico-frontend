@@ -51,6 +51,11 @@ const formSchema = z.object({
       message: "Por favor seleccione un segmento",
     })
     .min(1, "Por favor seleccione un segmento"),
+  idTipoPrograma: z
+    .string({
+      message: "Por favor seleccione un tipo de programa",
+    })
+    .min(1, "Por favor seleccione un tipo de programa"),
   codigoOld: z.string().max(10).nullable().optional(),
   sigla: z.string().min(2, {
     message: "La sigla es obligatoria",
@@ -108,6 +113,7 @@ const formSchema = z.object({
 
 type TPrograma = {
   idSegmento?: string;
+  idTipoPrograma?: string;
   codigoOld?: string;
   sigla?: string;
   nombre?: string;
@@ -123,6 +129,7 @@ export const ProgramaForm = () => {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
   const [segmentos, setSegmentos] = useState<DetalleParametro[]>([]);
+  const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
 
   const isEditMode = !!id;
 
@@ -135,6 +142,7 @@ export const ProgramaForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       idSegmento: "",
+      idTipoPrograma: "",
       codigoOld: "",
       sigla: "",
       nombre: "",
@@ -149,6 +157,7 @@ export const ProgramaForm = () => {
   const resetForm = () => {
     const dataForm: TPrograma = {
       idSegmento: "",
+      idTipoPrograma: "",
       codigoOld: "",
       sigla: "",
       nombre: "",
@@ -173,6 +182,7 @@ export const ProgramaForm = () => {
 
       const {
         idSegmento,
+        idTipoPrograma,
         codigoOld,
         sigla,
         nombre,
@@ -185,6 +195,7 @@ export const ProgramaForm = () => {
       } = values;
 
       formData.append("id_segmento", idSegmento);
+      formData.append("id_tipoprograma", idTipoPrograma);
       formData.append("codigo_old", codigoOld || "");
       formData.append("sigla", sigla);
       formData.append("nombre", nombre);
@@ -232,27 +243,53 @@ export const ProgramaForm = () => {
     const fetchData = async () => {
       try {
         let listSegmentos: DetalleParametro[] = [];
+        let listTipoProgramas: DetalleParametro[] = [];
 
-        const filters: DetalleParametroFilters = {
-          parametro_clase: 1009,
+        // Obteniendo datos para crear el listado de segmentos
+        const filtersSegmentos: DetalleParametroFilters = {
+          parametro_clase: 1008,
           en_persona: false,
           en_empresa: false,
           estado: true,
         };
 
-        const [responseProgramas] = await Promise.all([
-          getDetalleFiltered(filters),
+        const [responseSegmentos] = await Promise.all([
+          getDetalleFiltered(filtersSegmentos),
         ]);
 
-        console.log({ responseProgramas });
+        console.log({ responseSegmentos });
 
-        const { result, data } = responseProgramas;
+        const { result: resultSegmentos, data: dataSegmentos } =
+          responseSegmentos;
 
-        if (result && data) {
-          listSegmentos = data as DetalleParametro[];
+        if (resultSegmentos && dataSegmentos) {
+          listSegmentos = dataSegmentos as DetalleParametro[];
         }
 
         setSegmentos(listSegmentos);
+
+        // Obteniendo datos para crear el listado de tipo de programas
+        const filtersTipoProgramas: DetalleParametroFilters = {
+          parametro_clase: 1002,
+          en_persona: true,
+          en_empresa: false,
+          estado: true,
+        };
+
+        const [responseTipoProgramas] = await Promise.all([
+          getDetalleFiltered(filtersTipoProgramas),
+        ]);
+
+        console.log({ responseTipoProgramas });
+
+        const { result: resultTipoProgramas, data: dataTipoProgramas } =
+          responseTipoProgramas;
+
+        if (resultTipoProgramas && dataTipoProgramas) {
+          listTipoProgramas = dataTipoProgramas as DetalleParametro[];
+        }
+
+        setTipoProgramas(listTipoProgramas);
 
         if (id) {
           const responsePrograma = await getProgramaById(+id);
@@ -272,8 +309,9 @@ export const ProgramaForm = () => {
               duracion: programa.duracion ?? "",
               modulos: programa.modulos ?? 0,
               creditos: programa.creditos ?? 0,
-              idSegmento: programa.id_segmento,
-              modalidad: programa.modalidad,
+              idSegmento: programa.id_segmento ?? "",
+              idTipoPrograma: programa.id_tipoprograma ?? "",
+              modalidad: programa.modalidad ?? "VIRTUAL",
               valorCuota: programa.valor_cuota ?? 0,
             });
           } else {
@@ -332,6 +370,88 @@ export const ProgramaForm = () => {
                   Información de programa
                 </legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <FormField
+                    control={form.control}
+                    name="idSegmento"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Segmento</RequiredLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`
+                                ${
+                                  fieldState.invalid
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "focus:ring-blue-500"
+                                }
+                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
+                              `}
+                            >
+                              <SelectValue placeholder="Seleccionar segmento" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
+                            {segmentos.map((segmento) => (
+                              <SelectItem
+                                value={segmento.codigo!.toString()}
+                                key={segmento.codigo!.toString()}
+                                className="cursor-pointer hover:bg-gray-100 transition-colors"
+                              >
+                                {segmento.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="idTipoPrograma"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Tipo Programa</RequiredLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value ?? ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`
+                                ${
+                                  fieldState.invalid
+                                    ? "border-red-500 focus:ring-red-500"
+                                    : "focus:ring-blue-500"
+                                }
+                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
+                              `}
+                            >
+                              <SelectValue placeholder="Seleccionar tipo de programa" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-gray-400 placeholder-gray-400">
+                            {tipoProgramas.map((tipoPrograma) => (
+                              <SelectItem
+                                value={tipoPrograma.codigo!.toString()}
+                                key={tipoPrograma.codigo!.toString()}
+                                className="cursor-pointer hover:bg-gray-100 transition-colors"
+                              >
+                                {tipoPrograma.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="codigoOld"
@@ -515,47 +635,6 @@ export const ProgramaForm = () => {
                             `}
                           />
                         </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="idSegmento"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Segmento</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar segmento" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            {segmentos.map((segmento) => (
-                              <SelectItem
-                                value={segmento.codigo!.toString()}
-                                key={segmento.codigo!.toString()}
-                                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                              >
-                                {segmento.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}

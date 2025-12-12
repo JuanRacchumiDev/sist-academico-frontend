@@ -62,7 +62,7 @@ export const UniversidadTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1006,
+      parametro_clase: 1005,
     };
 
     console.log({ filters });

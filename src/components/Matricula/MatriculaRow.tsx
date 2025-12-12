@@ -8,6 +8,7 @@ import {
   MoreHorizontal,
   ToggleLeft,
   ToggleRight,
+  FileDown
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,6 +23,8 @@ import { Button } from "../ui/button";
 import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
+import { downloadFile } from "../../utils/fileUtils";
+import { getFichaById } from "../../services/matriculaService";
 
 interface Props {
   matricula: Matricula;
@@ -76,6 +79,29 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
     }
   };
 
+  const handleDownloadFicha = async () => {
+    setIsDropdownOpen(false); // Cierra el menú
+
+    // Puedes usar un estado de loading local si lo deseas, pero usaremos el toast para feedback
+    showToast("info", "Preparando descarga de la ficha...");
+    
+    try {
+        const response = await getFichaById(matricula.id!); // Asumo que matricula.id es seguro
+
+        if (response.result && response.data) {
+            // response.data es el Blob, response.filename es el nombre
+            downloadFile(response.data as Blob, response.filename || `ficha_${matricula.id}.pdf`);
+            
+            showToast("success", "Ficha de matrícula descargada exitosamente.");
+        } else {
+            showToast("error", response.error || response.message || "No se pudo generar la ficha PDF.");
+        }
+    } catch (error) {
+        console.error("Error al descargar la ficha:", error);
+        showToast("error", "Error de conexión al intentar descargar la ficha.");
+    }
+  };
+
   // Determinar texto y color de acción
   const actionText = matricula.estado ? "Desactivar" : "Activar";
   const ActionIcon = matricula.estado ? ToggleLeft : ToggleRight;
@@ -92,7 +118,6 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
       >
         <TableCell className="py-3">{matricula.nombre_alumno}</TableCell>
         <TableCell className="py-3">{matricula.nombre_sede}</TableCell>
-        <TableCell className="py-3">{matricula.nombre_programa}</TableCell>
         <TableCell className="py-3">{matricula.fecha_matricula}</TableCell>
         <TableCell className="py-3">
           {matricula.estado ? (
@@ -132,6 +157,14 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
                 <span>Ver/Editar Detalle</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                  onClick={handleDownloadFicha}
+                  className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
+              >
+                  <FileDown className="h-4 w-4" />
+                  <span>Descargar Ficha PDF</span>
+              </DropdownMenuItem>
 
               <DropdownMenuItem
                 onClick={handleOpenStatusModal}

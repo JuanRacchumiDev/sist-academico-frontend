@@ -3,6 +3,7 @@ import { DetalleParametro } from "./IDetalleParametro"
 export interface Programa {
     id?: number
     id_segmento?: string
+    id_tipoprograma?: string
     codigo_old?: string
     sigla?: string
     nombre?: string
@@ -15,6 +16,7 @@ export interface Programa {
     modalidad?: string
     valor_cuota?: number
     segmento?: DetalleParametro
+    tipoPrograma?: DetalleParametro
 }
 
 export interface ProgramaResponse {

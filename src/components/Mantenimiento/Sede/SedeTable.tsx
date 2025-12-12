@@ -62,7 +62,7 @@ export const SedeTable = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1005,
+      parametro_clase: 1004,
     };
 
     console.log({ filters });

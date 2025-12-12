@@ -2,6 +2,7 @@ import { Matricula } from "../interfaces/IMatricula"
 import {
     getAllPaginate,
     getById,
+    getFicha,
     create
 } from "../repositories/matriculaRepository"
 
@@ -34,6 +35,14 @@ export const getMatriculas = async (
 
 export const getMatriculaById = async (id: number) => {
     const response = await getById(id)
+
+    return {
+        ...response
+    }
+}
+
+export const getFichaById = async (id: number) => {
+    const response = await getFicha(id)
 
     return {
         ...response

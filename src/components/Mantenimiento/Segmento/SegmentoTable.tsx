@@ -62,7 +62,7 @@ export const SegmentoTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1009,
+      parametro_clase: 1008,
     };
 
     console.log({ filters });

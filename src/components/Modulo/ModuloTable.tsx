@@ -174,7 +174,7 @@ export const ModuloTable = () => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={4}
+                  colSpan={5}
                   className="text-center text-gray-500 py-6"
                 >
                   No se encontraron módulos registrados

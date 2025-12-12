@@ -60,7 +60,7 @@ export const MetodoPagoTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1014,
+      parametro_clase: 1013,
     };
 
     console.log({ filters });

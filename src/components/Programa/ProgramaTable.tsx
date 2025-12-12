@@ -153,6 +153,12 @@ export const ProgramaTable = () => {
                 Nombre
               </TableHead>
               <TableHead className="text-gray-600 font-medium">
+                Tipo
+              </TableHead>
+              <TableHead className="text-gray-600 font-medium">
+                Segmento
+              </TableHead>
+              <TableHead className="text-gray-600 font-medium">
                 Duración
               </TableHead>
               <TableHead className="text-gray-600 font-medium">
@@ -172,7 +178,7 @@ export const ProgramaTable = () => {
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableSpinner colSpan={8} />
+              <TableSpinner colSpan={10} />
             ) : programas.length > 0 ? (
               programas.map((programa) => (
                 <ProgramaRow
@@ -184,7 +190,7 @@ export const ProgramaTable = () => {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={9}
+                  colSpan={10}
                   className="text-center text-gray-500 py-6"
                 >
                   No se encontraron programas registrados
