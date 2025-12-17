@@ -3,6 +3,7 @@ import {
     getAllPaginate,
     getById,
     getFicha,
+    getCertificado,
     create
 } from "../repositories/matriculaRepository"
 
@@ -43,6 +44,24 @@ export const getMatriculaById = async (id: number) => {
 
 export const getFichaById = async (id: number) => {
     const response = await getFicha(id)
+
+    return {
+        ...response
+    }
+}
+
+export const getCertificadoByParams = async (
+    id_matricula: number,
+    id_alumno: number,
+    id_programa: number
+) => {
+    const queryParams = new URLSearchParams({
+        id_matricula: id_matricula.toString(),
+        id_alumno: id_alumno.toString(),
+        id_programa: id_programa.toString()
+    }).toString()
+
+    const response = await getCertificado(queryParams)
 
     return {
         ...response

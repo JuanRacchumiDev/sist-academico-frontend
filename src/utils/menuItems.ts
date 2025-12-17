@@ -51,20 +51,20 @@ export const MENU_ITEMS = [
         active: false,
         path: "/matricula"
     },
-    {
-        id: "promotor",
-        icon: User2Icon,
-        label: "Promotor",
-        active: false,
-        path: "/personas/promotor"
-    },
-    {
-        id: "cobrador",
-        icon: User2Icon,
-        label: "Cobrador",
-        active: false,
-        path: "/personas/cobrador"
-    },
+    // {
+    //     id: "promotor",
+    //     icon: User2Icon,
+    //     label: "Promotor",
+    //     active: false,
+    //     path: "/personas/promotor"
+    // },
+    // {
+    //     id: "cobrador",
+    //     icon: User2Icon,
+    //     label: "Cobrador",
+    //     active: false,
+    //     path: "/personas/cobrador"
+    // },
     // {
     //     id: "evento",
     //     icon: UserCheck,
@@ -79,13 +79,13 @@ export const MENU_ITEMS = [
     //     active: false,
     //     path: "/certificado"
     // },
-    {
-        id: "usuario",
-        icon: UserCheck,
-        label: "Usuario",
-        active: false,
-        path: "/usuario"
-    },
+    // {
+    //     id: "usuario",
+    //     icon: UserCheck,
+    //     label: "Usuario",
+    //     active: false,
+    //     path: "/usuario"
+    // },
     {
         id: "mantenimiento",
         icon: Settings,

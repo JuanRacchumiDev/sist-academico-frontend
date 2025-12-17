@@ -47,8 +47,6 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
   } Programa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el programa: <strong>${programa.nombre}</strong>?`;
 
-  console.log({ programa });
-
   const handleShowDetail = () => {
     navigate(`/programa-academico/editar/${programa.id}`);
   };

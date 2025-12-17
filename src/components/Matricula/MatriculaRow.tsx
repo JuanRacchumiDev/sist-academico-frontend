@@ -8,14 +8,19 @@ import {
   MoreHorizontal,
   ToggleLeft,
   ToggleRight,
-  FileDown
+  FileDown,
+  FileBadge,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
@@ -24,7 +29,10 @@ import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 import { downloadFile } from "../../utils/fileUtils";
-import { getFichaById } from "../../services/matriculaService";
+import {
+  getFichaById,
+  getCertificadoByParams,
+} from "../../services/matriculaService";
 
 interface Props {
   matricula: Matricula;
@@ -84,21 +92,63 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
 
     // Puedes usar un estado de loading local si lo deseas, pero usaremos el toast para feedback
     showToast("info", "Preparando descarga de la ficha...");
-    
-    try {
-        const response = await getFichaById(matricula.id!); // Asumo que matricula.id es seguro
 
-        if (response.result && response.data) {
-            // response.data es el Blob, response.filename es el nombre
-            downloadFile(response.data as Blob, response.filename || `ficha_${matricula.id}.pdf`);
-            
-            showToast("success", "Ficha de matrícula descargada exitosamente.");
-        } else {
-            showToast("error", response.error || response.message || "No se pudo generar la ficha PDF.");
-        }
+    try {
+      const response = await getFichaById(matricula.id!); // Asumo que matricula.id es seguro
+
+      if (response.result && response.data) {
+        // response.data es el Blob, response.filename es el nombre
+        downloadFile(
+          response.data as Blob,
+          response.filename || `ficha_${matricula.id}.pdf`
+        );
+
+        showToast("success", "Ficha de matrícula descargada exitosamente.");
+      } else {
+        showToast(
+          "error",
+          response.error ||
+            response.message ||
+            "No se pudo generar la ficha PDF."
+        );
+      }
     } catch (error) {
-        console.error("Error al descargar la ficha:", error);
-        showToast("error", "Error de conexión al intentar descargar la ficha.");
+      console.error("Error al descargar la ficha:", error);
+      showToast("error", "Error de conexión al intentar descargar la ficha.");
+    }
+  };
+
+  const handleDownloadCertificado = async (
+    id_matricula: number,
+    id_alumno: number,
+    id_programa: number
+  ) => {
+    try {
+      setIsDropdownOpen(false); // Cierra el menú
+
+      showToast("info", "Preparando descarga del certificado...");
+
+      const response = await getCertificadoByParams(
+        id_matricula,
+        id_alumno,
+        id_programa
+      );
+
+      if (response.result && response.data) {
+        downloadFile(response.data, response.filename);
+        showToast("success", "Certificado descargado exitosamente");
+      } else {
+        showToast(
+          "error",
+          response.error || "Error al descargar el certificado"
+        );
+      }
+    } catch (error) {
+      console.error("Error al descargar el certificado:", error);
+      showToast(
+        "error",
+        "Error de conexión al intentar descargar el certificado."
+      );
     }
   };
 
@@ -159,12 +209,67 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                  onClick={handleDownloadFicha}
-                  className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
+                onClick={handleDownloadFicha}
+                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
               >
-                  <FileDown className="h-4 w-4" />
-                  <span>Descargar Ficha PDF</span>
+                <FileDown className="h-4 w-4" />
+                <span>Descargar Ficha PDF</span>
               </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="cursor-pointer text-amber-600">
+                  <FileBadge className="h-4 w-4 mr-2" />
+                  <span>Generar Certificado</span>
+                </DropdownMenuSubTrigger>
+
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent className="bg-white border shadow-md w-64">
+                    {/* Cambiamos 'programas' por 'detalles' que es lo que viene 
+          realmente en tu objeto de la base de datos 
+      */}
+                    {matricula.detalles && matricula.detalles.length > 0 ? (
+                      matricula.detalles.map((det) => {
+                        // Log para depuración
+                        console.log(
+                          "Programa a certificar:",
+                          det.nombre_programa
+                        );
+
+                        return (
+                          <DropdownMenuItem
+                            key={det.id} // Usamos el ID del detalle
+                            onClick={() =>
+                              handleDownloadCertificado(
+                                matricula.id,
+                                matricula.id_alumno,
+                                det.id_programa // ID del programa
+                              )
+                            }
+                            className="cursor-pointer hover:bg-amber-50"
+                          >
+                            <div className="flex flex-col">
+                              <span className="text-xs font-medium">
+                                {det.nombre_programa}
+                              </span>
+                              <span className="text-[10px] text-gray-500">
+                                ID Prog: {det.id_programa}
+                              </span>
+                            </div>
+                          </DropdownMenuItem>
+                        );
+                      })
+                    ) : (
+                      <DropdownMenuItem disabled>
+                        <span className="text-xs text-gray-400">
+                          Sin programas registrados
+                        </span>
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
 
               <DropdownMenuItem
                 onClick={handleOpenStatusModal}

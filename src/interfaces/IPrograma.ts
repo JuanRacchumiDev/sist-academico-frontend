@@ -4,19 +4,32 @@ export interface Programa {
     id?: number
     id_segmento?: string
     id_tipoprograma?: string
+    id_categoriaprograma?: string
     codigo_old?: string
     sigla?: string
     nombre?: string
+    descripcion?: string
+    fecha_inicio?: string
+    fecha_final?: string
     duracion?: string
+    horas_academicas?: number
     modulos?: number
     creditos?: number
     plan?: File | null | undefined
-    is_vigente?: boolean
-    estado?: boolean
     modalidad?: string
-    valor_cuota?: number
+    temario?: string
+    capacidad_minima?: number
+    capacidad_maxima?: number
+    cantidad_inscritos?: number
+    precio?: number
+    is_vigente?: boolean
+    user_crea?: string
+    user_actualiza?: string
+    user_elimina?: string
+    estado?: boolean
     segmento?: DetalleParametro
-    tipoPrograma?: DetalleParametro
+    tipo_programa?: DetalleParametro
+    categoria_programa?: DetalleParametro
 }
 
 export interface ProgramaResponse {

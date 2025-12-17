@@ -19,7 +19,7 @@ import {
   FormField,
   FormItem,
   FormMessage,
-  FormLabel
+  FormLabel,
 } from "../ui/form";
 import {
   Select,
@@ -48,14 +48,25 @@ import { Persona } from "@/interfaces/IPersona";
 import { Programa } from "@/interfaces/IPrograma";
 import SearchableCombobox from "../../components/Common/SearchableCombobox";
 
+type TFormValues = z.infer<typeof formSchema>;
+
+type TProgramaAPI = {
+  idTipoPrograma: number; // Suponemos que la API lo devuelve como number
+  idPrograma: number; // Suponemos que la API lo devuelve como number
+};
+
 const ProgramaMatriculaSchema = z.object({
-  idPrograma: z.string({
-    message: "Debe seleccionar un programa"
-  }).nullable(),
-  idTipoPrograma: z.number({
-    message: "Debe seleccionar un tipo de programa"
-  }).nullable()
-})
+  idPrograma: z
+    .string({
+      message: "Debe seleccionar un programa",
+    })
+    .nullable(),
+  idTipoPrograma: z
+    .number({
+      message: "Debe seleccionar un tipo de programa",
+    })
+    .nullable(),
+});
 
 export const formSchema = z.object({
   idAlumno: z
@@ -71,7 +82,9 @@ export const formSchema = z.object({
       message: "Seleccione una sede.",
     })
     .min(1, "Seleccione una sede."),
-  programas: z.array(ProgramaMatriculaSchema).min(1, "Debe agregar al menos un programa"),
+  programas: z
+    .array(ProgramaMatriculaSchema)
+    .min(1, "Debe agregar al menos un programa"),
   // idPrograma: z
   //   .string({
   //     message: "Seleccione un programa.",
@@ -95,20 +108,19 @@ export const formSchema = z.object({
     }),
 });
 
-type TPrograma = {
-  idTipoPrograma?: number;
-  idPrograma?: number
-}
+// type TPrograma = {
+//   idTipoPrograma?: number;
+//   idPrograma?: number
+// }
 
-type TMatricula = {
-  idAlumno?: string;
-  idMetodoPago?: string;
-  idSede?: string;
-  programas?: TPrograma[];
-  // idPrograma?: string;
-  fechaMatricula?: Date | null;
-  monto?: number;
-};
+// type TMatricula = {
+//   idAlumno?: string;
+//   idMetodoPago?: string;
+//   idSede?: string;
+//   programas?: TPrograma[];
+//   fechaMatricula?: Date | null;
+//   monto?: number;
+// };
 
 const today = new Date();
 const minDateString = format(today, "yyyy-MM-dd");
@@ -121,9 +133,9 @@ export const MatriculaForm = () => {
   const [sedes, setSedes] = useState<DetalleParametro[]>([]);
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
   const [programas, setProgramas] = useState<Programa[]>([]);
-  const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
+  // const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
   const [metodosPago, setMetodosPago] = useState<DetalleParametro[]>([]);
-  const [estadosPago, setEstadosPago] = useState<DetalleParametro[]>([]);
+  // const [estadosPago, setEstadosPago] = useState<DetalleParametro[]>([]);
   const isEditMode = !!id;
 
   const handleGoBack = () => {
@@ -131,26 +143,24 @@ export const MatriculaForm = () => {
     navigate(urlBack);
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<TFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       idAlumno: "",
       idMetodoPago: "",
       idSede: "",
-      programas: [],
-      // idPrograma: "",
+      programas: [{ idPrograma: null, idTipoPrograma: null }],
       fechaMatricula: today,
       monto: 0,
     },
   });
 
   const resetForm = () => {
-    const dataForm: TMatricula = {
+    const dataForm: TFormValues = {
       idAlumno: "",
       idMetodoPago: "",
       idSede: "",
-      programas: [],
-      // idPrograma: "",
+      programas: [{ idPrograma: null, idTipoPrograma: null }],
       fechaMatricula: new Date(),
       monto: 0,
     };
@@ -162,20 +172,20 @@ export const MatriculaForm = () => {
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
-    name: "programas"
+    name: "programas",
   });
 
   const handleAddPrograma = () => {
-    append({ idPrograma: null, idTipoPrograma: null })
-  }
+    append({ idPrograma: null, idTipoPrograma: null });
+  };
 
   const getProgramasFiltrados = (selectedTipoId: number | null): Programa[] => {
     if (!selectedTipoId) {
-      return []
+      return [];
     }
 
-    return programas.filter(p => p.id_tipoprograma === selectedTipoId)
-  }
+    return programas.filter((p) => +p.id_tipoprograma! === selectedTipoId);
+  };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -187,24 +197,24 @@ export const MatriculaForm = () => {
         // idPrograma,
         programas,
         idMetodoPago,
-        idFormaPago,
-        idEstadoPago,
+        // idFormaPago,
+        // idEstadoPago,
         fechaMatricula,
         monto,
       } = values;
 
-      console.log({programas})
+      console.log({ programas });
 
       const programasIds: number[] = programas
-        .filter(p => p.idPrograma !== null)
-        .map(p => p.idPrograma!)
+        .filter((p) => p.idPrograma !== null)
+        .map((p) => +p.idPrograma!);
 
       if (programasIds.length === 0) {
-        showToast("error", "Debe agregar al menos un programa válido")
+        showToast("error", "Debe agregar al menos un programa válido");
         return;
       }
 
-      console.log({programasIds})
+      console.log({ programasIds });
 
       const fechaMatriculaToString: string | null = fechaMatricula
         ? fechaMatricula.toISOString()
@@ -227,23 +237,11 @@ export const MatriculaForm = () => {
         id_estadomatricula: 17,
         fecha_matricula: fechaMatriculaStr,
         monto: +monto,
-        id_formapago: 17,
-        id_metodopago: 44,
+        id_formapago: 19,
+        id_metodopago: +idMetodoPago,
         id_estadopago: 33,
-        estado: true
-      }
-
-      // let payload: Matricula = {
-      //   id_alumno: +idAlumno,
-      //   id_sede: +idSede,
-      //   id_programa: +idPrograma,
-      //   id_metodopago: +idMetodoPago,
-      //   fecha_matricula: fechaMatriculaStr,
-      //   monto: +monto,
-      //   id_estadomatricula: 52, // matriculado
-
-      //   estado: true,
-      // };
+        estado: true,
+      };
 
       console.log("payload new matrícula");
       console.log({ payload });
@@ -286,11 +284,11 @@ export const MatriculaForm = () => {
 
         let listProgramas: Programa[] = [];
 
-        let listFormasPago: DetalleParametro[] = [];
+        // let listFormasPago: DetalleParametro[] = [];
 
         let listMetodosPago: DetalleParametro[] = [];
 
-        let listEstadosPago: DetalleParametro[] = [];
+        // let listEstadosPago: DetalleParametro[] = [];
 
         // Obteniendo las sedes
         const filtersSedes: DetalleParametroFilters = {
@@ -306,15 +304,15 @@ export const MatriculaForm = () => {
           en_persona: true,
           en_empresa: false,
           estado: true,
-        }
+        };
 
         // Obteniendo las formas de pago
-        const filterFormasPago: DetalleParametroFilters = {
-          parametro_clase: 1006,
-          en_persona: false,
-          en_empresa: false,
-          estado: true,
-        };
+        // const filterFormasPago: DetalleParametroFilters = {
+        //   parametro_clase: 1006,
+        //   en_persona: false,
+        //   en_empresa: false,
+        //   estado: true,
+        // };
 
         // Obteniendo los métodos de pago
         const filterMetodosPago: DetalleParametroFilters = {
@@ -325,19 +323,25 @@ export const MatriculaForm = () => {
         };
 
         // Obteniendo los estados de pago
-        const filterEstadosPago: DetalleParametroFilters = {
-          parametro_clase: 1010,
-          en_persona: false,
-          en_empresa: false,
-          estado: true,
-        };
+        // const filterEstadosPago: DetalleParametroFilters = {
+        //   parametro_clase: 1010,
+        //   en_persona: false,
+        //   en_empresa: false,
+        //   estado: true,
+        // };
 
-        const [responseSedes, responseTipoProgramas, responseMetodosPago, responseFormasPago, responseEstadosPago] = await Promise.all([
+        const [
+          responseSedes,
+          responseTipoProgramas,
+          responseMetodosPago,
+          // responseFormasPago,
+          // responseEstadosPago,
+        ] = await Promise.all([
           getDetalleFiltered(filtersSedes),
           getDetalleFiltered(filterTipoProgramas),
           getDetalleFiltered(filterMetodosPago),
-          getDetalleFiltered(filterFormasPago),
-          getDetalleFiltered(filterEstadosPago)
+          // getDetalleFiltered(filterFormasPago),
+          // getDetalleFiltered(filterEstadosPago),
         ]);
 
         console.log({ responseSedes });
@@ -346,9 +350,9 @@ export const MatriculaForm = () => {
 
         console.log({ responseMetodosPago });
 
-        console.log({ responseFormasPago });
+        // console.log({ responseFormasPago });
 
-        console.log({ responseEstadosPago });
+        // console.log({ responseEstadosPago });
 
         // Sedes
         const { result: resultSedes, data: dataSedes } = responseSedes;
@@ -360,7 +364,8 @@ export const MatriculaForm = () => {
         setSedes(listSedes);
 
         // Tipo programas
-        const { result: resultTipoProgramas, data: dataTipoProgramas } = responseTipoProgramas;
+        const { result: resultTipoProgramas, data: dataTipoProgramas } =
+          responseTipoProgramas;
 
         if (resultTipoProgramas && dataTipoProgramas) {
           listTipoProgramas = dataTipoProgramas as DetalleParametro[];
@@ -369,14 +374,14 @@ export const MatriculaForm = () => {
         setTipoProgramas(listTipoProgramas);
 
         // Formas de pago
-        const { result: resultFormasPago, data: dataFormasPago } =
-          responseFormasPago;
+        // const { result: resultFormasPago, data: dataFormasPago } =
+        //   responseFormasPago;
 
-        if (resultFormasPago && dataFormasPago) {
-          listFormasPago = dataFormasPago as DetalleParametro[];
-        }
+        // if (resultFormasPago && dataFormasPago) {
+        //   listFormasPago = dataFormasPago as DetalleParametro[];
+        // }
 
-        setMetodosPago(listMetodosPago);
+        // setFormasPago(listFormasPago);
 
         // Métodos de pago
         const { result: resultMetodosPago, data: dataMetodosPago } =
@@ -389,14 +394,14 @@ export const MatriculaForm = () => {
         setMetodosPago(listMetodosPago);
 
         // Estados de pago
-        const { result: resultEstadosPago, data: dataEstadosPago } =
-          responseEstadosPago;
+        // const { result: resultEstadosPago, data: dataEstadosPago } =
+        //   responseEstadosPago;
 
-        if (resultEstadosPago && dataEstadosPago) {
-          listEstadosPago = dataEstadosPago as DetalleParametro[];
-        }
+        // if (resultEstadosPago && dataEstadosPago) {
+        //   listEstadosPago = dataEstadosPago as DetalleParametro[];
+        // }
 
-        setEstadosPago(listEstadosPago);
+        // setEstadosPago(listEstadosPago);
 
         // Obteniendo las alumnos
         const descGrupo = `grupo-alumno`;
@@ -429,11 +434,20 @@ export const MatriculaForm = () => {
           const { result, data, message } = responseMatricula;
 
           if (result && data) {
-            let dataForm: TMatricula = {};
-            const matricula = data as Matricula;
+            // let dataForm: TMatricula = {};
+            // let dataForm = {}
+            const dataForm: Partial<TFormValues> = {};
 
-            const { id_alumno, id_sede, id_programa, fecha_matricula } =
-              matricula;
+            const matriculaData = data as Matricula;
+
+            const {
+              id_alumno,
+              id_sede,
+              fecha_matricula,
+              programas: programasIdsAPI,
+              id_metodopago,
+              monto,
+            } = matriculaData;
 
             if (id_alumno) {
               dataForm.idAlumno = id_alumno.toString();
@@ -443,14 +457,59 @@ export const MatriculaForm = () => {
               dataForm.idSede = id_sede.toString();
             }
 
-            if (id_programa) {
-              dataForm.idPrograma = id_programa.toString();
-            }
-
             dataForm.fechaMatricula = fecha_matricula
               ? parseISO(fecha_matricula)
               : null;
             form.reset(dataForm);
+
+            if (id_metodopago) {
+              dataForm.idMetodoPago = id_metodopago.toString();
+            }
+
+            if (monto) {
+              dataForm.monto = monto
+            }
+
+            // dataForm.idMetodoPago = matriculaData.id_metodopago?.toString();
+            // dataForm.monto = matriculaData.monto;
+
+            // b) Mapeo de Programas (de number a string | null)
+            if (
+              programasIdsAPI &&
+              Array.isArray(programasIdsAPI) &&
+              programasIdsAPI.every((p) => typeof p === "number")
+            ) {
+              // Asumo que programasAPI es un array de objetos con idPrograma y idTipoPrograma
+              // dataForm.programas = programasidAPI.map((p) => ({
+              //   // ¡LA CLAVE!: Convertir number a string | null para que coincida con formSchema
+              //   idPrograma: p.idPrograma?.toString() || null,
+              //   idTipoPrograma: p.idTipoPrograma,
+              // }));
+              dataForm.programas = programasIdsAPI.map((idPrograma) => {
+                const programaCompleto = programas.find(
+                  (p) => p.id === idPrograma
+                );
+                const idTipoPrograma = programaCompleto
+                  ? +programaCompleto.id_tipoprograma!
+                  : null;
+
+                return {
+                  idPrograma: idPrograma.toString(),
+                  idTipoPrograma: idTipoPrograma,
+                };
+              });
+            } else {
+              dataForm.programas = [{ idPrograma: null, idTipoPrograma: null }];
+            }
+
+            // form.reset(dataForm as TFormValues);
+
+            if (dataForm.programas && dataForm.programas.length > 0) {
+              form.reset(dataForm as TFormValues);
+            } else {
+              // Si no hay programas válidos, resetear solo los campos principales
+              form.reset(dataForm as TFormValues);
+            }
           } else {
             showToast("error", message || "Matrícula no encontrada");
             navigate("/matricula/nuevo");
@@ -690,104 +749,133 @@ export const MatriculaForm = () => {
               </fieldset>
 
               <fieldset className="border border-blue-300 p-4 rounded-md mt-6">
-                  <legend className="text-base font-semibold text-blue-800 px-2 flex items-center justify-between w-full">
-                    <span>Programas de Matrícula</span>
-                    <Button 
-                        type="button" 
-                        onClick={handleAddPrograma}
-                        className="bg-blue-500 hover:bg-blue-600 h-8 px-3 text-xs"
-                        disabled={isSubmitting}
+                <legend className="text-base font-semibold text-blue-800 px-2 flex items-center justify-between w-full">
+                  <span>Programas de Matrícula</span>
+                  <Button
+                    type="button"
+                    onClick={handleAddPrograma}
+                    className="bg-blue-500 hover:bg-blue-600 h-8 px-3 text-xs"
+                    disabled={isSubmitting}
+                  >
+                    <Plus className="h-4 w-4 mr-1" />
+                    Agregar Programa
+                  </Button>
+                </legend>
+
+                {fields.map((field, index) => {
+                  const selectedTipoId = form.watch(
+                    `programas.${index}.idTipoPrograma`
+                  );
+
+                  const programasFiltrados =
+                    getProgramasFiltrados(selectedTipoId);
+
+                  return (
+                    <div
+                      key={field.id}
+                      className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-4 p-3 border-b border-gray-100 last:border-b-0 bg-gray-50 rounded-md"
                     >
-                        <Plus className="h-4 w-4 mr-1" />
-                        Agregar Programa
-                    </Button>  
-                  </legend>
-
-                  {fields.map((field, index) => {
-                    const selectedTipoId = form.watch(`programas.${index}.idTipoPrograma`)
-                    
-                    const programasFiltrados = getProgramasFiltrados(selectedTipoId)
-
-                    return (
-                      <div key={field.id} className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mt-4 p-3 border-b border-gray-100 last:border-b-0 bg-gray-50 rounded-md">
-                        <div className="col-span-1">
-                          <FormField
-                              control={form.control}
-                              name={`programas.${index}.idTipoPrograma`} 
-                              render={({ field: tipoField, fieldState }) => (
-                                  <FormItem>
-                                      {index === 0 ? <RequiredLabel>Tipo</RequiredLabel> : <FormLabel>Tipo</FormLabel>}
-                                      <Select
-                                          onValueChange={val => tipoField.onChange(parseInt(val, 10))}
-                                          value={tipoField.value?.toString() ?? ""}
-                                      >
-                                          <FormControl>
-                                              <SelectTrigger className={fieldState.invalid ? "border-red-500" : ""}>
-                                                  <SelectValue placeholder="Seleccionar tipo" />
-                                              </SelectTrigger>
-                                          </FormControl>
-                                          <SelectContent>
-                                              {tipoProgramas.map((tipo) => (
-                                                  <SelectItem value={tipo.codigo.toString()} key={tipo.codigo}>
-                                                      {tipo.nombre}
-                                                  </SelectItem>
-                                              ))}
-                                          </SelectContent>
-                                      </Select>
-                                      <FormMessage />
-                                  </FormItem>
+                      <div className="col-span-1">
+                        <FormField
+                          control={form.control}
+                          name={`programas.${index}.idTipoPrograma`}
+                          render={({ field: tipoField, fieldState }) => (
+                            <FormItem>
+                              {index === 0 ? (
+                                <RequiredLabel>Tipo</RequiredLabel>
+                              ) : (
+                                <FormLabel>Tipo</FormLabel>
                               )}
-                          />
-                        </div>
-
-                        <div className="col-span-1 md:col-span-2">
-                          <FormField
-                            control={form.control}
-                            name={`programas.${index}.idPrograma`}
-                            render={({ field: programaField, fieldState }) => (
-                                <FormItem>
-                                    {index === 0 ? <RequiredLabel>Programa</RequiredLabel> : <FormLabel>Programa ({index + 1})</FormLabel>}
-                                    <SearchableCombobox<Programa>
-                                        placeholder={selectedTipoId ? "Buscar un programa" : "Seleccione primero el tipo de programa"}
-                                        options={programasFiltrados}
-                                        value={programaField.value}
-                                        onChange={programaField.onChange}
-                                        displayKey="nombre"
-                                        valueKey="id"
-                                        searchKeys={["nombre"]}
-                                        isInvalid={fieldState.invalid}
-                                        disabled={!selectedTipoId || programasFiltrados.length === 0}
-                                    />
-                                    <FormMessage />
-                                </FormItem>
-                            )}
-                          />
-                        </div>
-
-                        <div className="col-span-1 flex items-center justify-end">
-                          {fields.length > 1 && (
-                              <Button
-                                  type="button"
-                                  variant="outline"
-                                  onClick={() => remove(index)}
-                                  className="h-10 w-10 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 border-red-300"
-                                  disabled={isSubmitting}
-                                  aria-label={`Eliminar programa ${index + 1}`}
+                              <Select
+                                onValueChange={(val) =>
+                                  tipoField.onChange(parseInt(val, 10))
+                                }
+                                value={tipoField.value?.toString() ?? ""}
                               >
-                                  <Trash2 className="h-4 w-4" />
-                              </Button>
+                                <FormControl>
+                                  <SelectTrigger
+                                    className={
+                                      fieldState.invalid ? "border-red-500" : ""
+                                    }
+                                  >
+                                    <SelectValue placeholder="Seleccionar tipo" />
+                                  </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                  {tipoProgramas.map((tipo) => (
+                                    <SelectItem
+                                      value={tipo.codigo.toString()}
+                                      key={tipo.codigo}
+                                    >
+                                      {tipo.nombre}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                              <FormMessage />
+                            </FormItem>
                           )}
-                        </div>
+                        />
                       </div>
-                    )
-                  })}
 
-                  {form.formState.errors.programas && (
-                    <p className="text-sm font-medium text-red-500 mt-2">
-                        {form.formState.errors.programas.message}
-                    </p>
-                  )}
+                      <div className="col-span-1 md:col-span-2">
+                        <FormField
+                          control={form.control}
+                          name={`programas.${index}.idPrograma`}
+                          render={({ field: programaField, fieldState }) => (
+                            <FormItem>
+                              {index === 0 ? (
+                                <RequiredLabel>Programa</RequiredLabel>
+                              ) : (
+                                <FormLabel>Programa ({index + 1})</FormLabel>
+                              )}
+                              <SearchableCombobox<Programa>
+                                placeholder={
+                                  selectedTipoId
+                                    ? "Buscar un programa"
+                                    : "Seleccione primero el tipo de programa"
+                                }
+                                options={programasFiltrados}
+                                value={programaField.value}
+                                onChange={programaField.onChange}
+                                displayKey="nombre"
+                                valueKey="id"
+                                searchKeys={["nombre"]}
+                                isInvalid={fieldState.invalid}
+                                disabled={
+                                  !selectedTipoId ||
+                                  programasFiltrados.length === 0
+                                }
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
 
+                      <div className="col-span-1 flex items-center justify-end">
+                        {fields.length > 1 && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => remove(index)}
+                            className="h-10 w-10 p-0 text-red-500 hover:bg-red-50 hover:text-red-600 border-red-300"
+                            disabled={isSubmitting}
+                            aria-label={`Eliminar programa ${index + 1}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {form.formState.errors.programas && (
+                  <p className="text-sm font-medium text-red-500 mt-2">
+                    {form.formState.errors.programas.message}
+                  </p>
+                )}
               </fieldset>
 
               <div className="flex justify-end space-x-4 pt-4">

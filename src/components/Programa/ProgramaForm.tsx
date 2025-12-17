@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { format, parseISO } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -56,16 +57,31 @@ const formSchema = z.object({
       message: "Por favor seleccione un tipo de programa",
     })
     .min(1, "Por favor seleccione un tipo de programa"),
-  codigoOld: z.string().max(10).nullable().optional(),
-  sigla: z.string().min(2, {
-    message: "La sigla es obligatoria",
-  }),
+  // codigoOld: z.string().max(10).nullable().optional(),
   nombre: z.string().min(10, {
     message: "El nombre es obligatorio",
   }),
+  sigla: z.string().min(2, {
+    message: "La sigla es obligatoria",
+  }),
+  fechaInicio: z
+    .date({
+      message: "La fecha de inicio es requerida",
+    })
+    .nullable(),
+  fechaFinal: z
+    .date({
+      message: "La fecha final es requerida",
+    })
+    .nullable(),
   duracion: z.string().min(5, {
     message: "La duración es obligatoria",
   }),
+  horasAcademicas: z
+    .number({
+      message: "Las horas académicas es obligatorio",
+    })
+    .nullable(),
   modulos: z
     .number({
       message: "La cantidad de módulos es obligatoria",
@@ -101,9 +117,9 @@ const formSchema = z.object({
       message: "Por favor seleccione una modalidad",
     })
     .min(1, "Por favor seleccione una modalidad"),
-  valorCuota: z
+  precio: z
     .number({
-      message: "El valor de la cuota es obligatoria",
+      message: "El precio es obligatorio",
     })
     .int("Debe ser un número entero")
     .min(1, {
@@ -114,14 +130,17 @@ const formSchema = z.object({
 type TPrograma = {
   idSegmento?: string;
   idTipoPrograma?: string;
-  codigoOld?: string;
-  sigla?: string;
+  // codigoOld?: string;
   nombre?: string;
+  sigla?: string;
+  fechaInicio?: Date | null;
+  fechaFinal?: Date | null;
   duracion?: string;
+  horasAcademicas?: number;
   modulos?: number;
   creditos?: number;
   modalidad?: string;
-  valorCuota?: number;
+  precio?: number;
 };
 
 export const ProgramaForm = () => {
@@ -143,14 +162,17 @@ export const ProgramaForm = () => {
     defaultValues: {
       idSegmento: "",
       idTipoPrograma: "",
-      codigoOld: "",
-      sigla: "",
+      // codigoOld: "",
       nombre: "",
+      sigla: "",
+      fechaInicio: null,
+      fechaFinal: null,
       duracion: "",
+      horasAcademicas: 0,
       modulos: 0,
       creditos: 0,
       modalidad: "VIRTUAL",
-      valorCuota: 0,
+      precio: 0,
     },
   });
 
@@ -158,14 +180,17 @@ export const ProgramaForm = () => {
     const dataForm: TPrograma = {
       idSegmento: "",
       idTipoPrograma: "",
-      codigoOld: "",
-      sigla: "",
+      // codigoOld: "",
       nombre: "",
+      sigla: "",
+      fechaInicio: null,
+      fechaFinal: null,
       duracion: "",
+      horasAcademicas: 0,
       modulos: 0,
       creditos: 0,
       modalidad: "VIRTUAL",
-      valorCuota: 0,
+      precio: 0,
     };
 
     form.reset(dataForm);
@@ -183,29 +208,64 @@ export const ProgramaForm = () => {
       const {
         idSegmento,
         idTipoPrograma,
-        codigoOld,
-        sigla,
+        // codigoOld,
         nombre,
+        sigla,
+        fechaInicio,
+        fechaFinal,
         duracion,
+        horasAcademicas,
         modulos,
         creditos,
         plan_file,
         modalidad,
-        valorCuota,
+        precio,
       } = values;
+
+      let fechaInicioStr: string = "";
+      if (fechaInicio) {
+        const fechaInicioToString: string = fechaInicio.toISOString();
+        const partsFechaInicio: string[] = fechaInicioToString.split("T");
+        fechaInicioStr = partsFechaInicio[0];
+      }
+
+      let fechaFinalStr: string = "";
+      if (fechaFinal) {
+        const fechaFinalToString: string = fechaFinal.toISOString();
+        const partsFechaFinal: string[] = fechaFinalToString.split("T");
+        fechaFinalStr = partsFechaFinal[0];
+      }
+
+      // const fechaInicioToString: string | null = fechaInicio
+      //   ? fechaInicio.toISOString()
+      //   : null;
+      // const partsFechaInicio: string[] = fechaInicioToString!.split("T");
+      // const fechaInicioStr: string = partsFechaInicio[0];
+
+      // const fechaFinalToString: string | null = fechaFinal
+      //   ? fechaFinal.toISOString()
+      //   : null;
+      // const partsFechaFinal: string[] = fechaFinalToString!.split("T");
+      // const fechaFinalStr: string = partsFechaFinal[0];
+
+      // console.log({ fechaInicioToString });
+      // console.log({ fechaFinalToString });
 
       formData.append("id_segmento", idSegmento);
       formData.append("id_tipoprograma", idTipoPrograma);
-      formData.append("codigo_old", codigoOld || "");
-      formData.append("sigla", sigla);
+      // formData.append("codigo_old", codigoOld || "");
       formData.append("nombre", nombre);
+      formData.append("sigla", sigla);
+      formData.append("fecha_inicio", fechaInicioStr);
+      formData.append("fecha_final", fechaFinalStr);
       formData.append("duracion", duracion);
+      formData.append("horas_academicas", horasAcademicas.toString());
       formData.append("modulos", modulos.toString());
       formData.append("creditos", creditos.toString());
       formData.append("is_vigente", "1");
       formData.append("estado", "1");
       formData.append("modalidad", modalidad || "");
-      formData.append("valor_cuota", valorCuota.toString());
+      formData.append("precio", precio.toString());
 
       // Agregar el archivo si existe
       if (plan_file) {
@@ -303,16 +363,23 @@ export const ProgramaForm = () => {
             console.log({ programa });
 
             form.reset({
-              codigoOld: programa.codigo_old ?? "",
-              sigla: programa.sigla ?? "",
+              // codigoOld: programa.codigo_old ?? "",
+              idSegmento: programa.id_segmento ?? "",
+              idTipoPrograma: programa.id_tipoprograma ?? "",
               nombre: programa.nombre ?? "",
+              sigla: programa.sigla ?? "",
+              fechaInicio: programa.fecha_inicio
+                ? new Date(programa.fecha_inicio as string)
+                : null,
+              fechaFinal: programa.fecha_final
+                ? new Date(programa.fecha_final as string)
+                : null,
+              horasAcademicas: programa.horas_academicas ?? 0,
               duracion: programa.duracion ?? "",
               modulos: programa.modulos ?? 0,
               creditos: programa.creditos ?? 0,
-              idSegmento: programa.id_segmento ?? "",
-              idTipoPrograma: programa.id_tipoprograma ?? "",
               modalidad: programa.modalidad ?? "VIRTUAL",
-              valorCuota: programa.valor_cuota ?? 0,
+              precio: programa.precio ?? 0,
             });
           } else {
             showToast("error", message || "Programa no encontrado");
@@ -452,7 +519,7 @@ export const ProgramaForm = () => {
                     )}
                   />
 
-                  <FormField
+                  {/* <FormField
                     control={form.control}
                     name="codigoOld"
                     render={({ field, fieldState }) => (
@@ -463,6 +530,35 @@ export const ProgramaForm = () => {
                             placeholder="COD039"
                             autoComplete="off"
                             maxLength={10}
+                            {...field}
+                            value={field.value ?? ""}
+                            className={`
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "focus:ring-blue-500"
+                              }
+                                transition-all duration-300
+                                placeholder-gray-400
+                            `}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  /> */}
+
+                  <FormField
+                    control={form.control}
+                    name="nombre"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Nombre</RequiredLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="ADMINISTRACIÓN EJECUTIVA"
+                            autoComplete="off"
+                            maxLength={100}
                             {...field}
                             value={field.value ?? ""}
                             className={`
@@ -512,17 +608,23 @@ export const ProgramaForm = () => {
 
                   <FormField
                     control={form.control}
-                    name="nombre"
+                    name="fechaInicio"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <RequiredLabel>Nombre</RequiredLabel>
+                        <RequiredLabel>Fecha Inicio</RequiredLabel>
                         <FormControl>
                           <Input
-                            placeholder="ADMINISTRACIÓN EJECUTIVA"
-                            autoComplete="off"
-                            maxLength={100}
-                            {...field}
-                            value={field.value ?? ""}
+                            type="date"
+                            value={
+                              field.value
+                                ? format(field.value, "yyyy-MM-dd")
+                                : ""
+                            }
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value ? parseISO(e.target.value) : null
+                              )
+                            }
                             className={`
                               ${
                                 fieldState.invalid
@@ -530,7 +632,40 @@ export const ProgramaForm = () => {
                                   : "focus:ring-blue-500"
                               }
                                 transition-all duration-300
-                                placeholder-gray-400
+                            `}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="fechaFinal"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Fecha Final</RequiredLabel>
+                        <FormControl>
+                          <Input
+                            type="date"
+                            value={
+                              field.value
+                                ? format(field.value, "yyyy-MM-dd")
+                                : ""
+                            }
+                            onChange={(e) =>
+                              field.onChange(
+                                e.target.value ? parseISO(e.target.value) : null
+                              )
+                            }
+                            className={`
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "focus:ring-blue-500"
+                              }
+                                transition-all duration-300
                             `}
                           />
                         </FormControl>
@@ -695,10 +830,10 @@ export const ProgramaForm = () => {
 
                   <FormField
                     control={form.control}
-                    name="valorCuota"
+                    name="precio"
                     render={({ field, fieldState }) => (
                       <FormItem>
-                        <RequiredLabel>Valor cuota módulo</RequiredLabel>
+                        <RequiredLabel>Precio</RequiredLabel>
                         <FormControl>
                           <Input
                             placeholder="120"
