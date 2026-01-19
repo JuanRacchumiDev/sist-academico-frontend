@@ -24,6 +24,9 @@ import { ModuloFormPage } from "./components/Modulo/Page/ModuloFormPage";
 import { MatriculaListPage } from "./components/Matricula/Page/MatriculaListPage";
 import { MatriculaFormPage } from "./components/Matricula/Page/MatriculaFormPage";
 
+import { PagoListPage } from "./components/Pago/Page/PagoListPage";
+import { PagoFormPage } from "./components/Pago/Page/PagoFormPage";
+
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -163,6 +166,17 @@ function App() {
                       path="/matricula/editar/:id"
                       element={<MatriculaFormPage />}
                     ></Route>
+
+                    <Route path="/pago" element={<PagoListPage />}></Route>
+                    <Route
+                      path="/pago/nuevo"
+                      element={<PagoFormPage />}
+                    ></Route>
+                    <Route
+                      path="/pago/editar/:id"
+                      element={<PagoFormPage />}
+                    ></Route>
+
                     <Route
                       path="/mantenimiento/*"
                       element={<MantenimientoPage />}

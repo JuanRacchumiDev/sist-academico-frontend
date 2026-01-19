@@ -51,6 +51,13 @@ export const MENU_ITEMS = [
         active: false,
         path: "/matricula"
     },
+    {
+        id: "pago",
+        icon: UserCheck,
+        label: "Pago",
+        active: false,
+        path: "/pago"
+    },
     // {
     //     id: "promotor",
     //     icon: User2Icon,

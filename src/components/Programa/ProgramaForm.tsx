@@ -331,7 +331,7 @@ export const ProgramaForm = () => {
         // Obteniendo datos para crear el listado de tipo de programas
         const filtersTipoProgramas: DetalleParametroFilters = {
           parametro_clase: 1002,
-          en_persona: true,
+          en_persona: false,
           en_empresa: false,
           estado: true,
         };

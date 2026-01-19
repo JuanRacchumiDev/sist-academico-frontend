@@ -33,6 +33,7 @@ export interface Matricula {
     // nombre_evento?: string
     fecha_matricula?: string
     pago_inicial?: number
+    numero_operacion?: string
     monto?: number
     estado?: boolean
 

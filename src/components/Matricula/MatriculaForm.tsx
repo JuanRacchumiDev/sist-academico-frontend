@@ -50,10 +50,10 @@ import SearchableCombobox from "../../components/Common/SearchableCombobox";
 
 type TFormValues = z.infer<typeof formSchema>;
 
-type TProgramaAPI = {
-  idTipoPrograma: number; // Suponemos que la API lo devuelve como number
-  idPrograma: number; // Suponemos que la API lo devuelve como number
-};
+// type TProgramaAPI = {
+//   idTipoPrograma: number; // Suponemos que la API lo devuelve como number
+//   idPrograma: number; // Suponemos que la API lo devuelve como number
+// };
 
 const ProgramaMatriculaSchema = z.object({
   idPrograma: z
@@ -74,6 +74,9 @@ export const formSchema = z.object({
       message: "Debe seleccionar un alumno",
     })
     .min(1, "Debe seleccionar un alumno"),
+  idFormaPago: z.string({
+    message: "Seleccione una forma de pago",
+  }),
   idMetodoPago: z.string({
     message: "Seleccione un método de pago",
   }),
@@ -98,6 +101,7 @@ export const formSchema = z.object({
     .refine((val) => val !== null, {
       message: "La fecha de matrícula es requerida",
     }),
+  numeroOperacion: z.string().nullable().optional(),
   monto: z
     .number({
       message: "El monto es obligatorio",
@@ -133,7 +137,7 @@ export const MatriculaForm = () => {
   const [sedes, setSedes] = useState<DetalleParametro[]>([]);
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
   const [programas, setProgramas] = useState<Programa[]>([]);
-  // const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
+  const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
   const [metodosPago, setMetodosPago] = useState<DetalleParametro[]>([]);
   // const [estadosPago, setEstadosPago] = useState<DetalleParametro[]>([]);
   const isEditMode = !!id;
@@ -147,10 +151,12 @@ export const MatriculaForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       idAlumno: "",
+      idFormaPago: "",
       idMetodoPago: "",
       idSede: "",
       programas: [{ idPrograma: null, idTipoPrograma: null }],
       fechaMatricula: today,
+      numeroOperacion: "",
       monto: 0,
     },
   });
@@ -158,10 +164,12 @@ export const MatriculaForm = () => {
   const resetForm = () => {
     const dataForm: TFormValues = {
       idAlumno: "",
+      idFormaPago: "",
       idMetodoPago: "",
       idSede: "",
       programas: [{ idPrograma: null, idTipoPrograma: null }],
       fechaMatricula: new Date(),
+      numeroOperacion: "",
       monto: 0,
     };
 
@@ -196,10 +204,12 @@ export const MatriculaForm = () => {
         idSede,
         // idPrograma,
         programas,
+        idFormaPago,
         idMetodoPago,
         // idFormaPago,
         // idEstadoPago,
         fechaMatricula,
+        numeroOperacion,
         monto,
       } = values;
 
@@ -234,12 +244,13 @@ export const MatriculaForm = () => {
         id_alumno: +idAlumno,
         programas: programasIds,
         id_sede: +idSede,
-        id_estadomatricula: 17,
+        id_estadomatricula: 40, // matriculado
         fecha_matricula: fechaMatriculaStr,
+        numero_operacion: numeroOperacion,
         monto: +monto,
-        id_formapago: 19,
+        id_formapago: +idFormaPago,
         id_metodopago: +idMetodoPago,
-        id_estadopago: 33,
+        id_estadopago: 35, // pago total
         estado: true,
       };
 
@@ -284,7 +295,7 @@ export const MatriculaForm = () => {
 
         let listProgramas: Programa[] = [];
 
-        // let listFormasPago: DetalleParametro[] = [];
+        let listFormasPago: DetalleParametro[] = [];
 
         let listMetodosPago: DetalleParametro[] = [];
 
@@ -293,7 +304,7 @@ export const MatriculaForm = () => {
         // Obteniendo las sedes
         const filtersSedes: DetalleParametroFilters = {
           parametro_clase: 1004,
-          en_persona: true,
+          en_persona: false,
           en_empresa: false,
           estado: true,
         };
@@ -301,18 +312,18 @@ export const MatriculaForm = () => {
         // Obteniendo los tipo de programas
         const filterTipoProgramas: DetalleParametroFilters = {
           parametro_clase: 1002,
-          en_persona: true,
+          en_persona: false,
           en_empresa: false,
           estado: true,
         };
 
         // Obteniendo las formas de pago
-        // const filterFormasPago: DetalleParametroFilters = {
-        //   parametro_clase: 1006,
-        //   en_persona: false,
-        //   en_empresa: false,
-        //   estado: true,
-        // };
+        const filterFormasPago: DetalleParametroFilters = {
+          parametro_clase: 1006,
+          en_persona: false,
+          en_empresa: false,
+          estado: true,
+        };
 
         // Obteniendo los métodos de pago
         const filterMetodosPago: DetalleParametroFilters = {
@@ -334,13 +345,13 @@ export const MatriculaForm = () => {
           responseSedes,
           responseTipoProgramas,
           responseMetodosPago,
-          // responseFormasPago,
+          responseFormasPago,
           // responseEstadosPago,
         ] = await Promise.all([
           getDetalleFiltered(filtersSedes),
           getDetalleFiltered(filterTipoProgramas),
           getDetalleFiltered(filterMetodosPago),
-          // getDetalleFiltered(filterFormasPago),
+          getDetalleFiltered(filterFormasPago),
           // getDetalleFiltered(filterEstadosPago),
         ]);
 
@@ -350,7 +361,7 @@ export const MatriculaForm = () => {
 
         console.log({ responseMetodosPago });
 
-        // console.log({ responseFormasPago });
+        console.log({ responseFormasPago });
 
         // console.log({ responseEstadosPago });
 
@@ -374,14 +385,14 @@ export const MatriculaForm = () => {
         setTipoProgramas(listTipoProgramas);
 
         // Formas de pago
-        // const { result: resultFormasPago, data: dataFormasPago } =
-        //   responseFormasPago;
+        const { result: resultFormasPago, data: dataFormasPago } =
+          responseFormasPago;
 
-        // if (resultFormasPago && dataFormasPago) {
-        //   listFormasPago = dataFormasPago as DetalleParametro[];
-        // }
+        if (resultFormasPago && dataFormasPago) {
+          listFormasPago = dataFormasPago as DetalleParametro[];
+        }
 
-        // setFormasPago(listFormasPago);
+        setFormasPago(listFormasPago);
 
         // Métodos de pago
         const { result: resultMetodosPago, data: dataMetodosPago } =
@@ -403,7 +414,7 @@ export const MatriculaForm = () => {
 
         // setEstadosPago(listEstadosPago);
 
-        // Obteniendo las alumnos
+        // Obteniendo alumnos
         const descGrupo = `grupo-alumno`;
         const responseAlumnos = await getPersonas(descGrupo);
         console.log({ responseAlumnos });
@@ -467,7 +478,7 @@ export const MatriculaForm = () => {
             }
 
             if (monto) {
-              dataForm.monto = monto
+              dataForm.monto = monto;
             }
 
             // dataForm.idMetodoPago = matriculaData.id_metodopago?.toString();
@@ -487,7 +498,7 @@ export const MatriculaForm = () => {
               // }));
               dataForm.programas = programasIdsAPI.map((idPrograma) => {
                 const programaCompleto = programas.find(
-                  (p) => p.id === idPrograma
+                  (p) => p.id === idPrograma,
                 );
                 const idTipoPrograma = programaCompleto
                   ? +programaCompleto.id_tipoprograma!
@@ -668,7 +679,9 @@ export const MatriculaForm = () => {
                             }
                             onChange={(e) =>
                               field.onChange(
-                                e.target.value ? parseISO(e.target.value) : null
+                                e.target.value
+                                  ? parseISO(e.target.value)
+                                  : null,
                               )
                             }
                             className={`
@@ -686,7 +699,14 @@ export const MatriculaForm = () => {
                       </FormItem>
                     )}
                   />
+                </div>
+              </fieldset>
 
+              <fieldset className="border border-gray-300 p-4 rounded-md">
+                <legend className="text-base font-semibold text-blue-800 px-2 flex items-center justify-between w-full">
+                  <span>Información de pago</span>
+                </legend>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FormField
                     control={form.control}
                     name="idMetodoPago"
@@ -712,6 +732,64 @@ export const MatriculaForm = () => {
 
                   <FormField
                     control={form.control}
+                    name="idFormaPago"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Forma Pago</RequiredLabel>
+                        <SearchableCombobox<DetalleParametro>
+                          placeholder="Buscar una forma de pago"
+                          options={formasPago}
+                          value={field.value}
+                          onChange={field.onChange}
+                          displayKey="nombre"
+                          valueKey="codigo"
+                          searchKeys={["nombre"]}
+                          // disabled={isFormDisabled || isModeLetter}
+                          // disabled={isDisabled}
+                          isInvalid={fieldState.invalid}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="numeroOperacion"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Número de operación</RequiredLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="0123-4567-8910"
+                            autoComplete="off"
+                            type="text"
+                            {...field}
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              field.onChange(
+                                value === "" ? null : parseInt(value, 10),
+                              );
+                            }}
+                            className={`
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "focus:ring-blue-500"
+                              }
+                                transition-all duration-300
+                                placeholder-gray-400
+                            `}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
                     name="monto"
                     render={({ field, fieldState }) => (
                       <FormItem>
@@ -727,7 +805,7 @@ export const MatriculaForm = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               field.onChange(
-                                value === "" ? null : parseInt(value, 10)
+                                value === "" ? null : parseInt(value, 10),
                               );
                             }}
                             className={`
@@ -764,7 +842,7 @@ export const MatriculaForm = () => {
 
                 {fields.map((field, index) => {
                   const selectedTipoId = form.watch(
-                    `programas.${index}.idTipoPrograma`
+                    `programas.${index}.idTipoPrograma`,
                   );
 
                   const programasFiltrados =

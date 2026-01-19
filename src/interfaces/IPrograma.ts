@@ -1,4 +1,5 @@
 import { DetalleParametro } from "./IDetalleParametro"
+import { Modulo } from "./IModulo"
 
 export interface Programa {
     id?: number
@@ -30,6 +31,7 @@ export interface Programa {
     segmento?: DetalleParametro
     tipo_programa?: DetalleParametro
     categoria_programa?: DetalleParametro
+    detalle_modulos?: Modulo[]
 }
 
 export interface ProgramaResponse {

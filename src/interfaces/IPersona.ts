@@ -1,4 +1,5 @@
 import { DetalleParametro } from './IDetalleParametro';
+import { Matricula } from './IMatricula';
 
 export interface Persona {
     id?: number
@@ -26,6 +27,7 @@ export interface Persona {
     nombre_grupo?: string
     estado?: boolean
     tipo_documento?: DetalleParametro
+    matriculas?: Matricula[]
 }
 
 export interface PersonaResponse {
