@@ -5,8 +5,8 @@ import App from "./App.tsx";
 
 createRoot(document.getElementById("root")!).render(
   <ToastProvider>
-    <BrowserRouter basename="/sistema-academico">
+    <BrowserRouter basename="/sistema-academico-front">
       <App />
     </BrowserRouter>
-  </ToastProvider>
+  </ToastProvider>,
 );

@@ -2,8 +2,8 @@ import axios, { AxiosError } from 'axios'
 
 // Crea una instancia de axios con la URL base
 const apiClient = axios.create({
-    // baseURL: "http://3.15.34.71/api/v1",
-    baseURL: "http://sistacademico-ipede/api/v1",
+    baseURL: "http://3.15.34.71/sistema-academico/api/v1",
+    // baseURL: "http://sistacademico-ipede/api/v1",
     headers: {
         'Content-Type': 'application/json'
     }
