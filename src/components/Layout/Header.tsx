@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../../components/ui/dropdown-menu";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useToast } from "../../context/ToastContext";
 import { logoutAuth } from "../../services/authService";
 import { getAuthData } from "../../utils/authMemo";
@@ -15,6 +15,7 @@ import { useMemo } from "react";
 
 export const Header = ({ sidebarCollapsed, onToggleSidebar }) => {
   const { showToast } = useToast();
+  const navigate = useNavigate();
 
   const userProfile = useMemo(() => getAuthData()?.usuario, []);
 
@@ -25,7 +26,10 @@ export const Header = ({ sidebarCollapsed, onToggleSidebar }) => {
       const { result, message } = response;
       const classResult = result ? "success" : "error";
       showToast(classResult, message as string);
-      window.location.href = "/";
+      // window.location.href = "/";
+      if (result) {
+        navigate("/");
+      }
     } else {
       showToast("error", "Error al cerrar sesión de usuario");
     }
