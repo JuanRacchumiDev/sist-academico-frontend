@@ -29,6 +29,8 @@ import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 import { downloadFile } from "../../utils/fileUtils";
+import { getMatriculaByParams } from "../../services/pagoService";
+import { getCertificadoByParams } from "@/services/matriculaService";
 // import {
 //   getFichaById,
 //   getCertificadoByParams,
@@ -84,6 +86,35 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
     } finally {
       setIsProcessing(false); // Desactiva el loading
       handleCloseModal(); // Cierra el modal
+    }
+  };
+
+  const handleDownloadMatricula = async () => {
+    setIsDropdownOpen(false); // Cierra el menú
+
+    showToast("info", "Preparando descarga de la matrícula...");
+
+    try {
+      const idMatricula = pago.id_matricula;
+      const idAlumno = pago.id_alumno;
+
+      const response = await getMatriculaByParams(idMatricula, idAlumno);
+
+      if (response.result && response.data) {
+        downloadFile(response.data, response.filename);
+        showToast("success", "Constancia de matrícul descargada exitosamente");
+      } else {
+        showToast(
+          "error",
+          response.error || "Error al descargar la constancia de matrícula",
+        );
+      }
+    } catch (error) {
+      console.error("Error al descargar la constancia de matrícula:", error);
+      showToast(
+        "error",
+        "Error de conexión al intentar descargar la constancia de matrícula.",
+      );
     }
   };
 
@@ -208,6 +239,14 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={handleDownloadMatricula}
+                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
+              >
+                <FileDown className="h-4 w-4" />
+                <span>Descargar Matrícula</span>
+              </DropdownMenuItem>
 
               {/* <DropdownMenuItem
                 onClick={handleDownloadFicha}

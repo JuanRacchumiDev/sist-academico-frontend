@@ -100,7 +100,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
         // response.data es el Blob, response.filename es el nombre
         downloadFile(
           response.data as Blob,
-          response.filename || `ficha_${matricula.id}.pdf`
+          response.filename || `ficha_${matricula.id}.pdf`,
         );
 
         showToast("success", "Ficha de matrícula descargada exitosamente.");
@@ -109,7 +109,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
           "error",
           response.error ||
             response.message ||
-            "No se pudo generar la ficha PDF."
+            "No se pudo generar la ficha PDF.",
         );
       }
     } catch (error) {
@@ -121,7 +121,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   const handleDownloadCertificado = async (
     id_matricula: number,
     id_alumno: number,
-    id_programa: number
+    id_programa: number,
   ) => {
     try {
       setIsDropdownOpen(false); // Cierra el menú
@@ -131,7 +131,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
       const response = await getCertificadoByParams(
         id_matricula,
         id_alumno,
-        id_programa
+        id_programa,
       );
 
       if (response.result && response.data) {
@@ -140,14 +140,14 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
       } else {
         showToast(
           "error",
-          response.error || "Error al descargar el certificado"
+          response.error || "Error al descargar el certificado",
         );
       }
     } catch (error) {
       console.error("Error al descargar el certificado:", error);
       showToast(
         "error",
-        "Error de conexión al intentar descargar el certificado."
+        "Error de conexión al intentar descargar el certificado.",
       );
     }
   };
@@ -226,15 +226,12 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
 
                 <DropdownMenuPortal>
                   <DropdownMenuSubContent className="bg-white border shadow-md w-64">
-                    {/* Cambiamos 'programas' por 'detalles' que es lo que viene 
-          realmente en tu objeto de la base de datos 
-      */}
                     {matricula.detalles && matricula.detalles.length > 0 ? (
                       matricula.detalles.map((det) => {
                         // Log para depuración
                         console.log(
                           "Programa a certificar:",
-                          det.nombre_programa
+                          det.nombre_programa,
                         );
 
                         return (
@@ -244,7 +241,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
                               handleDownloadCertificado(
                                 matricula.id,
                                 matricula.id_alumno,
-                                det.id_programa // ID del programa
+                                det.id_programa, // ID del programa
                               )
                             }
                             className="cursor-pointer hover:bg-amber-50"

@@ -158,6 +158,55 @@ export const getById = async (id: number): Promise<PagoResponse> => {
 //     }
 // }
 
+export const getMatricula = async (queryParams: string) => {
+    try {
+        const urlApi = `/pagos/matricula?${queryParams}`
+
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi, {
+            responseType: 'blob'
+        });
+
+        const fileBlob = response.data
+
+        // El nombre del archivo puede venir en los headers, si el backend lo envía
+        const contentDisposition = response.headers['content-disposition'];
+
+        const params = new URLSearchParams(queryParams);
+
+        // Obtenemos los valores y los convertimos a número
+        const id_m = Number(params.get('id_matricula')) || 0;
+        const id_a = Number(params.get('id_alumno')) || 0;
+
+        // Aplicamos el padding usando tu utilitario stringUtils
+        const mId = padString(4, id_m, 'left');
+        const aId = padString(4, id_a, 'left');
+
+        let filename = `pago_matricula_${mId}_${aId}.pdf`;
+
+        if (contentDisposition) {
+            // Intenta extraer el nombre del archivo del header 'Content-Disposition'
+            const filenameMatch = contentDisposition.match(/filename="(.+)"/i);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = filenameMatch[1];
+            }
+        }
+
+        return {
+            result: true,
+            data: fileBlob, // Retornamos el Blob
+            filename: filename, // Retornamos el nombre del archivo
+            message: "Constancia de pago de matrícula generado exitosamente."
+        };
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
 export const create = async (payload: Pago): Promise<PagoResponse> => {
     try {
         const response = await apiClient.post('/pagos', payload)

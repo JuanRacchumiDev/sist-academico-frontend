@@ -1,6 +1,7 @@
 import { Pago } from "../interfaces/IPago"
 import {
     getAllPaginate,
+    getMatricula,
     getById,
     // getFicha,
     // getCertificado,
@@ -36,6 +37,22 @@ export const getPagos = async (
 
 export const getPagoById = async (id: number) => {
     const response = await getById(id)
+
+    return {
+        ...response
+    }
+}
+
+export const getMatriculaByParams = async (
+    id_matricula: number,
+    id_alumno: number
+) => {
+    const queryParams = new URLSearchParams({
+        id_matricula: id_matricula.toString(),
+        id_alumno: id_alumno.toString()
+    }).toString()
+
+    const response = await getMatricula(queryParams)
 
     return {
         ...response
