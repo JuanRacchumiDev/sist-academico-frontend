@@ -29,7 +29,10 @@ import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 import { downloadFile } from "../../utils/fileUtils";
-import { getMatriculaByParams } from "../../services/pagoService";
+import {
+  getMatriculaByParams,
+  getModuloByParams,
+} from "../../services/pagoService";
 import { getCertificadoByParams } from "@/services/matriculaService";
 // import {
 //   getFichaById,
@@ -114,6 +117,51 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
       showToast(
         "error",
         "Error de conexión al intentar descargar la constancia de matrícula.",
+      );
+    }
+  };
+
+  const handleDownloadPagoModulo = async () => {
+    setIsDropdownOpen(false); // Cierra el menú
+
+    showToast("info", "Preparando descarga de pago de módulo...");
+
+    try {
+      const idMatricula = pago.id_matricula;
+      const idAlumno = pago.id_alumno;
+      const numeroModulo = pago.numero_modulo;
+
+      console.log({ idMatricula });
+      console.log({ idAlumno });
+      console.log({ numeroModulo });
+
+      const response = await getModuloByParams(
+        idMatricula,
+        idAlumno,
+        numeroModulo,
+      );
+
+      if (response.result && response.data) {
+        downloadFile(response.data, response.filename);
+        showToast(
+          "success",
+          "Constancia de pago de módulo descargado exitosamente",
+        );
+      } else {
+        showToast(
+          "error",
+          response.error ||
+            "Error al descargar la constancia de pago de módulo",
+        );
+      }
+    } catch (error) {
+      console.error(
+        "Error al descargar la constancia de pago de módulo:",
+        error,
+      );
+      showToast(
+        "error",
+        "Error de conexión al intentar descargar la constancia de pago de módulo.",
       );
     }
   };
@@ -246,6 +294,16 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
               >
                 <FileDown className="h-4 w-4" />
                 <span>Descargar Matrícula</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={handleDownloadPagoModulo}
+                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
+              >
+                <FileDown className="h-4 w-4" />
+                <span>Descargar Pago Módulo</span>
               </DropdownMenuItem>
 
               {/* <DropdownMenuItem

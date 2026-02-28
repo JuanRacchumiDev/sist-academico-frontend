@@ -19,29 +19,37 @@ export interface Matricula {
     id_sede?: number
     programas?: number[]
     // id_programa?: number
-    id_formapago?: number
-    id_estadopago?: number
+    // id_formapago?: number
+    // id_estadopago?: number
     id_metodopago?: number
     id_estadomatricula?: number
     // id_evento?: number
     // id_metodopago?: number
     nombre_alumno?: string
     nombre_sede?: string
-    nombre_formapago?: string
+    nombre_metodopago?: string
     nombre_estadomatricula?: string
+    // nombre_formapago?: string
+    // nombre_estadomatricula?: string
     // nombre_programa?: string
     // nombre_evento?: string
+    monto_matricula?: number
+    monto_modulo?: number
+    numero_modulos?: number
     fecha_matricula?: string
-    pago_inicial?: number
-    numero_operacion?: string
-    monto?: number
+    fecha_retiro?: string
+    fecha_reserva?: string
+    fecha_anula?: string
+    // pago_inicial?: number
+    // numero_operacion?: string
+
     estado?: boolean
 
     alumno?: Persona
     sede?: DetalleParametro
     // programa?: Programa
-    formaPago?: DetalleParametro
-    estadoPago?: DetalleParametro
+    // formaPago?: DetalleParametro
+    // estadoPago?: DetalleParametro
     metodoPago?: DetalleParametro
     estadoMatricula?: DetalleParametro
     detalles?: MatriculaDetalle[]

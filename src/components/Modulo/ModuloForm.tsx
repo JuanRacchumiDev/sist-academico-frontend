@@ -265,10 +265,29 @@ export const ModuloForm = () => {
                           onChange={field.onChange}
                           displayKey="nombre"
                           valueKey="id"
-                          searchKeys={["nombre"]}
+                          searchKeys={[
+                            "nombre",
+                            "id_segmento",
+                            "id_tipoprograma",
+                          ]}
                           // disabled={isFormDisabled || isModeLetter}
                           // disabled={isDisabled}
                           isInvalid={fieldState.invalid}
+                          renderOption={(programa) => (
+                            <div className="flex flex-col gap-0.5">
+                              <span className="font-semibold text-gray-900 truncate">
+                                {programa.nombre}
+                              </span>
+                              <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                                <span className="bg-gray-100 px-1.5 py-0.5 rounded border">
+                                  {programa.segmento?.nombre || "Sin segmento"}
+                                </span>
+                                <span className="italic text-blue-600">
+                                  {programa.tipo_programa?.nombre || "Sin tipo"}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                         />
                         <FormMessage />
                       </FormItem>
@@ -363,6 +382,35 @@ export const ModuloForm = () => {
                       </FormItem>
                     )}
                   />
+
+                  {/* <FormField
+                    control={form.control}
+                    name="video"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <RequiredLabel>Video</RequiredLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="URL del módulo"
+                            autoComplete="off"
+                            maxLength={150}
+                            {...field}
+                            value={field.value ?? ""}
+                            className={`
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-500"
+                                  : "focus:ring-blue-500"
+                              }
+                                transition-all duration-300
+                                placeholder-gray-400
+                            `}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  /> */}
                 </div>
               </fieldset>
 

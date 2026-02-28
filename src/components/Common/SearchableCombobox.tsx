@@ -29,6 +29,7 @@ interface SearchableComboboxProps<T extends { [key: string]: any }> {
   searchKeys: (keyof T)[];
   disabled?: boolean;
   isInvalid?: boolean;
+  renderOption?: (option: T) => React.ReactNode;
 }
 
 const SearchableCombobox = <T extends { [key: string]: any }>({
@@ -42,6 +43,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
   searchKeys,
   disabled,
   isInvalid,
+  renderOption,
 }: SearchableComboboxProps<T>) => {
   const [open, setOpen] = useState(false);
 
@@ -69,7 +71,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                 isInvalid
                   ? "border-red-500 focus:ring-red-500"
                   : "focus:ring-blue-500",
-                "focus:ring-2 focus:ring-offset-2 transition-all duration-300 h-10 px-3 py-2" // Altura y padding estándar
+                "focus:ring-2 focus:ring-offset-2 transition-all duration-300 h-10 px-3 py-2", // Altura y padding estándar
               )}
               disabled={disabled}
             >
@@ -108,24 +110,39 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                           setOpen(false);
                         }}
                         className={cn(
-                          "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors duration-150 ease-in-out",
-                          "", // Estilo para el seleccionado
+                          "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
                           "hover:bg-blue-50 hover:text-blue-700",
                           value === option[valueKey] &&
-                            "bg-blue-50 font-medium text-blue-700" // Estilo para el elemento actualmente seleccionado
+                            "bg-blue-50 font-medium text-blue-700",
                         )}
+                        // className={cn(
+                        //   "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors duration-150 ease-in-out",
+                        //   "", // Estilo para el seleccionado
+                        //   "hover:bg-blue-50 hover:text-blue-700",
+                        //   value === option[valueKey] &&
+                        //     "bg-blue-50 font-medium text-blue-700" // Estilo para el elemento actualmente seleccionado
+                        // )}
                       >
                         <Check
                           className={cn(
-                            "mr-2 h-4 w-4",
+                            "mr-2 h-4 w-4 shrink-0",
                             value === option[valueKey]
                               ? "opacity-100" // Color azul para el check
-                              : "opacity-0"
+                              : "opacity-0",
                           )}
                         />
-                        <span className="truncate">
+                        {/* <span className="truncate">
                           {option[displayKey] as string}
-                        </span>
+                        </span> */}
+                        <div className="flex flex-col w-full overflow-hidden">
+                          {renderOption ? (
+                            renderOption(option)
+                          ) : (
+                            <span className="truncate">
+                              {option[displayKey] as string}
+                            </span>
+                          )}
+                        </div>
                       </CommandItem>
                     );
                   })}

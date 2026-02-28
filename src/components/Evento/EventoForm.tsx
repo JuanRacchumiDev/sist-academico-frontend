@@ -40,6 +40,7 @@ import {
   DetalleParametroFilters,
 } from "@/interfaces/IDetalleParametro";
 import { Textarea } from "../ui/textarea";
+import { ParametroClase } from "@/params/parametroClase";
 
 const formSchema = z
   .object({
@@ -135,7 +136,7 @@ export const EventoForm = () => {
   const { showToast } = useToast();
   const [tipoEventos, setTipoEventos] = useState<DetalleParametro[]>([]);
   const [categoriaEventos, setCategoriaEventos] = useState<DetalleParametro[]>(
-    []
+    [],
   );
 
   const isEditMode = !!id;
@@ -296,14 +297,14 @@ export const EventoForm = () => {
         let listCategoriaEventos: DetalleParametro[] = [];
 
         const filtersTipoEventos: DetalleParametroFilters = {
-          parametro_clase: 1002,
+          parametro_clase: ParametroClase.TIPO_EVENTO,
           en_persona: true,
           en_empresa: false,
           estado: true,
         };
 
         const filtersCategoriaEventos: DetalleParametroFilters = {
-          parametro_clase: 1003,
+          parametro_clase: ParametroClase.CATEGORIA_EVENTO,
           en_persona: true,
           en_empresa: false,
           estado: true,
@@ -590,7 +591,9 @@ export const EventoForm = () => {
                             }
                             onChange={(e) =>
                               field.onChange(
-                                e.target.value ? parseISO(e.target.value) : null
+                                e.target.value
+                                  ? parseISO(e.target.value)
+                                  : null,
                               )
                             }
                             className={`
@@ -625,7 +628,9 @@ export const EventoForm = () => {
                             }
                             onChange={(e) =>
                               field.onChange(
-                                e.target.value ? parseISO(e.target.value) : null
+                                e.target.value
+                                  ? parseISO(e.target.value)
+                                  : null,
                               )
                             }
                             className={`
@@ -769,7 +774,7 @@ export const EventoForm = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               field.onChange(
-                                value === "" ? null : parseInt(value, 10)
+                                value === "" ? null : parseInt(value, 10),
                               );
                             }}
                             className={`
@@ -804,7 +809,7 @@ export const EventoForm = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               field.onChange(
-                                value === "" ? null : parseInt(value, 10)
+                                value === "" ? null : parseInt(value, 10),
                               );
                             }}
                             className={`

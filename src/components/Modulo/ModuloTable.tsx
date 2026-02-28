@@ -104,7 +104,7 @@ export const ModuloTable = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -124,7 +124,7 @@ export const ModuloTable = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -132,7 +132,7 @@ export const ModuloTable = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;
@@ -146,12 +146,14 @@ export const ModuloTable = () => {
           <TableHeader>
             <TableRow className="bg-gray-100">
               <TableHead className="text-gray-600 font-medium">
+                # Orden
+              </TableHead>
+              <TableHead className="text-gray-600 font-medium">
                 Título
               </TableHead>
               <TableHead className="text-gray-600 font-medium">
                 Programa
               </TableHead>
-              <TableHead className="text-gray-600 font-medium">Orden</TableHead>
               <TableHead className="text-gray-600 font-medium">
                 Estado
               </TableHead>

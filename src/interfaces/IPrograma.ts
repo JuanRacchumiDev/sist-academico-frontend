@@ -14,7 +14,7 @@ export interface Programa {
     fecha_final?: string
     duracion?: string
     horas_academicas?: number
-    modulos?: number
+    numero_modulos?: number
     creditos?: number
     plan?: File | null | undefined
     modalidad?: string

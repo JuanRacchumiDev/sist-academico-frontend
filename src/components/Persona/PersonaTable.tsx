@@ -20,6 +20,7 @@ import {
 import { PersonaRow } from "./PersonaRow";
 import { TableSpinner } from "../../components/Common/TableSpinner";
 import { Persona, PaginationType } from "@/interfaces/IPersona";
+import { ParametroClase } from "@/params/parametroClase";
 
 interface PersonaTableProps {
   nombreGrupo?: string;
@@ -61,7 +62,7 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1005,
+      parametro_clase: ParametroClase.GRUPO,
     };
 
     console.log({ filters });
@@ -75,7 +76,7 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
         currentPage,
         limit,
         tipoPersona,
-        filters
+        filters,
       );
 
       const { result, data, pagination: newPagination } = response;
@@ -118,7 +119,7 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -138,7 +139,7 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -146,7 +147,7 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

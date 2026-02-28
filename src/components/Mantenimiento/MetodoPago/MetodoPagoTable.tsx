@@ -23,6 +23,7 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 export const MetodoPagoTable: React.FC = () => {
   const [metodoPagos, setMetodoPagos] = useState<DetalleParametro[]>([]);
@@ -60,7 +61,7 @@ export const MetodoPagoTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1013,
+      parametro_clase: ParametroClase.METODO_PAGO,
     };
 
     console.log({ filters });
@@ -70,7 +71,7 @@ export const MetodoPagoTable: React.FC = () => {
         currentPage,
         limit,
         "metodo-pago",
-        filters
+        filters,
       );
 
       console.log("response metodoPagos", response);
@@ -115,7 +116,7 @@ export const MetodoPagoTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -135,7 +136,7 @@ export const MetodoPagoTable: React.FC = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -143,7 +144,7 @@ export const MetodoPagoTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

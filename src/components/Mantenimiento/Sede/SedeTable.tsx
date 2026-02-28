@@ -23,6 +23,7 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 export const SedeTable = () => {
   const [sedes, setSedes] = useState<DetalleParametro[]>([]);
@@ -62,7 +63,7 @@ export const SedeTable = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1004,
+      parametro_clase: ParametroClase.SEDE,
     };
 
     console.log({ filters });
@@ -112,7 +113,7 @@ export const SedeTable = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -132,7 +133,7 @@ export const SedeTable = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -140,7 +141,7 @@ export const SedeTable = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

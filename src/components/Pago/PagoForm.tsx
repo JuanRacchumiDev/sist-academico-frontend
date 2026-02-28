@@ -51,6 +51,7 @@ import {
 import { getDetalleFiltered } from "@/services/detalleParametroService";
 import { Modulo } from "@/interfaces/IModulo";
 import { getProgramaById } from "@/services/programaService";
+import { ParametroClase } from "@/params/parametroClase";
 
 const formSchema = z.object({
   idAlumno: z
@@ -367,7 +368,7 @@ export const PagoForm = () => {
 
         // Obteniendo las formas de pago
         const filterFormasPago: DetalleParametroFilters = {
-          parametro_clase: 1006,
+          parametro_clase: ParametroClase.METODO_PAGO,
           en_persona: false,
           en_empresa: false,
           estado: true,
@@ -375,7 +376,7 @@ export const PagoForm = () => {
 
         // Obteniendo los métodos de pago
         const filterMetodosPago: DetalleParametroFilters = {
-          parametro_clase: 1013,
+          parametro_clase: ParametroClase.METODO_PAGO,
           en_persona: false,
           en_empresa: false,
           estado: true,

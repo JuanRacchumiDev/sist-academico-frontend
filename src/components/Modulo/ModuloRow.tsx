@@ -90,9 +90,12 @@ export const ModuloRow: React.FC<Props> = ({ modulo }) => {
         key={modulo.id}
         className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
       >
+        <TableCell className="py-3">#{modulo.orden}</TableCell>
         <TableCell className="py-3">{modulo.titulo}</TableCell>
-        <TableCell className="py-3">{modulo.programa?.nombre}</TableCell>
-        <TableCell className="py-3">{modulo.orden}</TableCell>
+        <TableCell className="py-3">
+          {modulo.programa?.nombre} (CANT. MODULOS:{" "}
+          {modulo.programa.numero_modulos})
+        </TableCell>
         <TableCell className="py-3">
           {modulo.estado ? (
             <CircleCheck className="text-green-500 w-5 h-5" />

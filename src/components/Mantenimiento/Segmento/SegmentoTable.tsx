@@ -23,6 +23,7 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 export const SegmentoTable: React.FC = () => {
   const [segmentos, setSegmentos] = useState<DetalleParametro[]>([]);
@@ -62,7 +63,7 @@ export const SegmentoTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1008,
+      parametro_clase: ParametroClase.SEGMENTO,
     };
 
     console.log({ filters });
@@ -112,7 +113,7 @@ export const SegmentoTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -132,7 +133,7 @@ export const SegmentoTable: React.FC = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -140,7 +141,7 @@ export const SegmentoTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

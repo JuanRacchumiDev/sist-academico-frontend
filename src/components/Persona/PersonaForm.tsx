@@ -44,6 +44,7 @@ import {
   updatePersona,
 } from "../../services/personaService";
 import { getPersonaByApi } from "../../services/personaApiService";
+import { ParametroClase } from "@/params/parametroClase";
 
 interface PersonaFormProps {
   nombreGrupo?: string;
@@ -280,7 +281,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         let listTipoDocumentos: DetalleParametro[] = [];
 
         const filters: DetalleParametroFilters = {
-          parametro_clase: 1000,
+          parametro_clase: ParametroClase.TIPO_DOCUMENTO,
           en_persona: true,
           en_empresa: false,
           estado: true,
@@ -447,11 +448,11 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                   const responsePersona = await getPersonaByApi(
                                     tipoDocumento,
                                     field.value,
-                                    descGrupo
+                                    descGrupo,
                                   );
 
                                   console.log(
-                                    "---- responsePersona PersonaForm ----"
+                                    "---- responsePersona PersonaForm ----",
                                   );
                                   console.log({ responsePersona });
 
@@ -476,11 +477,11 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                     form.setValue("nombres", nombres as string);
                                     form.setValue(
                                       "apellidoPaterno",
-                                      apellido_paterno as string
+                                      apellido_paterno as string,
                                     );
                                     form.setValue(
                                       "apellidoMaterno",
-                                      apellido_materno as string
+                                      apellido_materno as string,
                                     );
 
                                     if (fecha_nacimiento) {
@@ -488,7 +489,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                         parseISO(fecha_nacimiento);
                                       form.setValue(
                                         "fechaNacimiento",
-                                        fechaNacimientoParsed
+                                        fechaNacimientoParsed,
                                       );
                                     }
 
@@ -619,7 +620,9 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                             }
                             onChange={(e) =>
                               field.onChange(
-                                e.target.value ? parseISO(e.target.value) : null
+                                e.target.value
+                                  ? parseISO(e.target.value)
+                                  : null,
                               )
                             }
                             className={`

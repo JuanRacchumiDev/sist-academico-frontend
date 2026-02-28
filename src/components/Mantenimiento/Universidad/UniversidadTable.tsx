@@ -23,6 +23,7 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 export const UniversidadTable: React.FC = () => {
   const [universidades, setUniversidades] = useState<DetalleParametro[]>([]);
@@ -62,7 +63,7 @@ export const UniversidadTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1005,
+      parametro_clase: ParametroClase.UNIVERSIDAD,
     };
 
     console.log({ filters });
@@ -113,7 +114,7 @@ export const UniversidadTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -133,7 +134,7 @@ export const UniversidadTable: React.FC = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -141,7 +142,7 @@ export const UniversidadTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

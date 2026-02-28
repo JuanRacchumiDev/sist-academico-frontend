@@ -23,6 +23,7 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 export const TipoDocumentoTable: React.FC = () => {
   const [tipoDocumentos, setTipoDocumentos] = useState<DetalleParametro[]>([]);
@@ -60,7 +61,7 @@ export const TipoDocumentoTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1000,
+      parametro_clase: ParametroClase.TIPO_DOCUMENTO,
     };
 
     console.log({ filters });
@@ -70,7 +71,7 @@ export const TipoDocumentoTable: React.FC = () => {
         currentPage,
         limit,
         "tipo-documento",
-        filters
+        filters,
       );
 
       console.log("response tipodocumentos", response);
@@ -98,7 +99,7 @@ export const TipoDocumentoTable: React.FC = () => {
     } catch (error) {
       console.error(
         "Error al obtener documentos por tipo de contingencia",
-        error
+        error,
       );
     } finally {
       setIsLoading(false);
@@ -118,7 +119,7 @@ export const TipoDocumentoTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -138,7 +139,7 @@ export const TipoDocumentoTable: React.FC = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -146,7 +147,7 @@ export const TipoDocumentoTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

@@ -23,6 +23,7 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 export const BancoCuentaTable: React.FC = () => {
   const [bancoCuentas, setBancoCuentas] = useState<DetalleParametro[]>([]);
@@ -62,7 +63,7 @@ export const BancoCuentaTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: 1012,
+      parametro_clase: ParametroClase.BANCO_CUENTA,
     };
 
     console.log({ filters });
@@ -72,7 +73,7 @@ export const BancoCuentaTable: React.FC = () => {
         currentPage,
         limit,
         "banco-cuenta",
-        filters
+        filters,
       );
 
       console.log("response bancoCuentas", response);
@@ -117,7 +118,7 @@ export const BancoCuentaTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-start">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -137,7 +138,7 @@ export const BancoCuentaTable: React.FC = () => {
           >
             {i}
           </PaginationLink>
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
 
@@ -145,7 +146,7 @@ export const BancoCuentaTable: React.FC = () => {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
-        </PaginationItem>
+        </PaginationItem>,
       );
     }
     return items;

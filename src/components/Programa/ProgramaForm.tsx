@@ -43,6 +43,7 @@ import {
   DetalleParametro,
   DetalleParametroFilters,
 } from "@/interfaces/IDetalleParametro";
+import { ParametroClase } from "@/params/parametroClase";
 
 const MAX_FILE_SIZE = 2097152;
 
@@ -106,11 +107,11 @@ const formSchema = z.object({
     .optional()
     .refine(
       (file) => !file || file.size <= MAX_FILE_SIZE,
-      `El archivo debe ser menor a 2MB`
+      `El archivo debe ser menor a 2MB`,
     )
     .refine(
       (file) => !file || file.type === "application/pdf",
-      `El archivo debe ser un PDF`
+      `El archivo debe ser un PDF`,
     ),
   modalidad: z
     .string({
@@ -119,12 +120,19 @@ const formSchema = z.object({
     .min(1, "Por favor seleccione una modalidad"),
   precio: z
     .number({
-      message: "El precio es obligatorio",
+      message: "El precio debe ser obligatorio",
     })
     .int("Debe ser un número entero")
-    .min(1, {
-      message: "Ingrese un valor mayor que cero (min. 1)",
-    }),
+    .nullable()
+    .optional(),
+  // precio: z
+  //   .number({
+  //     message: "El precio es obligatorio",
+  //   })
+  //   .int("Debe ser un número entero")
+  //   .min(1, {
+  //     message: "Ingrese un valor mayor que cero (min. 1)",
+  //   }),
 });
 
 type TPrograma = {
@@ -260,12 +268,12 @@ export const ProgramaForm = () => {
       formData.append("fecha_final", fechaFinalStr);
       formData.append("duracion", duracion);
       formData.append("horas_academicas", horasAcademicas.toString());
-      formData.append("modulos", modulos.toString());
+      formData.append("numero_modulos", modulos.toString());
       formData.append("creditos", creditos.toString());
       formData.append("is_vigente", "1");
       formData.append("estado", "1");
       formData.append("modalidad", modalidad || "");
-      formData.append("precio", precio.toString());
+      formData.append("precio_modulo", precio.toString());
 
       // Agregar el archivo si existe
       if (plan_file) {
@@ -307,7 +315,7 @@ export const ProgramaForm = () => {
 
         // Obteniendo datos para crear el listado de segmentos
         const filtersSegmentos: DetalleParametroFilters = {
-          parametro_clase: 1008,
+          parametro_clase: ParametroClase.SEGMENTO,
           en_persona: false,
           en_empresa: false,
           estado: true,
@@ -330,7 +338,7 @@ export const ProgramaForm = () => {
 
         // Obteniendo datos para crear el listado de tipo de programas
         const filtersTipoProgramas: DetalleParametroFilters = {
-          parametro_clase: 1002,
+          parametro_clase: ParametroClase.TIPO_PROGRAMA,
           en_persona: false,
           en_empresa: false,
           estado: true,
@@ -376,7 +384,7 @@ export const ProgramaForm = () => {
                 : null,
               horasAcademicas: programa.horas_academicas ?? 0,
               duracion: programa.duracion ?? "",
-              modulos: programa.modulos ?? 0,
+              modulos: programa.numero_modulos ?? 0,
               creditos: programa.creditos ?? 0,
               modalidad: programa.modalidad ?? "VIRTUAL",
               precio: programa.precio ?? 0,
@@ -622,7 +630,9 @@ export const ProgramaForm = () => {
                             }
                             onChange={(e) =>
                               field.onChange(
-                                e.target.value ? parseISO(e.target.value) : null
+                                e.target.value
+                                  ? parseISO(e.target.value)
+                                  : null,
                               )
                             }
                             className={`
@@ -656,7 +666,9 @@ export const ProgramaForm = () => {
                             }
                             onChange={(e) =>
                               field.onChange(
-                                e.target.value ? parseISO(e.target.value) : null
+                                e.target.value
+                                  ? parseISO(e.target.value)
+                                  : null,
                               )
                             }
                             className={`
@@ -720,7 +732,7 @@ export const ProgramaForm = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               field.onChange(
-                                value === "" ? null : parseInt(value, 10)
+                                value === "" ? null : parseInt(value, 10),
                               );
                             }}
                             className={`
@@ -756,7 +768,7 @@ export const ProgramaForm = () => {
                             onChange={(e) => {
                               const value = e.target.value;
                               field.onChange(
-                                value === "" ? null : parseInt(value, 10)
+                                value === "" ? null : parseInt(value, 10),
                               );
                             }}
                             className={`
@@ -839,13 +851,13 @@ export const ProgramaForm = () => {
                             placeholder="120"
                             autoComplete="off"
                             type="number"
-                            min={1}
+                            // min={1}
                             {...field}
                             value={field.value ?? ""}
                             onChange={(e) => {
                               const value = e.target.value;
                               field.onChange(
-                                value === "" ? null : parseInt(value, 10)
+                                value === "" ? null : parseInt(value, 10),
                               );
                             }}
                             className={`
