@@ -2,7 +2,10 @@ import { Modulo } from "../interfaces/IModulo"
 import {
     getAllPaginate,
     getById,
-    create
+    getByPrograma,
+    create,
+    createMultiple,
+    updateMultiple
 } from "../repositories/moduloRepository"
 
 export const getModulosPaginate = async (
@@ -40,8 +43,32 @@ export const getModuloById = async (id: number) => {
     }
 }
 
+export const getModulosByPrograma = async (idPrograma: number) => {
+    const response = await getByPrograma(idPrograma)
+
+    return {
+        ...response
+    }
+}
+
 export const createModulo = async (payload: Modulo) => {
     const response = await create(payload)
+
+    return {
+        ...response
+    }
+}
+
+export const createModulosMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]) => {
+    const response = await createMultiple(idPrograma, modulos)
+
+    return {
+        ...response
+    }
+}
+
+export const updateModulosMultiple = async (idPrograma: number, modulos: { id?: number; titulo: string }[]) => {
+    const response = await updateMultiple(idPrograma, modulos)
 
     return {
         ...response

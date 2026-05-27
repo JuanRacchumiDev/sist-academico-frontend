@@ -8,7 +8,7 @@ export interface Programa {
     id_categoriaprograma?: string
     codigo_old?: string
     sigla?: string
-    nombre?: string
+    titulo?: string
     descripcion?: string
     fecha_inicio?: string
     fecha_final?: string

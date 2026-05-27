@@ -37,13 +37,13 @@ export const MENU_ITEMS = [
         active: false,
         path: "/programa-academico"
     },
-    {
-        id: "modulo",
-        icon: Zap,
-        label: "Módulo",
-        active: false,
-        path: "/modulo"
-    },
+    // {
+    //     id: "modulo",
+    //     icon: Zap,
+    //     label: "Módulo",
+    //     active: false,
+    //     path: "/modulo"
+    // },
     {
         id: "matricula",
         icon: GraduationCap,
@@ -128,36 +128,36 @@ export const MENU_ITEMS = [
                 icon: Briefcase,
                 path: "/mantenimiento/tipo-documento"
             },
-            {
-                id: "sede",
-                label: "Sede",
-                icon: Briefcase,
-                path: "/mantenimiento/sede"
-            },
-            {
-                id: "universidad",
-                label: "Universidad",
-                icon: Briefcase,
-                path: "/mantenimiento/universidad"
-            },
-            {
-                id: "metodo-pago",
-                label: "Método de pago",
-                icon: DollarSign,
-                path: "/mantenimiento/metodo-pago"
-            },
+            // {
+            //     id: "sede",
+            //     label: "Sede",
+            //     icon: Briefcase,
+            //     path: "/mantenimiento/sede"
+            // },
+            // {
+            //     id: "universidad",
+            //     label: "Universidad",
+            //     icon: Briefcase,
+            //     path: "/mantenimiento/universidad"
+            // },
+            // {
+            //     id: "metodo-pago",
+            //     label: "Método de pago",
+            //     icon: DollarSign,
+            //     path: "/mantenimiento/metodo-pago"
+            // },
             // {
             //     id: "moneda",
             //     label: "Moneda",
             //     icon: Briefcase,
             //     path: "/mantenimiento/moneda"
+            // },
+            // {
+            //     id: "banco-cuenta",
+            //     label: "Cuentas",
+            //     icon: Briefcase,
+            //     path: "/mantenimiento/banco-cuenta"
             // }
-            {
-                id: "banco-cuenta",
-                label: "Cuentas",
-                icon: Briefcase,
-                path: "/mantenimiento/banco-cuenta"
-            }
         ]
     }
 ]

@@ -37,28 +37,30 @@ export const getAllPaginate = async (nombreGrupo: string, queryParams: string): 
 
         console.log({ response })
 
-        const { data: dataPersonas } = response
+        const { data: { data, result, message, pagination } } = response
 
-        console.log({ dataPersonas })
+        // const { data: dataPersonas } = response
 
-        const { result, data, message } = dataPersonas
+        // console.log({ dataPersonas })
 
-        const listaItems = data.data
+        // const { result, data, message } = dataPersonas
 
-        const paginationInfo = {
-            currentPage: data.current_page,
-            limit: data.per_page,
-            totalPages: data.last_page,
-            totalItems: data.total,
-            nextPage: data.next_page_url,
-            previousPage: data.prev_page_url
-        };
+        // const listaItems = data.data
+
+        // const paginationInfo = {
+        //     currentPage: data.current_page,
+        //     limit: data.per_page,
+        //     totalPages: data.last_page,
+        //     totalItems: data.total,
+        //     nextPage: data.next_page_url,
+        //     previousPage: data.prev_page_url
+        // };
 
         return {
             result,
-            data: listaItems,
+            data,
             message,
-            pagination: paginationInfo
+            pagination: pagination
         }
 
         // return {
@@ -123,8 +125,8 @@ export const update = async (id: number, payload: Persona): Promise<PersonaRespo
     try {
         const urlApi = `${'/personas/'}${id}`
         console.log('---- update personaRepository ----')
-        console.log({urlApi})
-        console.log({payload})
+        console.log({ urlApi })
+        console.log({ payload })
 
         const response = await apiClient.patch(urlApi, payload)
 

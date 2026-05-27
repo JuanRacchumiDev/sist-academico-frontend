@@ -10,11 +10,11 @@ export const getAll = async (): Promise<ProgramaResponse> => {
 
         console.log({ response })
 
-        const { data: dataProgramas } = response
+        // const { data: dataProgramas } = response
 
-        console.log({ dataProgramas })
+        // console.log({ dataProgramas })
 
-        const { result, data, message } = dataProgramas
+        const { data: { result, data, message } } = response
 
         return {
             result,
@@ -38,35 +38,25 @@ export const getAllPaginate = async (queryParams: string): Promise<ProgramaRespo
 
         console.log({ response })
 
-        const { data: dataProgramas } = response
+        const { data: { result, data, message } } = response
 
-        console.log({ dataProgramas })
-
-        const { result, data, message } = dataProgramas
-
-        const listaItems = data.data
+        const { current_page, per_page, last_page, total, next_page_url, prev_page_url } = data
 
         const paginationInfo = {
-            currentPage: data.current_page,
-            limit: data.per_page,
-            totalPages: data.last_page,
-            totalItems: data.total,
-            nextPage: data.next_page_url,
-            previousPage: data.prev_page_url
+            currentPage: current_page,
+            limit: per_page,
+            totalPages: last_page,
+            totalItems: total,
+            nextPage: next_page_url,
+            previousPage: prev_page_url
         };
 
         return {
             result,
-            data: listaItems,
+            data: data.data,
             message,
             pagination: paginationInfo
         }
-
-        // return {
-        //     result,
-        //     data,
-        //     message
-        // }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
@@ -158,11 +148,15 @@ export const create = async (
     }
 }
 
-export const update = async (id: number, payload: Programa): Promise<ProgramaResponse> => {
+export const update = async (
+    id: number,
+    payload: FormData | Programa,
+    config?: AxiosRequestConfig
+): Promise<ProgramaResponse> => {
     try {
         const urlApi = `${'/programas/'}${id}`
 
-        const response = await apiClient.patch(urlApi, payload)
+        const response = await apiClient.post(urlApi, payload, config)
 
         console.log({ response })
 

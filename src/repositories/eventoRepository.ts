@@ -5,9 +5,7 @@ export const getAll = async (): Promise<EventoResponse> => {
     try {
         const response = await apiClient.get('/eventos')
 
-        const { data: dataEventos } = response
-
-        const { result, data, message } = dataEventos
+        const { data: { result, data, message } } = response
 
         return {
             result,

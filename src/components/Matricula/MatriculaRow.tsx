@@ -53,7 +53,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   const modalTitle = `${
     action.charAt(0).toUpperCase() + action.slice(1)
   } Matrícula`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> la matrícula: <strong>${matricula.nombre_alumno}</strong>?`;
+  const modalMessage = `¿Deseas <strong>${action}</strong> la matrícula: <strong>${matricula.persona.nombre_completo}</strong>?`;
 
   console.log({ matricula });
 
@@ -120,7 +120,6 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
 
   const handleDownloadCertificado = async (
     id_matricula: number,
-    id_alumno: number,
     id_programa: number,
   ) => {
     try {
@@ -128,11 +127,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
 
       showToast("info", "Preparando descarga del certificado...");
 
-      const response = await getCertificadoByParams(
-        id_matricula,
-        id_alumno,
-        id_programa,
-      );
+      const response = await getCertificadoByParams(id_matricula, id_programa);
 
       if (response.result && response.data) {
         downloadFile(response.data, response.filename);
@@ -166,8 +161,13 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
         key={matricula.id}
         className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
       >
-        <TableCell className="py-3">{matricula.nombre_alumno}</TableCell>
-        <TableCell className="py-3">{matricula.nombre_sede}</TableCell>
+        <TableCell className="py-3">
+          {matricula.persona.nombre_completo}
+        </TableCell>
+        <TableCell className="py-3">
+          {matricula.persona.numero_documento}
+        </TableCell>
+        <TableCell className="py-3">{matricula.institucion.nombre}</TableCell>
         <TableCell className="py-3">{matricula.fecha_matricula}</TableCell>
         <TableCell className="py-3">
           {matricula.estado ? (
@@ -229,10 +229,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
                     {matricula.detalles && matricula.detalles.length > 0 ? (
                       matricula.detalles.map((det) => {
                         // Log para depuración
-                        console.log(
-                          "Programa a certificar:",
-                          det.nombre_programa,
-                        );
+                        console.log("Programa a certificar:", det.programa);
 
                         return (
                           <DropdownMenuItem
@@ -240,18 +237,17 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
                             onClick={() =>
                               handleDownloadCertificado(
                                 matricula.id,
-                                matricula.id_alumno,
-                                det.id_programa, // ID del programa
+                                det.id_programa,
                               )
                             }
                             className="cursor-pointer hover:bg-amber-50"
                           >
                             <div className="flex flex-col">
                               <span className="text-xs font-medium">
-                                {det.nombre_programa}
+                                {det.programa.titulo}
                               </span>
                               <span className="text-[10px] text-gray-500">
-                                ID Prog: {det.id_programa}
+                                Categoría: {det.programa.tipo_programa.nombre}
                               </span>
                             </div>
                           </DropdownMenuItem>

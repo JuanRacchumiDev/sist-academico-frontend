@@ -5,8 +5,9 @@ export interface DetalleMatricula {
     id?: number
     id_matricula?: number
     id_programa?: number
-    nombre_programa?: string
-    promedio?: number
+    user_crea?: string
+    user_actualiza?: string
+    user_elimina?: string
     estado?: boolean
     matricula?: Matricula
     programa?: Programa

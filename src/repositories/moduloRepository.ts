@@ -32,12 +32,6 @@ export const getAllPaginate = async (queryParams: string): Promise<ModuloRespons
             message,
             pagination: paginationInfo
         }
-
-        // return {
-        //     result,
-        //     data,
-        //     message
-        // }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
@@ -67,6 +61,53 @@ export const getById = async (id: number): Promise<ModuloResponse> => {
     }
 }
 
+export const getByPrograma = async (idPrograma: number) => {
+    try {
+        const urlApi = `${'/programas/'}${idPrograma}${'/'}`
+
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi)
+
+        console.log({ response })
+
+        const { data: { result, message, data } } = response
+
+        return {
+            result,
+            data,
+            message
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const createMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]): Promise<ModuloResponse> => {
+    try {
+        const payload = {
+            id_programa: idPrograma,
+            modulos
+        }
+
+        const response = await apiClient.post('/modulos', payload)
+
+        const { data: { result, message, data } } = response
+
+        return {
+            result,
+            message,
+            data
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
 export const create = async (payload: Modulo): Promise<ModuloResponse> => {
     try {
         const response = await apiClient.post('/modulos', payload)
@@ -79,6 +120,27 @@ export const create = async (payload: Modulo): Promise<ModuloResponse> => {
             data
         }
 
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const updateMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]): Promise<ModuloResponse> => {
+    try {
+        const urlApi = `${'/programas/'}${idPrograma}${'/'}`
+        console.log({ urlApi })
+
+        const response = await apiClient.patch(urlApi, modulos)
+
+        const { data: { result, message, data } } = response
+
+        return {
+            result,
+            message,
+            data
+        }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)

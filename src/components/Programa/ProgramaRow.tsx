@@ -9,6 +9,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Download,
+  Layers,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,8 +24,9 @@ import { Button } from "../ui/button";
 import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
-import { padString } from "../../utils/stringUtils";
+import { ModuloSheetForm } from "../Modulo/ModuloSheetForm";
 import { downloadProgramaPlan } from "@/services/programaService";
+import { formatDate } from "../../utils/dateUtils";
 
 interface Props {
   programa: Programa;
@@ -32,6 +34,8 @@ interface Props {
 }
 
 export const ProgramaRow: React.FC<Props> = ({ programa }) => {
+  console.log({ programa });
+
   const { showToast } = useToast();
 
   const navigate = useNavigate();
@@ -39,13 +43,14 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false); // ⬅️ Estado para el modal
   const [isProcessing, setIsProcessing] = useState(false); // ⬅️ Estado para el loading
+  const [isModuloSheetOpen, setIsModuloSheetOpen] = useState(false);
 
   const nuevoEstado = !programa.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
   const modalTitle = `${
     action.charAt(0).toUpperCase() + action.slice(1)
   } Programa`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> el programa: <strong>${programa.nombre}</strong>?`;
+  const modalMessage = `¿Deseas <strong>${action}</strong> el programa: <strong>${programa}</strong>?`;
 
   const handleShowDetail = () => {
     navigate(`/programa-academico/editar/${programa.id}`);
@@ -107,35 +112,50 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
     <>
       <TableRow
         key={programa.id}
-        className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
+        className="hover:bg-blue-50/50 hover:cursor-pointer transition-colors duration-200 border-b border-slate-100"
       >
-        <TableCell className="py-3">
-          {padString(4, programa.id as number, "left")}
+        <TableCell className="py-3 px-4 text-xs font-medium text-slate-700 whitespace-normal wrap-break-words">
+          {programa.segmento?.nombre ?? "--"}
         </TableCell>
-        <TableCell className="py-3">{programa.sigla}</TableCell>
-        <TableCell className="py-3">{programa.nombre}</TableCell>
-        <TableCell className="py-3">{programa.tipo_programa.nombre}</TableCell>
-        <TableCell className="py-3">{programa.segmento.nombre}</TableCell>
-        <TableCell className="py-3">{programa.duracion}</TableCell>
-        <TableCell className="py-3">{programa.numero_modulos}</TableCell>
-        <TableCell className="py-3">{programa.creditos}</TableCell>
-        {/* <TableCell className="py-3">
-          {programa.plan ? "Adjunto" : "--"}
-        </TableCell> */}
-        <TableCell className="py-3">
-          {programa.estado ? (
-            <CircleCheck className="text-green-500 w-5 h-5" />
-          ) : (
-            <CircleX className="text-red-500 w-5 h-5" />
-          )}
+
+        <TableCell className="py-3 px-4 text-xs text-slate-600 whitespace-normal wrap-break-words">
+          {programa.tipo_programa?.nombre ?? "--"}
         </TableCell>
-        <TableCell className="py-3">
-          {/* w-72 border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 */}
+        <TableCell
+          className="py-3 px-4 text-xs font-semibold text-slate-900 whitespace-normal wrap-break-words"
+          title={programa.titulo}
+        >
+          {programa.titulo ?? "--"}
+        </TableCell>
+
+        <TableCell className="py-3 px-2 text-xs text-slate-600 text-center tabular-nums">
+          {formatDate(programa.fecha_inicio)}
+        </TableCell>
+
+        <TableCell className="py-3 px-2 text-xs text-slate-600 text-center tabular-nums">
+          {formatDate(programa.fecha_final)}
+        </TableCell>
+        <TableCell className="py-3 px-2 text-xs text-slate-600 text-center">
+          {programa.duracion ?? "--"}
+        </TableCell>
+
+        <TableCell className="py-3 px-2 text-xs text-slate-600 text-center font-bold">
+          {programa.numero_modulos ?? 0}
+        </TableCell>
+        <TableCell className="py-3 px-2">
+          <div className="flex justify-center">
+            {programa.estado ? (
+              <CircleCheck className="text-green-500 w-4 h-4" />
+            ) : (
+              <CircleX className="text-red-400 w-4 h-4" />
+            )}
+          </div>
+        </TableCell>
+        <TableCell className="py-3 px-4 text-right">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger
               asChild
               className="focus:outline-none focus:ring-2 z-40 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
-              // className="bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
             >
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Abrir menú de acciones</span>
@@ -160,7 +180,6 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
                 <span>Ver/Editar Detalle</span>
               </DropdownMenuItem>
 
-              {/* 🌟 NUEVO ITEM: Botón de Descarga */}
               {programa.plan && (
                 <DropdownMenuItem
                   onClick={handleDownloadPlan}
@@ -181,9 +200,18 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
                 <span>{actionText} Programa</span>
               </DropdownMenuItem>
 
-              {/* <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 transition-colors">
-              Eliminar
-            </DropdownMenuItem> */}
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={() => {
+                  setIsDropdownOpen(false);
+                  setIsModuloSheetOpen(true);
+                }}
+                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
+              >
+                <Layers className="h-4 w-4" />
+                <span>Configurar módulos</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
@@ -202,6 +230,12 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
             className={programa.estado ? "text-red-500" : "text-green-500"}
           />
         }
+      />
+
+      <ModuloSheetForm
+        programa={programa}
+        isOpen={isModuloSheetOpen}
+        onClose={() => setIsModuloSheetOpen(false)}
       />
     </>
   );

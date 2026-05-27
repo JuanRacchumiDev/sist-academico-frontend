@@ -1,33 +1,29 @@
 import { DetalleParametro } from "./IDetalleParametro"
+import { Institucion } from "./IInstitucion"
 import { Matricula } from "./IMatricula"
-import { Persona } from "./IPersona"
-import { Programa } from "./IPrograma"
+import { Modulo } from "./IModulo"
 
 export interface Pago {
     id?: number
     id_matricula?: number
-    id_programa?: number
-    id_alumno?: number
-    id_formapago?: number
-    id_metodopago?: number
+    id_modulo?: number
     id_estadopago?: number
+    id_institucion?: number
+    id_formapago?: number
     concepto?: string
     fecha_pago?: string
-    nro_operacion?: string
-    numero_modulo?: number
-    monto_efectivo?: number
-    monto_tarjeta?: number
-    monto_total?: number
-    monto_pagado?: number
-    monto_saldo?: number
+    fecha_vencimiento?: string
+    cantidad?: number
+    user_crea?: string
+    user_actualiza?: string
+    user_elimina?: string
     estado?: boolean
 
     matricula?: Matricula
-    programa?: Programa
-    alumno?: Persona
-    formaPago?: DetalleParametro
-    metodoPago?: DetalleParametro
+    modulo?: Modulo
     estadoPago?: DetalleParametro
+    institucion?: Institucion
+    formaPago?: DetalleParametro
 }
 
 export interface PagoResponse {

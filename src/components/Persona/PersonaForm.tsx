@@ -37,7 +37,7 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Persona, PersonaResponse } from "@/interfaces/IPersona";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, XCircle } from "lucide-react";
 import {
   createPersona,
   getPersonaById,
@@ -53,9 +53,9 @@ interface PersonaFormProps {
 const formSchema = z.object({
   idTipoDocumento: z
     .string({
-      message: "Por favor seleccione un tipo de documento.",
+      message: "El tipo de documento es requerido.",
     })
-    .min(1, "Por favor seleccione un tipo de documento."),
+    .min(1, "El tipo de documento es requerido."),
   numeroDocumento: z.string().min(8, {
     message: "El número de documento debe tener al menos 8 caracteres.",
   }),
@@ -80,7 +80,7 @@ const formSchema = z.object({
     message: "Por favor ingrese un correo válido",
   }),
   sexo: z.string().min(1, {
-    message: "El sexo es obligatorio",
+    message: "El sexo es requerido",
   }),
   telefono: z.string().min(2, {
     message: "El teléfono es requerido.",
@@ -233,10 +233,6 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
           messageOperation = message as string;
 
           codeOperation = code as string;
-
-          // const messageStr = message as string;
-          // console.log({ messageStr });
-          // console.log({ code });
         }
       } else {
         console.log("update desde ");
@@ -335,450 +331,377 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
 
   return (
     <>
-      <Card className="shadow-lg border-gray-200">
-        <CardHeader className="border-b border-gray-200 p-4 sm:p-6 flex flex-row items-center justify-between">
-          <div className="shrink min-w-0">
-            <CardTitle className="text-xl font-bold text-gray-800 truncate">
+      <Card className="shadow-xl border-none bg-white">
+        <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
               {isEditMode
-                ? `Actualización de ${nombreGrupo}`
-                : `Registro de ${nombreGrupo}`}
+                ? `Editar ${nombreGrupo}`
+                : `Nuevo Registro de ${nombreGrupo}`}
             </CardTitle>
-            <CardDescription className="text-sm text-gray-500">
+            <CardDescription className="text-slate-500 font-medium">
               {isEditMode
-                ? `Formulario de actualización de ${nombreGrupo}`
-                : `Complete el formulario para registrar un ${nombreGrupo}`}
+                ? `Actualización de información de ${nombreGrupo}`
+                : `Complete la información para registrar un ${nombreGrupo}`}
             </CardDescription>
           </div>
-          <button
+          <Button
+            variant="ghost"
             onClick={handleGoBack}
-            className="
-              flex items-center text-sm font-semibold 
-              text-blue-600 
-              hover:text-blue-800 
-              hover:bg-blue-50 
-              transition-colors 
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 
-              rounded-md p-2 ml-4 
-              cursor-pointer
-            "
-            aria-label="Volver al listado"
+            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
-          </button>
+          </Button>
         </CardHeader>
-        <CardContent className="pt-6">
+
+        <CardContent className="px-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <fieldset className="border border-gray-300 p-4 rounded-md">
-                <legend className="text-base font-semibold text-gray-800 px-2">
-                  Información personal
-                </legend>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="idTipoDocumento"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Tipo de Documento</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar tipo de documento" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            {tipoDocumentos.map((tipo) => (
-                              <SelectItem
-                                value={tipo.codigo!.toString()}
-                                key={tipo.codigo!.toString()}
-                                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                              >
-                                {tipo.descripcion}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="numeroDocumento"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Número de Documento</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="12345678"
-                            autoComplete="off"
-                            maxLength={8}
-                            {...field}
-                            onKeyDown={async (e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                try {
-                                  showToast("success", "Buscando datos");
-
-                                  const idTipoDocumento =
-                                    form.getValues("idTipoDocumento");
-                                  console.log({ idTipoDocumento });
-
-                                  const tipoDocumento =
-                                    idTipoDocumento === "1" ? "DNI" : "CE";
-                                  console.log({ tipoDocumento });
-
-                                  const descGrupo = `grupo-${nombreGrupo}`;
-                                  console.log({ descGrupo });
-
-                                  const responsePersona = await getPersonaByApi(
-                                    tipoDocumento,
-                                    field.value,
-                                    descGrupo,
-                                  );
-
-                                  console.log(
-                                    "---- responsePersona PersonaForm ----",
-                                  );
-                                  console.log({ responsePersona });
-
-                                  const { result, data, message } =
-                                    responsePersona;
-
-                                  if (result && data) {
-                                    const persona = data as Persona;
-                                    console.log("---- data persona ----");
-                                    console.log({ persona });
-
-                                    const {
-                                      id,
-                                      nombres,
-                                      apellido_paterno,
-                                      apellido_materno,
-                                      fecha_nacimiento,
-                                    } = persona;
-
-                                    setIdPersona(id as number);
-
-                                    form.setValue("nombres", nombres as string);
-                                    form.setValue(
-                                      "apellidoPaterno",
-                                      apellido_paterno as string,
-                                    );
-                                    form.setValue(
-                                      "apellidoMaterno",
-                                      apellido_materno as string,
-                                    );
-
-                                    if (fecha_nacimiento) {
-                                      const fechaNacimientoParsed =
-                                        parseISO(fecha_nacimiento);
-                                      form.setValue(
-                                        "fechaNacimiento",
-                                        fechaNacimientoParsed,
-                                      );
-                                    }
-
-                                    setCamposHabilitados(false);
-                                    showToast("success", message as string);
-                                  } else {
-                                    setCamposHabilitados(true);
-                                    showToast("warning", "No se encontraron ");
-                                  }
-                                } catch (error) {
-                                  setCamposHabilitados(true);
-                                  showToast("error", "Error al crear persona");
-                                }
-                              }
-                            }}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300 placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="nombres"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Nombres</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="María Angélica"
-                            autoComplete="off"
-                            maxLength={40}
-                            {...field}
-                            disabled={!camposHabilitados}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300 placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="apellidoPaterno"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Apellido Paterno</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Pérez"
-                            autoComplete="off"
-                            maxLength={40}
-                            {...field}
-                            disabled={!camposHabilitados}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300 placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="apellidoMaterno"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Apellido Materno</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Vallejos"
-                            autoComplete="off"
-                            maxLength={40}
-                            {...field}
-                            disabled={!camposHabilitados}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300 placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="fechaNacimiento"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Fecha de Nacimiento</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={
-                              field.value
-                                ? format(field.value, "yyyy-MM-dd")
-                                : ""
-                            }
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? parseISO(e.target.value)
-                                  : null,
-                              )
-                            }
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                            `}
-                            disabled={!camposHabilitados}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Email</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="maria.lopez@empresa.com"
-                            autoComplete="off"
-                            maxLength={60}
-                            {...field}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300 placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="sexo"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Sexo</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar un sexo" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            <SelectItem
-                              value={"F"}
-                              key={"F"}
-                              className="cursor-pointer hover:bg-gray-100 transition-colors"
-                            >
-                              Femenino
-                            </SelectItem>
-                            <SelectItem
-                              value={"M"}
-                              key={"M"}
-                              className="cursor-pointer hover:bg-gray-100 transition-colors"
-                            >
-                              Masculino
-                            </SelectItem>
-                            {/* {tipoDocumentos.map((tipo) => (
-                              <SelectItem
-                                value={tipo.id}
-                                key={tipo.id}
-                                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                              >
-                                {tipo.abreviatura} - {tipo.nombre}
-                              </SelectItem>
-                            ))} */}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="telefono"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Teléfono</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="997755662"
-                            autoComplete="off"
-                            maxLength={9}
-                            {...field}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300 placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="relative">
+                <div className="flex items-center gap-4 mb-6">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
+                    01
+                  </span>
+                  <h3 className="text-lg font-semibold text-slate-800">
+                    Información Personal
+                  </h3>
+                  <div className="h-px bg-gray-200 flex-1"></div>
                 </div>
-              </fieldset>
+              </div>
 
-              <div className="flex justify-end space-x-4 pt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+                <FormField
+                  control={form.control}
+                  name="idTipoDocumento"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col">
+                      <RequiredLabel>Tipo de Documento</RequiredLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={`
+                              w-full w-full-important
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-200"
+                                  : "focus:ring-blue-200 transition-shadow"
+                              }
+                            `}
+                          >
+                            <SelectValue placeholder="Seleccionar..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {tipoDocumentos.map((tipo) => (
+                            <SelectItem
+                              value={tipo.codigo!.toString()}
+                              key={tipo.codigo!.toString()}
+                            >
+                              {tipo.descripcion}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="numeroDocumento"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>N° de documento</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="12345678"
+                          autoComplete="off"
+                          maxLength={8}
+                          {...field}
+                          onKeyDown={async (e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              try {
+                                showToast("success", "Buscando datos");
+
+                                const idTipoDocumento =
+                                  form.getValues("idTipoDocumento");
+                                console.log({ idTipoDocumento });
+
+                                const tipoDocumento =
+                                  idTipoDocumento === "1" ? "DNI" : "CE";
+                                console.log({ tipoDocumento });
+
+                                const descGrupo = `grupo-${nombreGrupo}`;
+                                console.log({ descGrupo });
+
+                                const responsePersona = await getPersonaByApi(
+                                  tipoDocumento,
+                                  field.value,
+                                  descGrupo,
+                                );
+
+                                console.log(
+                                  "---- responsePersona PersonaForm ----",
+                                );
+                                console.log({ responsePersona });
+
+                                const { result, data, message } =
+                                  responsePersona;
+
+                                if (result && data) {
+                                  const persona = data as Persona;
+                                  console.log("---- data persona ----");
+                                  console.log({ persona });
+
+                                  const {
+                                    id,
+                                    nombres,
+                                    apellido_paterno,
+                                    apellido_materno,
+                                    fecha_nacimiento,
+                                  } = persona;
+
+                                  setIdPersona(id as number);
+
+                                  form.setValue("nombres", nombres as string);
+                                  form.setValue(
+                                    "apellidoPaterno",
+                                    apellido_paterno as string,
+                                  );
+                                  form.setValue(
+                                    "apellidoMaterno",
+                                    apellido_materno as string,
+                                  );
+
+                                  if (fecha_nacimiento) {
+                                    const fechaNacimientoParsed =
+                                      parseISO(fecha_nacimiento);
+                                    form.setValue(
+                                      "fechaNacimiento",
+                                      fechaNacimientoParsed,
+                                    );
+                                  }
+
+                                  setCamposHabilitados(false);
+                                  showToast("success", message as string);
+                                } else {
+                                  setCamposHabilitados(true);
+                                  showToast("warning", "No se encontraron ");
+                                }
+                              } catch (error) {
+                                setCamposHabilitados(true);
+                                showToast("error", "Error al crear persona");
+                              }
+                            }
+                          }}
+                          className={
+                            fieldState.invalid
+                              ? "border-red-500"
+                              : "focus:ring-blue-200"
+                          }
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="nombres"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Nombres</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="María Angélica"
+                          autoComplete="off"
+                          maxLength={40}
+                          {...field}
+                          disabled={!camposHabilitados}
+                          className={fieldState.invalid ? "border-red-500" : ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="apellidoPaterno"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Apellido Paterno</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Pérez"
+                          autoComplete="off"
+                          maxLength={40}
+                          {...field}
+                          disabled={!camposHabilitados}
+                          className={fieldState.invalid ? "border-red-500" : ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="apellidoMaterno"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Apellido Materno</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Vallejos"
+                          autoComplete="off"
+                          maxLength={40}
+                          {...field}
+                          disabled={!camposHabilitados}
+                          className={fieldState.invalid ? "border-red-500" : ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="fechaNacimiento"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Fecha de Nacimiento</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          value={
+                            field.value ? format(field.value, "yyyy-MM-dd") : ""
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? parseISO(e.target.value) : null,
+                            )
+                          }
+                          className={fieldState.invalid ? "border-red-500" : ""}
+                          disabled={!camposHabilitados}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Correo electrónico</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="maria.lopez@empresa.com"
+                          autoComplete="off"
+                          maxLength={60}
+                          {...field}
+                          className={fieldState.invalid ? "border-red-500" : ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="sexo"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col">
+                      <RequiredLabel>Sexo</RequiredLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={`
+                              w-full w-full-important
+                              ${
+                                fieldState.invalid
+                                  ? "border-red-500 focus:ring-red-200"
+                                  : "focus:ring-blue-200 transition-shadow"
+                              }
+                            `}
+                          >
+                            <SelectValue placeholder="Seleccionar..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="bg-gray-400 placeholder-gray-400">
+                          <SelectItem value="F" key="F">
+                            Femenino
+                          </SelectItem>
+                          <SelectItem value="M" key="M">
+                            Masculino
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="telefono"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Teléfono</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="997755662"
+                          autoComplete="off"
+                          maxLength={9}
+                          {...field}
+                          className={fieldState.invalid ? "border-red-500" : ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 hover: cursor-pointer text-white transition-colors duration-300"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 transition-all active:scale-95"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditMode ? "Actualizando..." : "Registrando..."}
-                    </>
-                  ) : isEditMode ? (
-                    "Actualizar"
+                    <Spinner className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    "Registrar"
+                    <Save className="h-4 w-4 mr-2" />
                   )}
+                  {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={() => resetForm()}
-                  // onClick={() => navigate("/trabajador-social")}
-                  className="hover:bg-gray-200 hover: cursor-pointer transition-colors duration-300"
+                  className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
+                  <XCircle className="h-4 w-4 mr-2" />
                   Cancelar
-                  {/* {isSubmitting ? "Cancelando..." : "Cancelar"} */}
                 </Button>
               </div>
             </form>

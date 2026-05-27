@@ -1,58 +1,55 @@
 import { Persona } from "./IPersona"
 import { DetalleParametro } from "./IDetalleParametro"
-// import { Programa } from "./IPrograma"
+import { Institucion } from "./IInstitucion"
+import { DetalleMatricula } from "./IDetalleMatricula";
+import { Programa } from "./IPrograma";
 
 export interface MatriculaDetalle {
     id: number;
     id_matricula: number;
     id_programa: number;
-    id_alumno: number;
     nombre_programa: string;
     nombre_alumno: string;
     promedio: number | null;
     estado: boolean;
+    programa?: Programa
 }
 
 export interface Matricula {
     id?: number
-    id_alumno?: number
-    id_sede?: number
-    programas?: number[]
-    // id_programa?: number
-    // id_formapago?: number
-    // id_estadopago?: number
-    id_metodopago?: number
+    id_persona?: number
     id_estadomatricula?: number
-    // id_evento?: number
-    // id_metodopago?: number
-    nombre_alumno?: string
-    nombre_sede?: string
-    nombre_metodopago?: string
-    nombre_estadomatricula?: string
-    // nombre_formapago?: string
-    // nombre_estadomatricula?: string
-    // nombre_programa?: string
-    // nombre_evento?: string
-    monto_matricula?: number
-    monto_modulo?: number
-    numero_modulos?: number
+    id_institucion?: number
     fecha_matricula?: string
     fecha_retiro?: string
     fecha_reserva?: string
     fecha_anula?: string
-    // pago_inicial?: number
-    // numero_operacion?: string
-
+    user_crea?: string
+    user_actualiza?: string
+    user_elimina?: string
     estado?: boolean
 
-    alumno?: Persona
-    sede?: DetalleParametro
-    // programa?: Programa
-    // formaPago?: DetalleParametro
-    // estadoPago?: DetalleParametro
-    metodoPago?: DetalleParametro
+    // Datos de matrícula
+    monto_matricula?: number
+    id_formapago_matricula?: number
+    numero_operacion_matricula?: string
+    monto_efectivo_matricula?: number
+    monto_operacion_matricula?: number
+
+    // Datos de módulo
+    numero_modulos?: number
+    monto_modulo?: number
+    id_formapago_modulo?: number
+    numero_operacion_modulo?: string
+    monto_efectivo_modulo?: number
+    monto_operacion_modulo?: number
+
+    detalles?: DetalleMatricula[]
+    programas?: number[]
+
+    persona?: Persona
     estadoMatricula?: DetalleParametro
-    detalles?: MatriculaDetalle[]
+    institucion?: Institucion
 }
 
 export interface MatriculaResponse {

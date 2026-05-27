@@ -2,6 +2,28 @@ import apiClient from "./apiClient";
 import { Matricula, MatriculaResponse } from "@/interfaces/IMatricula";
 import { padString } from "../utils/stringUtils"
 
+export const getAll = async (): Promise<MatriculaResponse> => {
+    try {
+        const urlApi = `/matriculas`
+
+        const response = await apiClient.get(urlApi)
+
+        console.log({ response })
+
+        const { data: { result, data, message } } = response
+
+        return {
+            result,
+            data,
+            message
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
 export const getAllPaginate = async (queryParams: string): Promise<MatriculaResponse> => {
     try {
         const urlApi = `/matriculas/paginate?${queryParams}`
@@ -10,35 +32,27 @@ export const getAllPaginate = async (queryParams: string): Promise<MatriculaResp
 
         const response = await apiClient.get(urlApi)
 
-        const { data: dataMatriculas } = response
+        console.log({ response })
 
-        console.log({ dataMatriculas })
+        const { data: { result, data, message } } = response
 
-        const { result, data, message } = dataMatriculas
-
-        const listaItems = data.data
+        const { current_page, per_page, last_page, total, next_page_url, prev_page_url } = data
 
         const paginationInfo = {
-            currentPage: data.current_page,
-            limit: data.per_page,
-            totalPages: data.last_page,
-            totalItems: data.total,
-            nextPage: data.next_page_url,
-            previousPage: data.prev_page_url
+            currentPage: current_page,
+            limit: per_page,
+            totalPages: last_page,
+            totalItems: total,
+            nextPage: next_page_url,
+            previousPage: prev_page_url
         };
 
         return {
             result,
-            data: listaItems,
+            data: data.data,
             message,
             pagination: paginationInfo
         }
-
-        // return {
-        //     result,
-        //     data,
-        //     message
-        // }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
@@ -125,16 +139,14 @@ export const getCertificado = async (queryParams: string) => {
 
         // Obtenemos los valores y los convertimos a número
         const id_m = Number(params.get('id_matricula')) || 0;
-        const id_a = Number(params.get('id_alumno')) || 0;
         const id_p = Number(params.get('id_programa')) || 0;
 
         // Aplicamos el padding usando tu utilitario stringUtils
         const mId = padString(4, id_m, 'left');
-        const aId = padString(4, id_a, 'left');
         const pId = padString(4, id_p, 'left');
 
         // let filename = `certificado.pdf`; // Nombre por defecto
-        let filename = `certificado_${mId}_${aId}_${pId}.pdf`;
+        let filename = `certificado_matricula_${mId}_programa_${pId}.pdf`;
 
         if (contentDisposition) {
             // Intenta extraer el nombre del archivo del header 'Content-Disposition'
@@ -160,6 +172,9 @@ export const getCertificado = async (queryParams: string) => {
 
 export const create = async (payload: Matricula): Promise<MatriculaResponse> => {
     try {
+        console.log('matriculaRepository method: create payload')
+        console.log({ payload })
+
         const response = await apiClient.post('/matriculas', payload)
 
         console.log('response create matriculaRepository')
@@ -173,6 +188,30 @@ export const create = async (payload: Matricula): Promise<MatriculaResponse> => 
             data
         }
 
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const update = async (id: number, payload: Matricula): Promise<MatriculaResponse> => {
+    try {
+        const urlApi = `${'/matriculas/'}${id}`
+
+        const response = await apiClient.patch(urlApi, payload)
+
+        console.log({ response })
+
+        const { data: { result, data, message, error, status } } = response
+
+        return {
+            result,
+            data,
+            message,
+            error,
+            status
+        }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)

@@ -32,115 +32,87 @@ import {
 import {
   createPrograma,
   getProgramaById,
+  updatePrograma,
 } from "../../services/programaService";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
-import { Programa, ProgramaResponse } from "@/interfaces/IPrograma";
-import { ArrowLeft } from "lucide-react";
+import { Programa, ProgramaResponse } from "../../interfaces/IPrograma";
+import { ArrowLeft, Save, XCircle } from "lucide-react";
 import { getDetalleFiltered } from "../../services/detalleParametroService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
-} from "@/interfaces/IDetalleParametro";
-import { ParametroClase } from "@/params/parametroClase";
+} from "../../interfaces/IDetalleParametro";
+import { ParametroClase } from "../../params/parametroClase";
+import { parseDate } from "@/utils/dateUtils";
 
 const MAX_FILE_SIZE = 2097152;
 
-const formSchema = z.object({
-  idSegmento: z
-    .string({
-      message: "Por favor seleccione un segmento",
-    })
-    .min(1, "Por favor seleccione un segmento"),
-  idTipoPrograma: z
-    .string({
-      message: "Por favor seleccione un tipo de programa",
-    })
-    .min(1, "Por favor seleccione un tipo de programa"),
-  // codigoOld: z.string().max(10).nullable().optional(),
-  nombre: z.string().min(10, {
-    message: "El nombre es obligatorio",
-  }),
-  sigla: z.string().min(2, {
-    message: "La sigla es obligatoria",
-  }),
-  fechaInicio: z
-    .date({
+const formSchema = z
+  .object({
+    idSegmento: z
+      .string({
+        message: "El segmento es requerido",
+      })
+      .min(1, "El segmento es requerido"),
+    idTipoPrograma: z
+      .string({
+        message: "El tipo de programa es requerido",
+      })
+      .min(1, "El tipo de programa es requerido"),
+    titulo: z.string().min(10, {
+      message: "El título es requerido",
+    }),
+    fechaInicio: z.date({
       message: "La fecha de inicio es requerida",
-    })
-    .nullable(),
-  fechaFinal: z
-    .date({
+      // invalid_type_error: "Formato de fecha inválido",
+    }),
+    fechaFinal: z.date({
       message: "La fecha final es requerida",
-    })
-    .nullable(),
-  duracion: z.string().min(5, {
-    message: "La duración es obligatoria",
-  }),
-  horasAcademicas: z
-    .number({
-      message: "Las horas académicas es obligatorio",
-    })
-    .nullable(),
-  modulos: z
-    .number({
-      message: "La cantidad de módulos es obligatoria",
-    })
-    .int("Debe ser un número entero")
-    .min(1, {
-      message: "Ingrese un valor mayor que cero (min. 1)",
+      // invalid_type_error: "Formato de fecha inválido",
     }),
-  creditos: z
-    .number({
-      message: "La cantidad de créditos es obligatoria",
-    })
-    .int("Debe ser un número entero")
-    .min(1, {
-      message: "Ingrese un valor mayor que cero (min. 1)",
-    }),
-
-  // Esquema para el archivo
-  plan_file: z
-    .instanceof(File)
-    .nullable()
-    .optional()
-    .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      `El archivo debe ser menor a 2MB`,
-    )
-    .refine(
-      (file) => !file || file.type === "application/pdf",
-      `El archivo debe ser un PDF`,
-    ),
-  modalidad: z
-    .string({
-      message: "Por favor seleccione una modalidad",
-    })
-    .min(1, "Por favor seleccione una modalidad"),
-  precio: z
-    .number({
-      message: "El precio debe ser obligatorio",
-    })
-    .int("Debe ser un número entero")
-    .nullable()
-    .optional(),
-  // precio: z
-  //   .number({
-  //     message: "El precio es obligatorio",
-  //   })
-  //   .int("Debe ser un número entero")
-  //   .min(1, {
-  //     message: "Ingrese un valor mayor que cero (min. 1)",
-  //   }),
-});
+    duracion: z.string().optional().nullable(),
+    horasAcademicas: z
+      .number({
+        message: "Las horas académicas son requeridas",
+      })
+      .nullable(),
+    modulos: z
+      .number({ message: "Debe ser un número" })
+      .min(0, { message: "El valor mínimo es 0" }),
+    plan_file: z
+      .instanceof(File)
+      .nullable()
+      .optional()
+      .refine(
+        (file) => !file || file.size <= MAX_FILE_SIZE,
+        `El archivo debe ser menor a 2MB`,
+      )
+      .refine(
+        (file) => !file || file.type === "application/pdf",
+        `El archivo debe ser un PDF`,
+      ),
+    modalidad: z
+      .string({
+        message: "La modalidad es requerida",
+      })
+      .min(1, "La modalidad es requerida"),
+  })
+  .superRefine((data, ctx) => {
+    if (data.fechaFinal <= data.fechaInicio) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La fecha debe ser posterior a la fecha de inicio",
+        path: ["fechaFinal"],
+      });
+    }
+  });
 
 type TPrograma = {
   idSegmento?: string;
   idTipoPrograma?: string;
-  // codigoOld?: string;
-  nombre?: string;
-  sigla?: string;
+  titulo?: string;
   fechaInicio?: Date | null;
   fechaFinal?: Date | null;
   duracion?: string;
@@ -148,7 +120,7 @@ type TPrograma = {
   modulos?: number;
   creditos?: number;
   modalidad?: string;
-  precio?: number;
+  plan_file?: null;
 };
 
 export const ProgramaForm = () => {
@@ -160,6 +132,9 @@ export const ProgramaForm = () => {
 
   const isEditMode = !!id;
 
+  const inputErrorClass = (invalid: boolean) =>
+    invalid ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500";
+
   const handleGoBack = () => {
     const urlBack = `/programa-academico/`;
     navigate(urlBack);
@@ -170,35 +145,32 @@ export const ProgramaForm = () => {
     defaultValues: {
       idSegmento: "",
       idTipoPrograma: "",
-      // codigoOld: "",
-      nombre: "",
-      sigla: "",
-      fechaInicio: null,
-      fechaFinal: null,
+      titulo: "",
+      fechaInicio: new Date(),
+      fechaFinal: new Date(),
       duracion: "",
       horasAcademicas: 0,
       modulos: 0,
-      creditos: 0,
       modalidad: "VIRTUAL",
-      precio: 0,
+      plan_file: null,
     },
   });
+
+  const watchFechaInicio = form.watch("fechaInicio");
+  const watchFechaFinal = form.watch("fechaFinal");
 
   const resetForm = () => {
     const dataForm: TPrograma = {
       idSegmento: "",
       idTipoPrograma: "",
-      // codigoOld: "",
-      nombre: "",
-      sigla: "",
-      fechaInicio: null,
-      fechaFinal: null,
+      titulo: "",
+      fechaInicio: new Date(),
+      fechaFinal: new Date(),
       duracion: "",
       horasAcademicas: 0,
       modulos: 0,
-      creditos: 0,
       modalidad: "VIRTUAL",
-      precio: 0,
+      plan_file: null,
     };
 
     form.reset(dataForm);
@@ -216,64 +188,37 @@ export const ProgramaForm = () => {
       const {
         idSegmento,
         idTipoPrograma,
-        // codigoOld,
-        nombre,
-        sigla,
+        titulo,
         fechaInicio,
         fechaFinal,
         duracion,
         horasAcademicas,
         modulos,
-        creditos,
         plan_file,
         modalidad,
-        precio,
       } = values;
 
-      let fechaInicioStr: string = "";
-      if (fechaInicio) {
-        const fechaInicioToString: string = fechaInicio.toISOString();
-        const partsFechaInicio: string[] = fechaInicioToString.split("T");
-        fechaInicioStr = partsFechaInicio[0];
+      const fechaInicioStr = format(fechaInicio, "yyyy-MM-dd");
+      const fechaFinalStr = format(fechaFinal, "yyyy-MM-dd");
+
+      console.log({ fechaInicioStr });
+      console.log({ fechaFinalStr });
+
+      if (isEditMode) {
+        formData.append("_method", "PATCH");
       }
-
-      let fechaFinalStr: string = "";
-      if (fechaFinal) {
-        const fechaFinalToString: string = fechaFinal.toISOString();
-        const partsFechaFinal: string[] = fechaFinalToString.split("T");
-        fechaFinalStr = partsFechaFinal[0];
-      }
-
-      // const fechaInicioToString: string | null = fechaInicio
-      //   ? fechaInicio.toISOString()
-      //   : null;
-      // const partsFechaInicio: string[] = fechaInicioToString!.split("T");
-      // const fechaInicioStr: string = partsFechaInicio[0];
-
-      // const fechaFinalToString: string | null = fechaFinal
-      //   ? fechaFinal.toISOString()
-      //   : null;
-      // const partsFechaFinal: string[] = fechaFinalToString!.split("T");
-      // const fechaFinalStr: string = partsFechaFinal[0];
-
-      // console.log({ fechaInicioToString });
-      // console.log({ fechaFinalToString });
 
       formData.append("id_segmento", idSegmento);
       formData.append("id_tipoprograma", idTipoPrograma);
-      // formData.append("codigo_old", codigoOld || "");
-      formData.append("nombre", nombre);
-      formData.append("sigla", sigla);
+      formData.append("titulo", titulo);
       formData.append("fecha_inicio", fechaInicioStr);
       formData.append("fecha_final", fechaFinalStr);
       formData.append("duracion", duracion);
-      formData.append("horas_academicas", horasAcademicas.toString());
+      formData.append("horas_academicas", (horasAcademicas ?? 0).toString());
       formData.append("numero_modulos", modulos.toString());
-      formData.append("creditos", creditos.toString());
       formData.append("is_vigente", "1");
       formData.append("estado", "1");
       formData.append("modalidad", modalidad || "");
-      formData.append("precio_modulo", precio.toString());
 
       // Agregar el archivo si existe
       if (plan_file) {
@@ -283,18 +228,35 @@ export const ProgramaForm = () => {
       console.log("--- formData ----");
       console.log({ formData });
 
-      const response = await createPrograma(formData, {
+      let response = null;
+
+      const config = {
         headers: {
           "Content-Type": "multipart/form-data",
         },
-      });
-      console.log("response create", response);
+      };
+
+      console.log({ isEditMode });
+
+      if (isEditMode) {
+        console.log("---- actualizar programa ----");
+        response = await updatePrograma(+id, formData, config);
+      } else {
+        console.log("---- crear programa ----");
+        response = await createPrograma(formData, config);
+      }
+
+      console.log("response create/update", response);
       const { result, message, data } = response as ProgramaResponse;
       console.log({ result });
       console.log({ message });
       console.log({ data });
       if (result && data) {
-        showToast("success", message as string);
+        showToast(
+          "success",
+          message ||
+            (isEditMode ? "Programa actualizado" : "Programa registrado"),
+        );
         navigate(`/programa-academico`);
       } else {
         showToast("error", message || "Error al registrar el programa");
@@ -302,10 +264,37 @@ export const ProgramaForm = () => {
       }
     } catch (error) {
       console.error("Error al registrar programa", error);
-      // showToast("error", error);
       showToast("error", "Error al registrar el programa");
     }
   };
+
+  useEffect(() => {
+    if (watchFechaInicio && watchFechaFinal) {
+      // Cálculo de diferencia de meses
+      const start = new Date(watchFechaInicio);
+      const end = new Date(watchFechaFinal);
+
+      let months = (end.getFullYear() - start.getFullYear()) * 12;
+      months -= start.getMonth();
+      months += end.getMonth();
+
+      const diffMeses = months <= 0 ? 0 : months;
+
+      if (diffMeses > 0) {
+        const mesesFormateados =
+          diffMeses < 10 ? `0${diffMeses}` : `${diffMeses}`;
+
+        // Actualizar campos automáticamente
+        form.setValue("duracion", `${mesesFormateados} MESES`, {
+          shouldValidate: true,
+        });
+        form.setValue("modulos", diffMeses, { shouldValidate: true });
+      } else {
+        form.setValue("duracion", "", { shouldValidate: true });
+        form.setValue("modulos", 0, { shouldValidate: true });
+      }
+    }
+  }, [watchFechaFinal, watchFechaInicio, form]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -314,7 +303,7 @@ export const ProgramaForm = () => {
         let listTipoProgramas: DetalleParametro[] = [];
 
         // Obteniendo datos para crear el listado de segmentos
-        const filtersSegmentos: DetalleParametroFilters = {
+        const filters: DetalleParametroFilters = {
           parametro_clase: ParametroClase.SEGMENTO,
           en_persona: false,
           en_empresa: false,
@@ -322,7 +311,7 @@ export const ProgramaForm = () => {
         };
 
         const [responseSegmentos] = await Promise.all([
-          getDetalleFiltered(filtersSegmentos),
+          getDetalleFiltered(filters),
         ]);
 
         console.log({ responseSegmentos });
@@ -337,7 +326,7 @@ export const ProgramaForm = () => {
         setSegmentos(listSegmentos);
 
         // Obteniendo datos para crear el listado de tipo de programas
-        const filtersTipoProgramas: DetalleParametroFilters = {
+        const filtersTipoPrograma: DetalleParametroFilters = {
           parametro_clase: ParametroClase.TIPO_PROGRAMA,
           en_persona: false,
           en_empresa: false,
@@ -345,7 +334,7 @@ export const ProgramaForm = () => {
         };
 
         const [responseTipoProgramas] = await Promise.all([
-          getDetalleFiltered(filtersTipoProgramas),
+          getDetalleFiltered(filtersTipoPrograma),
         ]);
 
         console.log({ responseTipoProgramas });
@@ -359,11 +348,11 @@ export const ProgramaForm = () => {
 
         setTipoProgramas(listTipoProgramas);
 
-        if (id) {
+        if (isEditMode) {
           const responsePrograma = await getProgramaById(+id);
           console.log({ responsePrograma });
 
-          const { result, data, message } = responsePrograma;
+          const { result, data } = responsePrograma;
 
           if (result && data) {
             const programa = data as Programa;
@@ -371,27 +360,16 @@ export const ProgramaForm = () => {
             console.log({ programa });
 
             form.reset({
-              // codigoOld: programa.codigo_old ?? "",
-              idSegmento: programa.id_segmento ?? "",
-              idTipoPrograma: programa.id_tipoprograma ?? "",
-              nombre: programa.nombre ?? "",
-              sigla: programa.sigla ?? "",
-              fechaInicio: programa.fecha_inicio
-                ? new Date(programa.fecha_inicio as string)
-                : null,
-              fechaFinal: programa.fecha_final
-                ? new Date(programa.fecha_final as string)
-                : null,
-              horasAcademicas: programa.horas_academicas ?? 0,
-              duracion: programa.duracion ?? "",
-              modulos: programa.numero_modulos ?? 0,
-              creditos: programa.creditos ?? 0,
-              modalidad: programa.modalidad ?? "VIRTUAL",
-              precio: programa.precio ?? 0,
+              idSegmento: programa.id_segmento,
+              idTipoPrograma: programa.id_tipoprograma,
+              titulo: programa.titulo,
+              fechaInicio: parseDate(programa.fecha_inicio),
+              fechaFinal: parseDate(programa.fecha_final),
+              horasAcademicas: programa.horas_academicas,
+              duracion: programa.duracion,
+              modulos: programa.numero_modulos,
+              modalidad: programa.modalidad,
             });
-          } else {
-            showToast("error", message || "Programa no encontrado");
-            navigate("/programa-academico/nuevo");
           }
         }
       } catch (error) {
@@ -405,547 +383,320 @@ export const ProgramaForm = () => {
 
   return (
     <>
-      <Card className="shadow-lg border-gray-200">
-        <CardHeader className="border-b border-gray-200 p-4 sm:p-6 flex flex-row items-center justify-between">
-          <div className="shrink min-w-0">
-            <CardTitle className="text-xl font-bold text-gray-800 truncate">
-              {isEditMode
-                ? `Actualización de programa`
-                : `Registro de programa`}
+      <Card className="shadow-xl border-none bg-white">
+        <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
+          <div className="space-y-1">
+            <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
+              {isEditMode ? `Editar programa` : `Nuevo Registro de programa`}
             </CardTitle>
-            <CardDescription className="text-sm text-gray-500">
+            <CardDescription className="text-slate-500 font-medium">
               {isEditMode
-                ? `Formulario de actualización de programa`
-                : `Complete el formulario para registrar un programa`}
+                ? `Actualización de información de programa`
+                : `Complete la informaicón para registrar un programa`}
             </CardDescription>
           </div>
-          <button
+          <Button
+            variant="ghost"
             onClick={handleGoBack}
-            className="
-              flex items-center text-sm font-semibold 
-              text-blue-600 
-              hover:text-blue-800 
-              hover:bg-blue-50 
-              transition-colors 
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 
-              rounded-md p-2 ml-4 
-              cursor-pointer
-            "
-            aria-label="Volver al listado"
+            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
           >
-            <ArrowLeft className="h-4 w-4 mr-1" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
-          </button>
+          </Button>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="px-8">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <fieldset className="border border-gray-300 p-4 rounded-md">
-                <legend className="text-base font-semibold text-gray-800 px-2">
-                  Información de programa
-                </legend>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <FormField
-                    control={form.control}
-                    name="idSegmento"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Segmento</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar segmento" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            {segmentos.map((segmento) => (
-                              <SelectItem
-                                value={segmento.codigo!.toString()}
-                                key={segmento.codigo!.toString()}
-                                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                              >
-                                {segmento.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="idTipoPrograma"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Tipo Programa</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar tipo de programa" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            {tipoProgramas.map((tipoPrograma) => (
-                              <SelectItem
-                                value={tipoPrograma.codigo!.toString()}
-                                key={tipoPrograma.codigo!.toString()}
-                                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                              >
-                                {tipoPrograma.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  {/* <FormField
-                    control={form.control}
-                    name="codigoOld"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Código Anterior</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="COD039"
-                            autoComplete="off"
-                            maxLength={10}
-                            {...field}
-                            value={field.value ?? ""}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
-
-                  <FormField
-                    control={form.control}
-                    name="nombre"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Nombre</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="ADMINISTRACIÓN EJECUTIVA"
-                            autoComplete="off"
-                            maxLength={100}
-                            {...field}
-                            value={field.value ?? ""}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="sigla"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Sigla</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="AE"
-                            autoComplete="off"
-                            maxLength={10}
-                            {...field}
-                            value={field.value ?? ""}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="fechaInicio"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Fecha Inicio</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={
-                              field.value
-                                ? format(field.value, "yyyy-MM-dd")
-                                : ""
-                            }
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? parseISO(e.target.value)
-                                  : null,
-                              )
-                            }
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="fechaFinal"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Fecha Final</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            type="date"
-                            value={
-                              field.value
-                                ? format(field.value, "yyyy-MM-dd")
-                                : ""
-                            }
-                            onChange={(e) =>
-                              field.onChange(
-                                e.target.value
-                                  ? parseISO(e.target.value)
-                                  : null,
-                              )
-                            }
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="duracion"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Duración</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="12 MESES"
-                            autoComplete="off"
-                            maxLength={20}
-                            {...field}
-                            value={field.value ?? ""}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="modulos"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Módulos</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="12"
-                            autoComplete="off"
-                            type="number"
-                            min={1}
-                            {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              field.onChange(
-                                value === "" ? null : parseInt(value, 10),
-                              );
-                            }}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="creditos"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Créditos</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="24"
-                            autoComplete="off"
-                            type="number"
-                            min={1}
-                            {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              field.onChange(
-                                value === "" ? null : parseInt(value, 10),
-                              );
-                            }}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="modalidad"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Modalidad</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar modalidad" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            <SelectItem
-                              value={"VIRTUAL"}
-                              key={"VIRTUAL"}
-                              className="cursor-pointer hover:bg-gray-100 transition-colors"
-                            >
-                              VIRTUAL
-                            </SelectItem>
-                            <SelectItem
-                              value={"PRESENCIAL"}
-                              key={"PRESENCIAL"}
-                              className="cursor-pointer hover:bg-gray-100 transition-colors"
-                            >
-                              PRESENCIAL
-                            </SelectItem>
-                            <SelectItem
-                              value={"MIXTA"}
-                              key={"MIXTRA"}
-                              className="cursor-pointer hover:bg-gray-100 transition-colors"
-                            >
-                              MIXTA
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="precio"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Precio</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="120"
-                            autoComplete="off"
-                            type="number"
-                            // min={1}
-                            {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) => {
-                              const value = e.target.value;
-                              field.onChange(
-                                value === "" ? null : parseInt(value, 10),
-                              );
-                            }}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="plan_file"
-                    render={({ field, fieldState }) => (
-                      <FormItem className="md:col-span-2">
-                        <RequiredLabel>Plan de estudios</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            id="plan_file"
-                            type="file"
-                            accept=".pdf"
-                            onChange={(e) => {
-                              // Accede al primer archivo seleccionado
-                              const file = e.target.files?.[0];
-                              // Llama a field.onChange con el objeto File (o null)
-                              field.onChange(file ?? null);
-                            }}
-                            className={`
-                                flex h-10 w-full rounded-md border border-input bg-white px-3 py-2 text-sm text-gray-700 shadow-sm transition-all duration-300
-                                file:mr-4 file:py-1 file:px-3
-                                file:rounded-full file:border-0
-                                file:text-sm file:font-semibold
-                                file:bg-blue-50 file:text-blue-700
-                                hover:file:bg-blue-100
-                                hover:border-blue-400
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                            `}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          Sube el documento del plan de estudios (PDF, Máx. 2MB)
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="relative">
+                <div className="flex items-center gap-4 mb-6">
+                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
+                    01
+                  </span>
+                  <h3 className="text-lg font-semibold text-slate-800">
+                    Información de registro
+                  </h3>
+                  <div className="h-px bg-gray-200 flex-1"></div>
                 </div>
-              </fieldset>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+                <FormField
+                  control={form.control}
+                  name="idSegmento"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col">
+                      <RequiredLabel>Segmento</RequiredLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
+                          >
+                            <SelectValue placeholder="Seleccionar..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {segmentos.map((segmento) => (
+                            <SelectItem
+                              value={segmento.codigo!.toString()}
+                              key={segmento.codigo!.toString()}
+                            >
+                              {segmento.nombre}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <div className="flex justify-end space-x-4 pt-4">
+                <FormField
+                  control={form.control}
+                  name="idTipoPrograma"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col">
+                      <RequiredLabel>Tipo Programa</RequiredLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
+                          >
+                            <SelectValue placeholder="Seleccionar..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {tipoProgramas.map((tipoPrograma) => (
+                            <SelectItem
+                              value={tipoPrograma.codigo!.toString()}
+                              key={tipoPrograma.codigo!.toString()}
+                            >
+                              {tipoPrograma.nombre}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="titulo"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Título</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="ADMINISTRACIÓN EJECUTIVA"
+                          autoComplete="off"
+                          maxLength={100}
+                          {...field}
+                          value={field.value ?? ""}
+                          className={inputErrorClass(fieldState.invalid)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="fechaInicio"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Fecha Inicio</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          value={
+                            field.value instanceof Date &&
+                            !isNaN(field.value.getTime())
+                              ? format(field.value, "yyyy-MM-dd")
+                              : ""
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? parseISO(e.target.value) : null,
+                            )
+                          }
+                          className={inputErrorClass(fieldState.invalid)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="fechaFinal"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Fecha Final</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          type="date"
+                          value={
+                            field.value instanceof Date &&
+                            !isNaN(field.value.getTime())
+                              ? format(field.value, "yyyy-MM-dd")
+                              : ""
+                          }
+                          onChange={(e) =>
+                            field.onChange(
+                              e.target.value ? parseISO(e.target.value) : null,
+                            )
+                          }
+                          className={inputErrorClass(fieldState.invalid)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="duracion"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <label className="text-sm font-medium text-slate-700">
+                        Duración
+                      </label>
+                      {/* <RequiredLabel>Duración</RequiredLabel> */}
+                      <FormControl>
+                        <Input
+                          placeholder="12 MESES"
+                          autoComplete="off"
+                          maxLength={20}
+                          {...field}
+                          value={field.value ?? ""}
+                          className={inputErrorClass(fieldState.invalid)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="modulos"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <label className="text-sm font-medium text-slate-700">
+                        Módulos
+                      </label>
+                      {/* <RequiredLabel>Módulos</RequiredLabel> */}
+                      <FormControl>
+                        <Input
+                          placeholder="12"
+                          autoComplete="off"
+                          type="number"
+                          min={0}
+                          {...field}
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            field.onChange(
+                              value === "" ? null : parseInt(value, 10),
+                            );
+                          }}
+                          className={inputErrorClass(fieldState.invalid)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="modalidad"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="flex flex-col">
+                      <RequiredLabel>Modalidad</RequiredLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value ?? ""}
+                      >
+                        <FormControl>
+                          <SelectTrigger
+                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
+                          >
+                            <SelectValue placeholder="Seleccionar..." />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="VIRTUAL" key="VIRTUAL">
+                            VIRTUAL
+                          </SelectItem>
+                          <SelectItem value="PRESENCIAL" key="PRESENCIAL">
+                            PRESENCIAL
+                          </SelectItem>
+                          <SelectItem value="MIXTA" key="MIXTRA">
+                            MIXTA
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="plan_file"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="md:col-span-2">
+                      <RequiredLabel>Plan de estudios</RequiredLabel>
+                      <FormControl>
+                        <Input
+                          id="plan_file"
+                          type="file"
+                          accept=".pdf"
+                          onChange={(e) =>
+                            field.onChange(e.target.files?.[0] ?? null)
+                          }
+                          className={`cursor-pointer file:bg-blue-50 file:text-blue-700 file:rounded-md hover:file:bg-blue-100 ${inputErrorClass(fieldState.invalid)}`}
+                        />
+                      </FormControl>
+                      <FormDescription>PDF (Máx. 2MB)</FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 hover: cursor-pointer text-white transition-colors duration-300"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 transition-all active:scale-95"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                      {isEditMode ? "Actualizando..." : "Registrando..."}
-                    </>
-                  ) : isEditMode ? (
-                    "Actualizar"
+                    <Spinner className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    "Registrar"
+                    <Save className="h-4 w-4 mr-2" />
                   )}
+                  {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
                 </Button>
                 <Button
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={() => resetForm()}
-                  // onClick={() => navigate("/trabajador-social")}
-                  className="hover:bg-gray-200 hover: cursor-pointer transition-colors duration-300"
+                  className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
                 >
+                  <XCircle className="h-4 w-4 mr-2" />
                   Cancelar
-                  {/* {isSubmitting ? "Cancelando..." : "Cancelar"} */}
                 </Button>
               </div>
             </form>

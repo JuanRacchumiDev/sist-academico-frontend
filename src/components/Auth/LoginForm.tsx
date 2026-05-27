@@ -75,8 +75,6 @@ export const LoginForm = ({ onLoginSuccess }: LoginFormProps) => {
           htmlFor="email"
           className="block text-sm font-semibold text-gray-700 mb-1"
         >
-          {" "}
-          {/* block y mb-1 para mejor espaciado */}
           Email
         </label>
         <input

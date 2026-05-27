@@ -68,8 +68,17 @@ export const createPrograma = async (
     }
 }
 
-export const updatePrograma = async (id: number, payload: Programa) => {
-    const response = await update(id, payload)
+export const updatePrograma = async (id: number, payload: FormData | Programa, config?: AxiosRequestConfig) => {
+    console.log('---- updatePrograma programaService ----')
+    console.log({ id })
+    console.log({ payload })
+    console.log({ config })
+
+    console.log(typeof id)
+    console.log(typeof payload)
+    console.log(typeof config)
+
+    const response = await update(id, payload, config)
 
     return {
         ...response

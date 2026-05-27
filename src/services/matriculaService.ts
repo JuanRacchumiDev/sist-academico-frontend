@@ -1,13 +1,23 @@
 import { Matricula } from "../interfaces/IMatricula"
 import {
+    getAll,
     getAllPaginate,
     getById,
     getFicha,
     getCertificado,
-    create
+    create,
+    update
 } from "../repositories/matriculaRepository"
 
-export const getMatriculas = async (
+export const getMatriculas = async () => {
+    const response = await getAll()
+
+    return {
+        ...response
+    }
+}
+
+export const getMatriculasPaginate = async (
     page: number,
     limit: number,
     filters: {}
@@ -52,12 +62,10 @@ export const getFichaById = async (id: number) => {
 
 export const getCertificadoByParams = async (
     id_matricula: number,
-    id_alumno: number,
     id_programa: number
 ) => {
     const queryParams = new URLSearchParams({
         id_matricula: id_matricula.toString(),
-        id_alumno: id_alumno.toString(),
         id_programa: id_programa.toString()
     }).toString()
 
@@ -70,6 +78,14 @@ export const getCertificadoByParams = async (
 
 export const createMatricula = async (payload: Matricula) => {
     const response = await create(payload)
+
+    return {
+        ...response
+    }
+}
+
+export const updateMatricula = async (id: number, payload: Matricula) => {
+    const response = await update(id, payload)
 
     return {
         ...response

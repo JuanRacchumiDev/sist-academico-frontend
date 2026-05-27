@@ -211,47 +211,6 @@ export const ModuloForm = () => {
                   Información de módulo
                 </legend>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {/* <FormField
-                    control={form.control}
-                    name="idPrograma"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Programa</RequiredLabel>
-                        <Select
-                          onValueChange={field.onChange}
-                          value={field.value ?? ""}
-                        >
-                          <FormControl>
-                            <SelectTrigger
-                              className={`
-                                ${
-                                  fieldState.invalid
-                                    ? "border-red-500 focus:ring-red-500"
-                                    : "focus:ring-blue-500"
-                                }
-                                  focus:ring-2 focus:ring-offset-2 transition-all duration-300 cursor-pointer
-                              `}
-                            >
-                              <SelectValue placeholder="Seleccionar programa" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent className="bg-gray-400 placeholder-gray-400">
-                            {programas.map((programa) => (
-                              <SelectItem
-                                value={programa.id!.toString()}
-                                key={programa.id!.toString()}
-                                className="cursor-pointer hover:bg-gray-100 transition-colors"
-                              >
-                                {programa.nombre}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
-
                   <FormField
                     control={form.control}
                     name="idPrograma"
@@ -263,20 +222,18 @@ export const ModuloForm = () => {
                           options={programas}
                           value={field.value}
                           onChange={field.onChange}
-                          displayKey="nombre"
+                          displayKey="titulo"
                           valueKey="id"
                           searchKeys={[
-                            "nombre",
+                            "titulo",
                             "id_segmento",
                             "id_tipoprograma",
                           ]}
-                          // disabled={isFormDisabled || isModeLetter}
-                          // disabled={isDisabled}
                           isInvalid={fieldState.invalid}
                           renderOption={(programa) => (
                             <div className="flex flex-col gap-0.5">
                               <span className="font-semibold text-gray-900 truncate">
-                                {programa.nombre}
+                                {programa.titulo}
                               </span>
                               <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
                                 <span className="bg-gray-100 px-1.5 py-0.5 rounded border">

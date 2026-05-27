@@ -21,10 +21,14 @@ export const getPersonasPaginate = async (
     nombreGrupo: string,
     filters: {}
 ) => {
+    console.log('---- inicio recibir datos en personaService ----');
+
     console.log({ page })
     console.log({ limit })
     console.log({ nombreGrupo })
     console.log({ filters })
+
+    console.log('---- fin recibir datos en personaService ----');
 
     // Construir la cadena de query parameters
     const queryParams = new URLSearchParams({
@@ -38,6 +42,10 @@ export const getPersonasPaginate = async (
     console.log({ queryParams })
 
     const response = await getAllPaginate(nombreGrupo, queryParams)
+
+    console.log('---- response in personaService ----')
+
+    console.log({ response })
 
     return {
         ...response

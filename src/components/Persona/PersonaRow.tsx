@@ -26,14 +26,9 @@ import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 interface Props {
   persona: Persona;
   grupo: string;
-  // onStatusChange?: (personaId: number) => void;
 }
 
-export const PersonaRow: React.FC<Props> = ({
-  persona,
-  grupo,
-  // onStatusChange,
-}) => {
+export const PersonaRow: React.FC<Props> = ({ persona, grupo }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -48,10 +43,6 @@ export const PersonaRow: React.FC<Props> = ({
     action.charAt(0).toUpperCase() + action.slice(1)
   } Empresa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la persona: <strong>${persona.nombre_completo}</strong>?`;
-
-  console.log({ persona });
-
-  console.log({ grupo });
 
   const handleShowDetail = () => {
     navigate(`/personas/${grupo}/editar/${persona.id}`);
@@ -95,25 +86,35 @@ export const PersonaRow: React.FC<Props> = ({
     <>
       <TableRow
         key={persona.id}
-        className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
+        className="hover:bg-blue-50/50 hover:cursor-pointer transition-colors duration-200 border-b border-slate-100"
       >
-        <TableCell className="py-3">{persona.nombre_completo}</TableCell>
-        <TableCell className="py-3">{persona.tipo_documento?.nombre}</TableCell>
-        <TableCell className="py-3">{persona.numero_documento}</TableCell>
-        <TableCell className="py-3">
+        <TableCell className="py-3 px-4 text-xs font-medium text-slate-700 whitespace-normal wrap-break-words">
+          {persona.nombre_completo}
+        </TableCell>
+        <TableCell className="py-3 px-4 text-xs text-slate-600 whitespace-normal wrap-break-words">
+          {persona.tipo_documento?.nombre}
+        </TableCell>
+        <TableCell className="py-3 px-4 text-xs text-slate-600 whitespace-normal wrap-break-words">
+          {persona.numero_documento}
+        </TableCell>
+        <TableCell className="py-3 px-4 text-xs text-slate-600 whitespace-normal wrap-break-words">
+          {persona.email}
+        </TableCell>
+        <TableCell className="py-3 px-4 text-xs text-slate-600 whitespace-normal wrap-break-words">
+          {persona.telefono}
+        </TableCell>
+        <TableCell className="py-3 px-2">
           {persona.estado ? (
-            <CircleCheck className="text-green-500 w-5 h-5" />
+            <CircleCheck className="text-green-500 w-4 h-4" />
           ) : (
-            <CircleX className="text-red-500 w-5 h-5" />
+            <CircleX className="text-red-500 w-4 h-4" />
           )}
         </TableCell>
-        <TableCell className="py-3">
-          {/* w-72 border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 */}
+        <TableCell className="py-3 px-4 text-right">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger
               asChild
               className="focus:outline-none focus:ring-2 z-40 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
-              // className="bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
             >
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Abrir menú de acciones</span>
@@ -146,10 +147,6 @@ export const PersonaRow: React.FC<Props> = ({
                 <ActionIcon className="h-4 w-4" />
                 <span>{actionText} Persona</span>
               </DropdownMenuItem>
-
-              {/* <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 transition-colors">
-              Eliminar
-            </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
