@@ -5,6 +5,9 @@ import {
     getById,
     getFicha,
     getCertificado,
+    getCrogramaPagos,
+    getModulosPorPagar,
+    getModulosPagados,
     create,
     update
 } from "../repositories/matriculaRepository"
@@ -70,6 +73,36 @@ export const getCertificadoByParams = async (
     }).toString()
 
     const response = await getCertificado(queryParams)
+
+    return {
+        ...response
+    }
+}
+
+export const getCronogramaPagosByParams = async (
+    id_matricula: number
+) => {
+    const queryParams = new URLSearchParams({
+        id_matricula: id_matricula.toString()
+    }).toString()
+
+    const response = await getCrogramaPagos(queryParams)
+
+    return {
+        ...response
+    }
+}
+
+export const getModulosPendientes = async (id: number) => {
+    const response = await getModulosPorPagar(id);
+
+    return {
+        ...response
+    }
+}
+
+export const getModulosCancelados = async (id: number) => {
+    const response = await getModulosPagados(id);
 
     return {
         ...response

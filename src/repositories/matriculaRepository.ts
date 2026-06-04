@@ -1,6 +1,7 @@
 import apiClient from "./apiClient";
 import { Matricula, MatriculaResponse } from "@/interfaces/IMatricula";
 import { padString } from "../utils/stringUtils"
+import { ModulosPorPagarResponse, ModulosPagadosResponse } from "@/interfaces/IPago";
 
 export const getAll = async (): Promise<MatriculaResponse> => {
     try {
@@ -167,6 +168,114 @@ export const getCertificado = async (queryParams: string) => {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const getCrogramaPagos = async (queryParams: string) => {
+    try {
+        const urlApi = `/matriculas/cronograma-pagos?${queryParams}`
+
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi, {
+            responseType: 'blob'
+        });
+
+        const fileBlob = response.data
+
+        // El nombre del archivo puede venir en los headers, si el backend lo envía
+        const contentDisposition = response.headers['content-disposition'];
+
+        const params = new URLSearchParams(queryParams);
+
+        // Obtenemos los valores y los convertimos a número
+        const id_m = Number(params.get('id_matricula')) || 0;
+
+        // Aplicamos el padding usando tu utilitario stringUtils
+        const mId = padString(4, id_m, 'left');
+
+        // let filename = `certificado.pdf`; // Nombre por defecto
+        let filename = `cronograma_pagos_matricula_${mId}.pdf`;
+
+        if (contentDisposition) {
+            // Intenta extraer el nombre del archivo del header 'Content-Disposition'
+            const filenameMatch = contentDisposition.match(/filename="(.+)"/i);
+            if (filenameMatch && filenameMatch[1]) {
+                filename = filenameMatch[1];
+            }
+        }
+
+        return {
+            result: true,
+            data: fileBlob, // Retornamos el Blob
+            filename: filename, // Retornamos el nombre del archivo
+            message: "Cronograma de pagos generado exitosamente."
+        };
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const getModulosPorPagar = async (id: number): Promise<ModulosPorPagarResponse> => {
+    try {
+        const urlApi = `${'/matriculas/'}${id}${'/modulos-por-pagar'}`
+
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi)
+
+        console.log({ response })
+
+        const { data: { result, message, data } } = response
+
+        return {
+            result,
+            data,
+            message
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return {
+            result: false,
+            data: null,
+            message: "Módulos por pagar no obtenidos",
+            error: errorMessage,
+            status: 500
+        }
+    }
+}
+
+export const getModulosPagados = async (id: number): Promise<ModulosPagadosResponse> => {
+    try {
+        const urlApi = `${'/matriculas/'}${id}${'/modulos-pagados'}`
+
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi)
+
+        console.log({ response })
+
+        const { data: { result, message, data } } = response
+
+        return {
+            result,
+            data,
+            message
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return {
+            result: false,
+            data: null,
+            message: "Módulos por pagar no obtenidos",
+            error: errorMessage,
+            status: 500
+        }
     }
 }
 

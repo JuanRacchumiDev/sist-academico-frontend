@@ -6,24 +6,56 @@ import { Modulo } from "./IModulo"
 export interface Pago {
     id?: number
     id_matricula?: number
-    id_modulo?: number
+    // id_modulo?: number
     id_estadopago?: number
-    id_institucion?: number
     id_formapago?: number
+    id_institucion?: number
     concepto?: string
+    numero_modulo?: number
+    numero_operacion?: string
     fecha_pago?: string
     fecha_vencimiento?: string
-    cantidad?: number
+    cantidad_efectivo?: number
+    cantidad_operacion?: number
     user_crea?: string
     user_actualiza?: string
     user_elimina?: string
     estado?: boolean
 
     matricula?: Matricula
-    modulo?: Modulo
-    estadoPago?: DetalleParametro
+    // modulo?: Modulo
+    estado_pago?: DetalleParametro
+    forma_pago?: DetalleParametro
     institucion?: Institucion
-    formaPago?: DetalleParametro
+}
+
+export interface ModuloPendiente {
+    numero_modulo: number;
+    pagado: boolean;
+    id_pago: number | null;
+}
+
+export interface ModuloPagado {
+    id: number;
+    id_formapago: number;
+    numero_modulo: number;
+    concepto: string;
+    numero_operacion: string;
+    fecha_pago: string;
+    cantidad_efectivo?: number;
+    cantidad_operacion?: number;
+    nombre_formapago: string
+}
+
+export interface DetalleModulosPorPagar {
+    matricula_id: number;
+    total_modulos: number;
+    modulos: ModuloPendiente[];
+}
+
+export interface DetalleModulosPagados {
+    matricula_id: number
+    modulos: ModuloPagado[]
 }
 
 export interface PagoResponse {
@@ -52,4 +84,20 @@ export interface PagoPaginateResponse {
     errors?: string
     status?: number
     pagination?: PaginationType
+}
+
+export interface ModulosPorPagarResponse {
+    result: boolean;
+    message: string;
+    data: DetalleModulosPorPagar | null;
+    error?: string;
+    status?: number;
+}
+
+export interface ModulosPagadosResponse {
+    result: boolean
+    message: string
+    data: DetalleModulosPagados | null;
+    error?: string
+    status?: number
 }

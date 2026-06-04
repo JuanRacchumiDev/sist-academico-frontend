@@ -166,16 +166,20 @@ function App() {
                       path="/matricula/editar/:id"
                       element={<MatriculaFormPage />}
                     ></Route>
+                    <Route
+                      path="/matricula/:id/pago-modulo"
+                      element={<PagoFormPage />}
+                    ></Route>
 
                     <Route path="/pago" element={<PagoListPage />}></Route>
-                    <Route
+                    {/* <Route
                       path="/pago/nuevo"
                       element={<PagoFormPage />}
                     ></Route>
                     <Route
                       path="/pago/editar/:id"
                       element={<PagoFormPage />}
-                    ></Route>
+                    ></Route> */}
 
                     <Route
                       path="/mantenimiento/*"

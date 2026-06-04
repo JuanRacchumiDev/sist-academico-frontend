@@ -1,15 +1,21 @@
 import { Pago } from "../interfaces/IPago"
 import {
+    getAll,
     getAllPaginate,
-    getMatricula,
-    getPagoModulo,
     getById,
-    // getFicha,
-    // getCertificado,
-    create
+    create,
+    update
 } from "../repositories/pagoRepository"
 
-export const getPagos = async (
+export const getPagos = async () => {
+    const response = await getAll()
+
+    return {
+        ...response
+    }
+}
+
+export const getPagosPaginate = async (
     page: number,
     limit: number,
     filters: {}
@@ -44,68 +50,16 @@ export const getPagoById = async (id: number) => {
     }
 }
 
-export const getMatriculaByParams = async (
-    id_matricula: number,
-    id_alumno: number
-) => {
-    const queryParams = new URLSearchParams({
-        id_matricula: id_matricula.toString(),
-        id_alumno: id_alumno.toString()
-    }).toString()
-
-    const response = await getMatricula(queryParams)
-
-    return {
-        ...response
-    }
-}
-
-export const getModuloByParams = async (
-    id_matricula: number,
-    id_alumno: number,
-    numero_modulo: number
-) => {
-    const queryParams = new URLSearchParams({
-        id_matricula: id_matricula.toString(),
-        id_alumno: id_alumno.toString(),
-        numero_modulo: numero_modulo.toString()
-    }).toString()
-
-    const response = await getPagoModulo(queryParams)
-
-    return {
-        ...response
-    }
-}
-
-// export const getFichaById = async (id: number) => {
-//     const response = await getFicha(id)
-
-//     return {
-//         ...response
-//     }
-// }
-
-// export const getCertificadoByParams = async (
-//     id_matricula: number,
-//     id_alumno: number,
-//     id_programa: number
-// ) => {
-//     const queryParams = new URLSearchParams({
-//         id_matricula: id_matricula.toString(),
-//         id_alumno: id_alumno.toString(),
-//         id_programa: id_programa.toString()
-//     }).toString()
-
-//     const response = await getCertificado(queryParams)
-
-//     return {
-//         ...response
-//     }
-// }
-
 export const createPago = async (payload: Pago) => {
     const response = await create(payload)
+
+    return {
+        ...response
+    }
+}
+
+export const updatePago = async (id: number, payload: Pago) => {
+    const response = await update(id, payload)
 
     return {
         ...response

@@ -29,15 +29,6 @@ import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 import { downloadFile } from "../../utils/fileUtils";
-import {
-  getMatriculaByParams,
-  getModuloByParams,
-} from "../../services/pagoService";
-import { getCertificadoByParams } from "@/services/matriculaService";
-// import {
-//   getFichaById,
-//   getCertificadoByParams,
-// } from "../../services/pagoService";
 
 interface Props {
   pago: Pago;
@@ -55,9 +46,7 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
 
   const nuevoEstado = !pago.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
-  const modalTitle = `${
-    action.charAt(0).toUpperCase() + action.slice(1)
-  } Matrícula`;
+  const modalTitle = `${action.charAt(0).toUpperCase() + action.slice(1)} Pago`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el pago: <strong>${pago.id}</strong>?`;
 
   console.log({ pago });
@@ -66,12 +55,16 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
     navigate(`/pago/editar/${pago.id}`);
   };
 
-  // Abre el modal
-  const handleOpenStatusModal = (event: React.MouseEvent) => {
-    event.preventDefault();
-    setIsDropdownOpen(false);
-    setIsModalOpen(true);
+  const handleFormPago = () => {
+    navigate(`/pago/nuevo`);
   };
+
+  // Abre el modal
+  // const handleOpenStatusModal = (event: React.MouseEvent) => {
+  //   event.preventDefault();
+  //   setIsDropdownOpen(false);
+  //   setIsModalOpen(true);
+  // };
 
   // Cierra el modal
   const handleCloseModal = () => {
@@ -92,145 +85,6 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
     }
   };
 
-  const handleDownloadMatricula = async () => {
-    setIsDropdownOpen(false); // Cierra el menú
-
-    showToast("info", "Preparando descarga de la matrícula...");
-
-    try {
-      const idMatricula = pago.id_matricula;
-      const idAlumno = pago.id_alumno;
-
-      const response = await getMatriculaByParams(idMatricula, idAlumno);
-
-      if (response.result && response.data) {
-        downloadFile(response.data, response.filename);
-        showToast("success", "Constancia de matrícul descargada exitosamente");
-      } else {
-        showToast(
-          "error",
-          response.error || "Error al descargar la constancia de matrícula",
-        );
-      }
-    } catch (error) {
-      console.error("Error al descargar la constancia de matrícula:", error);
-      showToast(
-        "error",
-        "Error de conexión al intentar descargar la constancia de matrícula.",
-      );
-    }
-  };
-
-  const handleDownloadPagoModulo = async () => {
-    setIsDropdownOpen(false); // Cierra el menú
-
-    showToast("info", "Preparando descarga de pago de módulo...");
-
-    try {
-      const idMatricula = pago.id_matricula;
-      const idAlumno = pago.id_alumno;
-      const numeroModulo = pago.numero_modulo;
-
-      console.log({ idMatricula });
-      console.log({ idAlumno });
-      console.log({ numeroModulo });
-
-      const response = await getModuloByParams(
-        idMatricula,
-        idAlumno,
-        numeroModulo,
-      );
-
-      if (response.result && response.data) {
-        downloadFile(response.data, response.filename);
-        showToast(
-          "success",
-          "Constancia de pago de módulo descargado exitosamente",
-        );
-      } else {
-        showToast(
-          "error",
-          response.error ||
-            "Error al descargar la constancia de pago de módulo",
-        );
-      }
-    } catch (error) {
-      console.error(
-        "Error al descargar la constancia de pago de módulo:",
-        error,
-      );
-      showToast(
-        "error",
-        "Error de conexión al intentar descargar la constancia de pago de módulo.",
-      );
-    }
-  };
-
-  //   const handleDownloadFicha = async () => {
-  //     setIsDropdownOpen(false); // Cierra el menú
-
-  //     // Puedes usar un estado de loading local si lo deseas, pero usaremos el toast para feedback
-  //     showToast("info", "Preparando descarga de la ficha...");
-
-  //     try {
-  //     //   const response = await getFichaById(matricula.id!); // Asumo que matricula.id es seguro
-
-  //       if (response.result && response.data) {
-  //         // response.data es el Blob, response.filename es el nombre
-  //         downloadFile(
-  //           response.data as Blob,
-  //           response.filename || `ficha_${matricula.id}.pdf`,
-  //         );
-
-  //         showToast("success", "Ficha de matrícula descargada exitosamente.");
-  //       } else {
-  //         showToast(
-  //           "error",
-  //           response.error ||
-  //             response.message ||
-  //             "No se pudo generar la ficha PDF.",
-  //         );
-  //       }
-  //     } catch (error) {
-  //       console.error("Error al descargar la ficha:", error);
-  //       showToast("error", "Error de conexión al intentar descargar la ficha.");
-  //     }
-  //   };
-
-  //   const handleDownloadCertificado = async (
-  //     id_matricula: number,
-  //     id_alumno: number,
-  //     id_programa: number,
-  //   ) => {
-  //     try {
-  //       setIsDropdownOpen(false); // Cierra el menú
-
-  //       showToast("info", "Preparando descarga del certificado...");
-
-  //       const response = await getCertificadoByParams(
-  //         id_matricula,
-  //         id_alumno,
-  //         id_programa,
-  //       );
-
-  //       if (response.result && response.data) {
-  //         downloadFile(response.data, response.filename);
-  //         showToast("success", "Certificado descargado exitosamente");
-  //       } else {
-  //         showToast(
-  //           "error",
-  //           response.error || "Error al descargar el certificado",
-  //         );
-  //       }
-  //     } catch (error) {
-  //       console.error("Error al descargar el certificado:", error);
-  //       showToast(
-  //         "error",
-  //         "Error de conexión al intentar descargar el certificado.",
-  //       );
-  //     }
-  //   };
-
   // Determinar texto y color de acción
   const actionText = pago.estado ? "Desactivar" : "Activar";
   const ActionIcon = pago.estado ? ToggleLeft : ToggleRight;
@@ -243,11 +97,12 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
         key={pago.id}
         className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
       >
+        <TableCell className="py-3">
+          {pago.matricula.persona.nombre_completo}
+        </TableCell>
         <TableCell className="py-3">{pago.concepto}</TableCell>
-        <TableCell className="py-3">{pago.numero_modulo}</TableCell>
-        <TableCell className="py-3">{pago.alumno.nombre_completo}</TableCell>
+        <TableCell className="py-3">{pago.forma_pago.nombre}</TableCell>
         <TableCell className="py-3">{pago.fecha_pago}</TableCell>
-        <TableCell className="py-3">{pago.monto_pagado}</TableCell>
         <TableCell className="py-3">
           {pago.estado ? (
             <CircleCheck className="text-green-500 w-5 h-5" />
@@ -256,12 +111,10 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
           )}
         </TableCell>
         <TableCell className="py-3">
-          {/* w-72 border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 */}
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger
               asChild
               className="focus:outline-none focus:ring-2 z-40 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
-              // className="bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
             >
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Abrir menú de acciones</span>
@@ -289,94 +142,12 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                onClick={handleDownloadMatricula}
-                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
-              >
-                <FileDown className="h-4 w-4" />
-                <span>Descargar Matrícula</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={handleDownloadPagoModulo}
-                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
-              >
-                <FileDown className="h-4 w-4" />
-                <span>Descargar Pago Módulo</span>
-              </DropdownMenuItem>
-
-              {/* <DropdownMenuItem
-                onClick={handleDownloadFicha}
-                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
-              >
-                <FileDown className="h-4 w-4" />
-                <span>Descargar Ficha PDF</span>
-              </DropdownMenuItem>
-
-              <DropdownMenuSeparator />
-
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="cursor-pointer text-amber-600">
-                  <FileBadge className="h-4 w-4 mr-2" />
-                  <span>Generar Certificado</span>
-                </DropdownMenuSubTrigger>
-
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent className="bg-white border shadow-md w-64">
-                    {matricula.detalles && matricula.detalles.length > 0 ? (
-                      matricula.detalles.map((det) => {
-                        // Log para depuración
-                        console.log(
-                          "Programa a certificar:",
-                          det.nombre_programa,
-                        );
-
-                        return (
-                          <DropdownMenuItem
-                            key={det.id} // Usamos el ID del detalle
-                            onClick={() =>
-                              handleDownloadCertificado(
-                                matricula.id,
-                                matricula.id_alumno,
-                                det.id_programa, // ID del programa
-                              )
-                            }
-                            className="cursor-pointer hover:bg-amber-50"
-                          >
-                            <div className="flex flex-col">
-                              <span className="text-xs font-medium">
-                                {det.nombre_programa}
-                              </span>
-                              <span className="text-[10px] text-gray-500">
-                                ID Prog: {det.id_programa}
-                              </span>
-                            </div>
-                          </DropdownMenuItem>
-                        );
-                      })
-                    ) : (
-                      <DropdownMenuItem disabled>
-                        <span className="text-xs text-gray-400">
-                          Sin programas registrados
-                        </span>
-                      </DropdownMenuItem>
-                    )}
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub> */}
-
-              <DropdownMenuItem
-                onClick={handleOpenStatusModal}
-                className={`cursor-pointer ${hoverBgColor} transition-colors flex items-center space-x-2 ${actionColor}`}
+                onClick={handleFormPago}
+                className={`cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-blue-600`}
               >
                 <ActionIcon className="h-4 w-4" />
-                <span>{actionText} Pago</span>
+                <span>Nuevo Pago</span>
               </DropdownMenuItem>
-
-              {/* <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 transition-colors">
-              Eliminar
-            </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>

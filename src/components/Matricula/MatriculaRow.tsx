@@ -32,6 +32,7 @@ import { downloadFile } from "../../utils/fileUtils";
 import {
   getFichaById,
   getCertificadoByParams,
+  getCronogramaPagosByParams,
 } from "../../services/matriculaService";
 
 interface Props {
@@ -58,7 +59,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   console.log({ matricula });
 
   const handleShowDetail = () => {
-    navigate(`/matricula/editar/${matricula.id}`);
+    navigate(`/matriculas/editar/${matricula.id}`);
   };
 
   // Abre el modal
@@ -122,11 +123,11 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
     id_matricula: number,
     id_programa: number,
   ) => {
+    setIsDropdownOpen(false); // Cierra el menú
+
+    showToast("info", "Preparando descarga del certificado...");
+
     try {
-      setIsDropdownOpen(false); // Cierra el menú
-
-      showToast("info", "Preparando descarga del certificado...");
-
       const response = await getCertificadoByParams(id_matricula, id_programa);
 
       if (response.result && response.data) {
@@ -147,6 +148,42 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
     }
   };
 
+  const handleDownloadCronogramaPagos = async () => {
+    setIsDropdownOpen(false); // Cierra el menú
+
+    showToast("info", "Preparando descarga de cronograma de pagos...");
+
+    try {
+      const response = await getCronogramaPagosByParams(matricula.id!);
+
+      if (response.result && response.data) {
+        downloadFile(response.data as Blob, response.filename);
+        showToast("success", "Cronograma de pagos descargado exitosamente");
+      } else {
+        showToast(
+          "error",
+          response.error || "Error al descargar el cronograma de pagos",
+        );
+      }
+    } catch (error) {
+      console.error("Error al descargar el cronograma de pagos:", error);
+      showToast(
+        "error",
+        "Error de conexión al intentar descargar el cronograma de pagos.",
+      );
+    }
+  };
+
+  const handleFormPago = async () => {
+    if (matricula.id) {
+      const urlApi = `/matricula/${matricula.id}/pago-modulo`;
+      console.log(urlApi);
+      navigate(urlApi);
+    } else {
+      showToast("error", "La matrícula seleccionada no posee un ID válido");
+    }
+  };
+
   // Determinar texto y color de acción
   const actionText = matricula.estado ? "Desactivar" : "Activar";
   const ActionIcon = matricula.estado ? ToggleLeft : ToggleRight;
@@ -162,7 +199,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
         className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
       >
         <TableCell className="py-3">
-          {matricula.persona.nombre_completo}
+          Id matrícula: {matricula.id} - {matricula.persona.nombre_completo}
         </TableCell>
         <TableCell className="py-3">
           {matricula.persona.numero_documento}
@@ -177,12 +214,10 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
           )}
         </TableCell>
         <TableCell className="py-3">
-          {/* w-72 border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 */}
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger
               asChild
               className="focus:outline-none focus:ring-2 z-40 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
-              // className="bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
             >
               <Button variant="ghost" className="h-8 w-8 p-0">
                 <span className="sr-only">Abrir menú de acciones</span>
@@ -209,11 +244,11 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
               <DropdownMenuSeparator />
 
               <DropdownMenuItem
-                onClick={handleDownloadFicha}
+                onClick={handleDownloadCronogramaPagos}
                 className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-indigo-600"
               >
                 <FileDown className="h-4 w-4" />
-                <span>Descargar Ficha PDF</span>
+                <span>Descargar Cronograma Pagos</span>
               </DropdownMenuItem>
 
               <DropdownMenuSeparator />
@@ -272,9 +307,15 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
                 <span>{actionText} Matrícula</span>
               </DropdownMenuItem>
 
-              {/* <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 transition-colors">
-              Eliminar
-            </DropdownMenuItem> */}
+              <DropdownMenuSeparator />
+
+              <DropdownMenuItem
+                onClick={handleFormPago}
+                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-purple-600"
+              >
+                <Edit className="h-4 w-4" />
+                <span>Registrar pago módulo</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
