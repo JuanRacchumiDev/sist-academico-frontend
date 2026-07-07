@@ -1,22 +1,27 @@
 import { DetalleParametro } from "./IDetalleParametro"
-import { Evento } from "./IEvento"
+import { Institucion } from "./IInstitucion"
 import { Persona } from "./IPersona"
+import { Plantilla } from "./IPlantilla"
+import { Programa } from "./IPrograma"
 
 export interface Certificado {
     id?: number
-    id_evento?: number
     id_persona?: number
     id_tipocertificado?: number
+    id_institucion?: number
     id_plantilla?: number
-    codigo?: string
-    path_codigo_qr?: string
+    id_programa?: number
+    codigo_verificacion?: string
+    codigo_qr_path?: string
     path_file?: string
     filename?: string
     nombre_impresion?: string
     estado?: boolean
-    evento?: Evento
     persona?: Persona
     tipoCertificado?: DetalleParametro
+    institucion?: Institucion
+    plantilla?: Plantilla
+    programa?: Programa
 }
 
 export interface CertificadoResponse {

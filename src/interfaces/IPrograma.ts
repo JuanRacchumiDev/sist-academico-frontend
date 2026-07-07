@@ -1,5 +1,6 @@
 import { DetalleParametro } from "./IDetalleParametro"
 import { Modulo } from "./IModulo"
+import { Adjunto } from "./IAdjunto"
 
 export interface Programa {
     id?: number
@@ -32,6 +33,7 @@ export interface Programa {
     tipo_programa?: DetalleParametro
     categoria_programa?: DetalleParametro
     detalle_modulos?: Modulo[]
+    adjuntos?: Adjunto[]
 }
 
 export interface ProgramaResponse {

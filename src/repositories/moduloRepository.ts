@@ -63,9 +63,11 @@ export const getById = async (id: number): Promise<ModuloResponse> => {
 
 export const getByPrograma = async (idPrograma: number) => {
     try {
-        const urlApi = `${'/programas/'}${idPrograma}${'/'}`
+        const urlApi = `${'/programas/'}${idPrograma}`
 
         console.log({ urlApi })
+
+        console.log('---- response moduloRepository ----')
 
         const response = await apiClient.get(urlApi)
 
@@ -73,15 +75,24 @@ export const getByPrograma = async (idPrograma: number) => {
 
         const { data: { result, message, data } } = response
 
+        console.log({ data })
+
+        const modulosAsociados = data?.detalle_modulos || [];
+
         return {
             result,
-            data,
-            message
+            data: modulosAsociados as Modulo[],
+            message: message || "Módulos cargados correctamente"
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
-        return { result: false, data: [], error: errorMessage, status: 500 }
+        return {
+            result: false,
+            data: [],
+            error: errorMessage,
+            status: error.response.status || 500
+        }
     }
 }
 

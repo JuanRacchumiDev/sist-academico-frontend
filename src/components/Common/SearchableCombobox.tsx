@@ -56,7 +56,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
     : placeholder;
 
   return (
-    <FormItem>
+    <FormItem className="w-full">
       {label && <RequiredLabel>{label}</RequiredLabel>}
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -66,31 +66,37 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
               role="combobox"
               className={cn(
                 // Ajustado el ancho para evitar que sea fijo y mejor manejo de texto
-                "w-full justify-between overflow-hidden text-ellipsis whitespace-nowrap cursor-pointer",
+                "w-full justify-between cursor-pointer h-auto min-h-10 px-3 py-2 text-left",
                 !value && "text-muted-foreground",
                 isInvalid
                   ? "border-red-500 focus:ring-red-500"
                   : "focus:ring-blue-500",
-                "focus:ring-2 focus:ring-offset-2 transition-all duration-300 h-10 px-3 py-2", // Altura y padding estándar
+                "focus:ring-2 focus:ring-offset-2 transition-all duration-300", // Altura y padding estándar
               )}
               disabled={disabled}
             >
-              <span className="truncate">{displayValue}</span>
-              <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+              <span className="block line-clamp-2 sm:line-clamp-1 pr-2 break-words">
+                {displayValue}
+              </span>
+              <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 self-center" />
             </Button>
           </FormControl>
         </PopoverTrigger>
-        <PopoverContent className="w-[350px] p-0 bg-white" align="start">
-          <Command>
+
+        <PopoverContent
+          className="w-[var(--radix-popover-trigger-width)] min-w-[320px] p-0 bg-white"
+          align="start"
+        >
+          <Command className="w-full">
             <CommandInput
               placeholder={`Buscar ${label ? label.toLowerCase() : ""}...`}
-              className="h-9 px-3 border-b border-gray-200 focus:ring-0"
+              className="h-9 px-3 border-b border-gray-200 focus:ring-0 w-full"
             />
-            <CommandList className="max-h-[350px] overflow-y-auto">
+            <CommandList className="max-h-[350px] overflow-y-auto w-full">
               <CommandEmpty className="py-6 text-center text-sm">
                 No se encontraron resultados {label ? label.toLowerCase() : ""}
               </CommandEmpty>
-              <CommandGroup className="p-1">
+              <CommandGroup className="p-1 w-full">
                 {Array.isArray(options) &&
                   options.map((option) => {
                     const optionValue = String(option[valueKey]);
@@ -115,13 +121,6 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                           value === option[valueKey] &&
                             "bg-blue-50 font-medium text-blue-700",
                         )}
-                        // className={cn(
-                        //   "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors duration-150 ease-in-out",
-                        //   "", // Estilo para el seleccionado
-                        //   "hover:bg-blue-50 hover:text-blue-700",
-                        //   value === option[valueKey] &&
-                        //     "bg-blue-50 font-medium text-blue-700" // Estilo para el elemento actualmente seleccionado
-                        // )}
                       >
                         <Check
                           className={cn(
@@ -131,14 +130,11 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                               : "opacity-0",
                           )}
                         />
-                        {/* <span className="truncate">
-                          {option[displayKey] as string}
-                        </span> */}
-                        <div className="flex flex-col w-full overflow-hidden">
+                        <div className="flex flex-col w-full whitespace-normal break-words">
                           {renderOption ? (
                             renderOption(option)
                           ) : (
-                            <span className="truncate">
+                            <span className="block line-clamp-2">
                               {option[displayKey] as string}
                             </span>
                           )}

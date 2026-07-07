@@ -44,7 +44,7 @@ export interface Matricula {
     monto_efectivo_modulo?: number
     monto_operacion_modulo?: number
 
-    detalles?: DetalleMatricula[]
+    detalles?: MatriculaDetalle[]
     programas?: number[]
 
     persona?: Persona

@@ -44,6 +44,8 @@ export const getModuloById = async (id: number) => {
 }
 
 export const getModulosByPrograma = async (idPrograma: number) => {
+    console.log('---- moduloService response ----')
+
     const response = await getByPrograma(idPrograma)
 
     return {

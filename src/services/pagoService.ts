@@ -51,7 +51,10 @@ export const getPagoById = async (id: number) => {
 }
 
 export const createPago = async (payload: Pago) => {
+    console.log('---- response pagoService ----')
+
     const response = await create(payload)
+    console.log({ response })
 
     return {
         ...response

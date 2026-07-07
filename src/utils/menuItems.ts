@@ -1,20 +1,20 @@
+// /src/utils/menuItems.ts
 import {
-    ChevronDown,
-    GraduationCap,
     Home,
-    Users,
     UserIcon,
     BookOpen,
-    DollarSign,
-    Calendar,
+    GraduationCap,
     Settings,
-    Zap,
     Briefcase,
-    User2Icon,
-    UserCheck,
+    Award,
+    CreditCard,    // Nuevo: Ideal para Pagos / Transacciones
+    Paperclip,     // Nuevo: Ideal para Archivos Adjuntos / Sílabos
+    UserCog,       // Nuevo: Ideal para Usuarios / Credenciales del Sistema
+    Layers,        // Nuevo: Ideal para Segmentos / Estructuras
+    FileCheck      // Nuevo: Ideal para Tipo de Documento / Validaciones
 } from "lucide-react";
 
-export const MENU_ITEMS = [
+export const ADMIN_MENU_ITEMS = [
     {
         id: "dashboard",
         icon: Home,
@@ -37,13 +37,6 @@ export const MENU_ITEMS = [
         active: false,
         path: "/programa-academico"
     },
-    // {
-    //     id: "modulo",
-    //     icon: Zap,
-    //     label: "Módulo",
-    //     active: false,
-    //     path: "/modulo"
-    // },
     {
         id: "matricula",
         icon: GraduationCap,
@@ -53,46 +46,25 @@ export const MENU_ITEMS = [
     },
     {
         id: "pago",
-        icon: UserCheck,
+        icon: CreditCard, // Actualizado
         label: "Pago",
         active: false,
         path: "/pago"
     },
-    // {
-    //     id: "promotor",
-    //     icon: User2Icon,
-    //     label: "Promotor",
-    //     active: false,
-    //     path: "/personas/promotor"
-    // },
-    // {
-    //     id: "cobrador",
-    //     icon: User2Icon,
-    //     label: "Cobrador",
-    //     active: false,
-    //     path: "/personas/cobrador"
-    // },
-    // {
-    //     id: "evento",
-    //     icon: UserCheck,
-    //     label: "Evento",
-    //     active: false,
-    //     path: "/evento"
-    // },
-    // {
-    //     id: "certificado",
-    //     icon: UserCheck,
-    //     label: "Certificado",
-    //     active: false,
-    //     path: "/certificado"
-    // },
-    // {
-    //     id: "usuario",
-    //     icon: UserCheck,
-    //     label: "Usuario",
-    //     active: false,
-    //     path: "/usuario"
-    // },
+    {
+        id: "adjunto",
+        icon: Paperclip, // Actualizado
+        label: "Adjunto",
+        active: false,
+        path: "/adjunto"
+    },
+    {
+        id: "usuario",
+        icon: UserCog, // Actualizado
+        label: "Usuario",
+        active: false,
+        path: "/usuario"
+    },
     {
         id: "mantenimiento",
         icon: Settings,
@@ -101,63 +73,38 @@ export const MENU_ITEMS = [
             {
                 id: "segmento",
                 label: "Segmento",
-                icon: Briefcase,
+                icon: Layers, // Actualizado para no repetir con Tipo Documento
                 path: "/mantenimiento/segmento"
             },
-            // {
-            //     id: "tipo-evento",
-            //     label: "Tipo evento",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/tipo-evento"
-            // },
-            // {
-            //     id: "tipo-certificado",
-            //     label: "Tipo certificado",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/tipo-certificado"
-            // },
-            // {
-            //     id: "categoria-evento",
-            //     label: "Categoría evento",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/categoria-evento"
-            // },
             {
                 id: "tipo-documento",
                 label: "Tipo Documento",
-                icon: Briefcase,
+                icon: FileCheck, // Actualizado
                 path: "/mantenimiento/tipo-documento"
             },
-            // {
-            //     id: "sede",
-            //     label: "Sede",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/sede"
-            // },
-            // {
-            //     id: "universidad",
-            //     label: "Universidad",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/universidad"
-            // },
-            // {
-            //     id: "metodo-pago",
-            //     label: "Método de pago",
-            //     icon: DollarSign,
-            //     path: "/mantenimiento/metodo-pago"
-            // },
-            // {
-            //     id: "moneda",
-            //     label: "Moneda",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/moneda"
-            // },
-            // {
-            //     id: "banco-cuenta",
-            //     label: "Cuentas",
-            //     icon: Briefcase,
-            //     path: "/mantenimiento/banco-cuenta"
-            // }
         ]
     }
-]
+];
+
+export const ALUMNO_MENU_ITEMS = [
+    {
+        id: "dashboard-alumno",
+        icon: Home,
+        label: "Dashboard",
+        active: true,
+        badge: "New",
+        path: "/dashboard-alumno"
+    },
+    {
+        id: "mis-matriculas",
+        icon: GraduationCap,
+        label: "Mis Matrículas",
+        path: "/mis-matriculas"
+    },
+    {
+        id: "mis-certificados",
+        icon: Award,
+        label: "Mis Certificados",
+        path: "/mis-certificados"
+    }
+];

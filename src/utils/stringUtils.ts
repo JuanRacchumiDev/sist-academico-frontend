@@ -24,3 +24,54 @@ export const padString = (
         return strValue
     }
 }
+
+const cleanText = (text: string): string => {
+    return text
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/ñ/g, "n")
+        .replace(/[^a-z0-9]/g, "")
+}
+
+interface getFullname {
+    nombres: string,
+    apellidoPaterno: string,
+    apellidoMaterno: string
+}
+
+export const generateUsername = ({
+    nombres,
+    apellidoPaterno,
+    apellidoMaterno = ""
+}: getFullname): string => {
+    const nombresLimpios = cleanText(nombres)
+    const primerNombre = cleanText(nombres.split(" ")[0] || "")
+    const apePaterno = cleanText(apellidoPaterno)
+    const apeMaterno = cleanText(apellidoMaterno)
+
+    const MAX_LENGTH = 10
+
+    // Regla 1: Inicial primer nombre + primer apellido
+    const inicialNombre = primerNombre.charAt(0)
+    let sugerencia = `${inicialNombre}${apePaterno}`
+
+    if (sugerencia.length <= MAX_LENGTH && sugerencia.length > 1) {
+        return sugerencia
+    }
+
+    // Regla 2: Inicial primer nombre + inicial primer apellido + segundo apellido
+    if (apeMaterno) {
+        const inicialApePaterno = apePaterno.charAt(0)
+        sugerencia = `${inicialNombre}${inicialApePaterno}${apeMaterno}`
+
+        if (sugerencia.length <= MAX_LENGTH) {
+            return sugerencia;
+        }
+    }
+
+    // Regla 3: Nombres + apellidos (truncado a 10 caracteres)
+    const cadenaCompleta = `${primerNombre}${apePaterno}${apeMaterno}`;
+    return cadenaCompleta.substring(0, MAX_LENGTH)
+} 

@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
 import { Matricula } from "../../interfaces/IMatricula";
 import {
   CreditCard,
   Calendar,
   CheckCircle2,
-  AlertCircle,
   ListFilter,
-  ArrowLeft,
-  Link,
   Wallet,
   Hash,
   Loader2,
+  ArrowLeft,
+  Info,
 } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
 import {
@@ -29,6 +27,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
+import { useNavigate } from "react-router-dom";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "../ui/card";
 import { getDetalleFiltered } from "../../services/detalleParametroService";
 import {
   getModulosPendientes,
@@ -53,6 +59,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
+import { padString } from "@/utils/stringUtils";
+import { VALOR_MODULO } from "@/params/constants";
 
 const loadFormasPago = async () => {
   const filters: DetalleParametroFilters = {
@@ -69,8 +77,6 @@ const loadFormasPago = async () => {
 
 const loadModulosPendientes = async (matriculaId: number) => {
   const response = await getModulosPendientes(matriculaId);
-  console.log("load módulos pendientes de pago para matrícula: ", matriculaId);
-  console.log({ response });
   return response.result && response.data
     ? (response.data.modulos as ModuloPendiente[])
     : [];
@@ -78,8 +84,6 @@ const loadModulosPendientes = async (matriculaId: number) => {
 
 const loadModulosPagados = async (matriculaId: number) => {
   const response = await getModulosCancelados(matriculaId);
-  console.log("load módulos cancelados para matrícula: ", matriculaId);
-  console.log({ response });
   return response.result && response.data
     ? (response.data.modulos as ModuloPagado[])
     : [];
@@ -178,9 +182,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
   onSave,
   onCancel,
 }) => {
-  const { showToast } = useToast();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
+  const { showToast } = useToast();
   const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
   const [modulosPendientes, setModulosPendientes] = useState<ModuloPendiente[]>(
     [],
@@ -190,8 +193,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
   const inputErrorClass = (invalid: boolean) =>
     invalid
-      ? "border-red-500 focus:ring-red-500 focus-visible:ring-red-500"
-      : "focus:ring-blue-500";
+      ? "border-destructive focus-visible:ring-destructive focus:ring-destructive"
+      : "focus:ring-indigo-500";
 
   const form = useForm<TFormInput>({
     resolver: zodResolver(formSchema),
@@ -211,16 +214,16 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
   const currentFormaPago = watch("idFormaPago");
   const currentCantidadEfectivo = watch("cantidadEfectivo") || 0;
   const currentCantidadOperacion = watch("cantidadOperacion") || 0;
+
   const totalRecibido =
     Number(currentCantidadEfectivo) + Number(currentCantidadOperacion);
 
-  const { isSubmitting, errors } = form.formState;
+  const { isSubmitting } = form.formState;
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-
         const [listFormasPago, listModulosPendientes, listModulosPagados] =
           await Promise.all([
             loadFormasPago(),
@@ -242,7 +245,6 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
     fetchData();
   }, [matriculaSeleccionada.id]);
 
-  // Manejar el cambio de forma de pago para mapear el nombre al esquema de validación
   const handleFormaPagoChange = (val: string) => {
     setValue("idFormaPago", val);
     const seleccionado = formasPago.find((f) => f.codigo?.toString() === val);
@@ -253,7 +255,13 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
   const onSubmit: SubmitHandler<TFormOutput> = async (values) => {
     try {
-      console.log({ values });
+      if (totalRecibido > VALOR_MODULO) {
+        showToast(
+          "error",
+          `El monto total ingresado (S/. ${totalRecibido.toFixed(2)}) no puede ser mayor al costo del módulo (S/. ${VALOR_MODULO.toFixed(2)})`,
+        );
+        return;
+      }
 
       const fechaPagoStr = values.fechaPago
         ? format(values.fechaPago, "yyyy-MM-dd")
@@ -267,24 +275,26 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
         numero_modulo: values.numeroModulo,
         numero_operacion: values.numeroOperacion,
         fecha_pago: fechaPagoStr,
-        // fecha_vencimiento: values.fechaVencimiento,
         cantidad_efectivo: values.cantidadEfectivo,
         cantidad_operacion: values.cantidadOperacion,
         estado: true,
       };
 
+      console.log("payload nuevo pago");
       console.log({ payload });
 
       const response = await createPago(payload);
-      console.log("response pago");
+      console.log("---- response createPago ----");
       console.log({ response });
-
       const { result, message } = response as PagoResponse;
 
+      console.log({ result });
+
+      console.log({ message });
+
       if (result) {
-        showToast("success", "Pago registrado con éxito");
-        if (onSave) onSave(payload);
-        handleCancelar();
+        showToast("success", message || "Pago registrado");
+        navigate(`/matricula`);
       } else {
         showToast("error", message || "Error al procesar la matrícula");
       }
@@ -302,9 +312,15 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
     onCancel();
   };
 
+  const handleGoBack = () => {
+    const urlBack = `/matricula/`;
+    navigate(urlBack);
+  };
+
   const formaPagoSeleccionada = formasPago.find(
     (f) => f.codigo?.toString() === currentFormaPago,
   );
+
   const nombreForma = formaPagoSeleccionada?.nombre?.toLowerCase() ?? "";
   const mostrarEfectivo =
     nombreForma.includes("efectivo") || nombreForma.includes("mixto");
@@ -316,46 +332,60 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
     nombreForma.includes("deposito") ||
     nombreForma.includes("mixto");
 
-  return (
-    <div className="max-w-6xl mx-auto bg-slate-50 rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-      {/* Encabezado Principal */}
-      <div className="bg-slate-950 px-8 py-5 border-b border-slate-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          {/* Enlace Volver */}
-          {/* <Link
-            to="/matricula"
-            className="inline-flex items-center gap-1.5 text-xs text-indigo-400 hover:text-indigo-300 transition-colors mb-2 group font-medium"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 transition-transform group-hover:-translate-x-0.5" />
-            Volver a Matrículas
-          </Link> */}
-          <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
-            <CreditCard className="text-indigo-400 w-6 h-6" />
-            Caja Chica: Registro de Pago
-          </h2>
-          <p className="text-slate-400 text-sm mt-1">
-            Estudiante:{" "}
-            <span className="font-bold text-slate-200">
-              {matriculaSeleccionada?.persona?.nombre_completo}
-            </span>
-          </p>
-        </div>
-        <div className="bg-slate-900 border border-slate-800 px-4 py-2 rounded-xl flex items-center gap-2">
-          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-            Matrícula Referencia:
-          </span>
-          <span className="text-indigo-400 font-mono font-bold text-sm">
-            #{matriculaSeleccionada?.id ?? "0"}
-          </span>
-        </div>
+  if (loading) {
+    return (
+      <div className="flex h-72 w-full items-center justify-center gap-2">
+        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
+        <span className="text-sm font-medium text-muted-foreground">
+          Cargando información del formulario...
+        </span>
       </div>
+    );
+  }
 
-      {/* Grid de 2 Columnas Principal */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white">
-        {/* COLUMNA IZQUIERDA: Formulario de Registro de Pago (7 Columnas de 12) */}
-        <div className="lg:col-span-7 p-6 md:p-8 border-b lg:border-b-0 lg:border-r border-slate-200">
-          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-6">
-            <span className="flex items-center justify-center bg-indigo-100 text-indigo-700 w-6 h-6 rounded-full text-xs font-bold">
+  return (
+    <Card className="mx-auto max-w-6xl overflow-hidden border-slate-200 shadow-xl">
+      <CardHeader className="bg-slate-950 px-6 py-5 text-white">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              onClick={handleGoBack}
+              className="text-slate-400 hover:text-white hover:bg-slate-900 transition-all p-2 h-auto"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              <span className="sr-only">Volver</span>
+            </Button>
+            <div className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-xl font-bold tracking-tight">
+                <CreditCard className="h-5 w-5 text-indigo-400" />
+                Registro de Pago
+              </CardTitle>
+              <CardDescription className="text-slate-400">
+                Estudiante:{" "}
+                <span className="font-semibold text-slate-200">
+                  {matriculaSeleccionada?.persona?.nombre_completo}
+                </span>
+              </CardDescription>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 self-start rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 md:self-auto">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">
+              Matrícula Ref:
+            </span>
+            <span className="font-mono text-sm font-bold text-indigo-400">
+              #{padString(4, matriculaSeleccionada?.id, "left")}
+            </span>
+          </div>
+        </div>
+      </CardHeader>
+
+      <CardContent className="grid grid-cols-1 p-0 lg:grid-cols-12">
+        {/* Columna Izquierda: Formulario */}
+        <div className="p-6 md:p-8 lg:col-span-7 border-b lg:border-b-0 lg:border-r border-slate-200">
+          <h3 className="mb-6 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-slate-500">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700">
               1
             </span>
             Datos de la Transacción
@@ -408,7 +438,6 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 )}
               />
 
-              {/* Concepto del Pago */}
               <FormField
                 control={form.control}
                 name="concepto"
@@ -427,7 +456,6 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 )}
               />
 
-              {/* Selector de Forma de Pago */}
               <FormField
                 control={form.control}
                 name="idFormaPago"
@@ -461,13 +489,12 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 )}
               />
 
-              {/* Campos Dinámicos de Arqueo de Valores */}
               {(mostrarEfectivo || mostrarDigital) && (
-                <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/80 space-y-4">
-                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider block">
+                <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50 p-5">
+                  <span className="block text-xs font-bold uppercase tracking-wider text-slate-700">
                     Arqueo de Valores
                   </span>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                     {mostrarEfectivo && (
                       <FormField
                         control={form.control}
@@ -542,7 +569,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                               <FormControl>
                                 <Input
                                   placeholder="Ej: OPE-987123"
-                                  className={`uppercase font-mono ${inputErrorClass(fieldState.invalid)}`}
+                                  className={`font-mono uppercase ${inputErrorClass(fieldState.invalid)}`}
                                   {...field}
                                 />
                               </FormControl>
@@ -556,34 +583,43 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 </div>
               )}
 
-              {/* Totalizador */}
-              <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-xl shadow-inner mt-2">
+              <div className="flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/70 p-3 text-xs text-blue-800">
+                <Info className="h-4 w-4 shrink-0 text-blue-600" />
+                <span>
+                  El costo estándar estipulado por módulo es de{" "}
+                  <strong className="font-semibold text-blue-900">
+                    S/. {VALOR_MODULO.toFixed(2)}
+                  </strong>
+                  .
+                </span>
+              </div>
+
+              <div className="mt-2 flex items-center justify-between rounded-xl bg-slate-900 p-4 text-white shadow-inner">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
                   Total Neto a Recibir:
                 </span>
-                <span className="text-2xl font-mono font-black text-emerald-400">
+                <span className="font-mono text-2xl font-black text-emerald-400">
                   S/. {totalRecibido.toFixed(2)}
                 </span>
               </div>
 
-              {/* Botones de acción */}
-              <div className="flex justify-end gap-3 pt-4">
+              <div className="flex justify-end gap-3 pt-2">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={handleCancelar}
-                  className="rounded-xl hover:bg-slate-100"
+                  className="rounded-xl border-slate-200 text-slate-700 hover:bg-slate-100"
                 >
                   Cancelar
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold shadow-md"
+                  className="rounded-xl bg-indigo-600 font-bold text-white shadow-md hover:bg-indigo-700"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       Procesando Pago...
                     </>
                   ) : (
@@ -595,70 +631,31 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
           </Form>
         </div>
 
-        {/* COLUMNA DERECHA: Control de Historiales */}
-        <div className="lg:col-span-5 bg-slate-50/60 p-6 md:p-8 flex flex-col space-y-6">
-          <div>
-            <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
-              <ListFilter className="text-indigo-600 w-5 h-5" />
+        {/* Columna Derecha: Panel de Módulos */}
+        <div className="p-6 md:p-8 lg:col-span-5 bg-slate-50/50 flex flex-col space-y-6">
+          <div className="space-y-1">
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 flex items-center gap-2">
+              <ListFilter className="h-4 w-4 text-indigo-600" />
               Estado Analítico de Módulos
             </h3>
-            <p className="text-xs text-slate-500 leading-relaxed">
+            <p className="text-xs text-muted-foreground leading-relaxed">
               Monitoreo en tiempo real de los módulos registrados bajo esta
               matrícula.
             </p>
           </div>
 
-          {/* Módulos pendientes */}
-
-          {/* <div className="space-y-3">
-            <span className="text-xs font-bold text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
-              Créditos Pendientes / En Proceso
-            </span>
-            {loading ? (
-              <p className="text-xs text-slate-400">Cargando módulos...</p>
-            ) : modulosPendientes.length === 0 ? (
-              <div className="p-4 border border-dashed border-slate-200 text-center text-xs text-slate-400 rounded-xl bg-white">
-                El alumno no registra saldos pendientes.
-              </div>
-            ) : (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
-                {modulosPendientes.map((det) => (
-                  <div
-                    key={det.numero_modulo}
-                    onClick={() => setValue("numeroModulo", det.numero_modulo)}
-                    className={`p-3.5 border rounded-xl bg-white shadow-sm transition cursor-pointer flex justify-between items-center ${
-                      watch("numeroModulo") === det.numero_modulo
-                        ? "border-amber-500 ring-2 ring-amber-200 bg-amber-50/20"
-                        : "border-slate-200 hover:border-slate-300"
-                    }`}
-                  >
-                    <div className="flex flex-col">
-                      <span className="text-xs font-semibold text-slate-800">
-                        Módulo N° {det.numero_modulo}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-1 bg-amber-100 text-amber-800 rounded-md">
-                      Por pagar
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div> */}
-
-          {/* Módulos pagados */}
           <div className="space-y-3 pt-2">
-            <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+            <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-800">
+              <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               Historial de Módulos Cancelados
             </span>
+
             {modulosPagados.length === 0 ? (
-              <div className="p-4 border border-dashed border-slate-200 text-center text-xs text-slate-400 rounded-xl bg-white">
+              <div className="rounded-xl border border-dashed border-slate-200 bg-white p-6 text-center text-xs text-slate-400 shadow-sm">
                 No se registran transacciones previas aprobadas.
               </div>
             ) : (
-              <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
+              <div className="max-h-[26rem] space-y-3 overflow-y-auto pr-1">
                 {modulosPagados.map((modPagado, index) => {
                   const totalFila =
                     (Number(modPagado.cantidad_efectivo) || 0) +
@@ -667,26 +664,24 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                   return (
                     <div
                       key={index}
-                      className="p-4 bg-white border border-slate-200 rounded-xl shadow-sm hover:border-emerald-200 transition-all flex flex-col gap-2"
+                      className="flex flex-col gap-2.5 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:border-emerald-200"
                     >
-                      {/* Cabecera del item */}
                       <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-2">
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-                          <span className="text-xs font-bold text-slate-800 leading-tight">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
+                          <span className="text-xs font-bold leading-tight text-slate-800">
                             {modPagado.concepto ||
                               `Pago de Módulo N° ${modPagado.numero_modulo}`}
                           </span>
                         </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-md shrink-0">
+                        <span className="shrink-0 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
                           S/. {totalFila.toFixed(2)}
                         </span>
                       </div>
 
-                      {/* Detalles en Grid de Metadatos */}
-                      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 pt-1.5 border-t border-slate-100 text-[11px] text-slate-500">
+                      <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 border-t border-slate-100 pt-2 text-[11px] text-slate-500">
                         <span className="flex items-center gap-1.5">
-                          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
                           {modPagado.fecha_pago
                             ? format(
                                 parseISO(modPagado.fecha_pago),
@@ -695,19 +690,18 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                             : "---"}
                         </span>
                         <span className="flex items-center gap-1.5 truncate">
-                          <Wallet className="w-3.5 h-3.5 text-slate-400" />
+                          <Wallet className="h-3.5 w-3.5 text-slate-400" />
                           <span className="truncate">
                             {modPagado.nombre_formapago || "No especificado"}
                           </span>
                         </span>
 
-                        {/* Desglose de montos si es mixto o específico */}
-                        <div className="col-span-2 flex flex-wrap gap-x-3 gap-y-1 text-[10px] bg-slate-50 p-1.5 rounded-md mt-0.5 text-slate-600">
+                        <div className="col-span-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-slate-50 p-2 text-[10px] font-medium text-slate-600">
                           {!!modPagado.cantidad_efectivo && (
                             <span>
                               EFEC:{" "}
                               <strong className="font-mono text-slate-700">
-                                S/.
+                                S/.{" "}
                                 {Number(modPagado.cantidad_efectivo).toFixed(2)}
                               </strong>
                             </span>
@@ -716,7 +710,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                             <span>
                               REMOTO:{" "}
                               <strong className="font-mono text-slate-700">
-                                S/.
+                                S/.{" "}
                                 {Number(modPagado.cantidad_operacion).toFixed(
                                   2,
                                 )}
@@ -724,8 +718,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                             </span>
                           )}
                           {modPagado.numero_operacion && (
-                            <span className="flex items-center gap-0.5 font-mono text-indigo-600 ml-auto font-medium">
-                              <Hash className="w-3 h-3" />{" "}
+                            <span className="ml-auto flex items-center gap-0.5 font-mono font-semibold text-indigo-600">
+                              <Hash className="h-3 w-3" />
                               {modPagado.numero_operacion}
                             </span>
                           )}
@@ -738,7 +732,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };

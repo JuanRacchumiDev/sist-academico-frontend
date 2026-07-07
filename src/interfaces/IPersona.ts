@@ -1,3 +1,4 @@
+import { Certificado } from './ICertificado';
 import { DetalleParametro } from './IDetalleParametro';
 import { Matricula } from './IMatricula';
 
@@ -28,6 +29,7 @@ export interface Persona {
     estado?: boolean
     tipo_documento?: DetalleParametro
     matriculas?: Matricula[]
+    certificados?: Certificado[]
 }
 
 export interface PersonaResponse {

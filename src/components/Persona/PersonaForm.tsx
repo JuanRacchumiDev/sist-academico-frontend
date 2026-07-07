@@ -220,6 +220,8 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         } else {
           console.log("create desde form");
 
+          payload.origen = "WEB";
+
           // Nueva persona
           const response = await createPersona(payload);
 
@@ -306,6 +308,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
           if (result && data) {
             const persona = data as Persona;
             console.log({ persona });
+
+            if (persona.id) {
+              setIdPersona(persona.id);
+            }
 
             form.reset({
               idTipoDocumento: String(persona.id_tipodocumento),

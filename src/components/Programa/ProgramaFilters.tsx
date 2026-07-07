@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Search, RotateCcw, Filter, BookOpen, Layers, Tag } from "lucide-react";
+import { Search, RotateCcw, Filter } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import {
@@ -62,8 +62,13 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
       id_tipoprograma: "all",
     };
     setFilters(resetValues);
-    // Al resetear enviamos strings vacíos para que el backend traiga todo
-    onSearch({ titulo: "", id_segmento: "", id_tipoprograma: "" });
+
+    const cleanResetValues = {
+      titulo: "",
+      id_segmento: "",
+      id_tipoprograma: "",
+    };
+    onSearch(cleanResetValues);
   };
 
   return (

@@ -289,10 +289,10 @@ export const create = async (payload: Matricula): Promise<MatriculaResponse> => 
         console.log('response create matriculaRepository')
         console.log({ response })
 
-        const { data: { success, message, data } } = response
+        const { data: { result, message, data } } = response
 
         return {
-            result: success,
+            result,
             message,
             data
         }

@@ -58,6 +58,7 @@ import { Programa } from "../../interfaces/IPrograma";
 import { Institucion } from "../../interfaces/IInstitucion";
 import SearchableCombobox from "../../components/Common/SearchableCombobox";
 import { ParametroClase } from "../../params/parametroClase";
+import { VALOR_MATRICULA, VALOR_MODULO } from "@/params/constants";
 
 // --- ESQUEMAS DE VALIDACIÓN (ZOD) ---
 const ProgramaMatriculaSchema = z.object({
@@ -116,6 +117,7 @@ export const formSchema = z
   .superRefine((data, ctx) => {
     // Validaciones condicionales para MATRÍCULA
     const formaPagoMat = data.idFormaPagoMatricula.toUpperCase();
+
     if (formaPagoMat.includes("EFECTIVO")) {
       if (data.montoEfectivoMatricula <= 0) {
         ctx.addIssue({
@@ -219,12 +221,22 @@ export const formSchema = z
         });
       }
     }
+
+    const sumaMontosMatricula =
+      (data.montoEfectivoMatricula || 0) + (data.montoOperacionMatricula || 0);
+    if (sumaMontosMatricula > VALOR_MATRICULA) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `La suma de los montos no puede exceder el valor de la matrícula (S/. ${VALOR_MATRICULA})`,
+        path: ["montoEfectivoMatricula"],
+      });
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `La suma de los montos no puede exceder el valor de la matrícula (S/. ${VALOR_MATRICULA})`,
+        path: ["montoOperacionMatricula"],
+      });
+    }
   });
-
-type TFormValues = z.infer<typeof formSchema>;
-
-const today = new Date();
-const minDateString = format(today, "yyyy-MM-dd");
 
 // --- FUNCIONES DE CARGA DE DATOS (MOCKED/API REST) ---
 const loadAlumnos = async () => {
@@ -270,6 +282,11 @@ const loadProgramas = async () => {
   return response.result && response.data ? (response.data as Programa[]) : [];
 };
 
+type TFormValues = z.infer<typeof formSchema>;
+
+const today = new Date();
+const minDateString = format(today, "yyyy-MM-dd");
+
 // --- COMPONENTE PRINCIPAL ---
 export const MatriculaForm = () => {
   const navigate = useNavigate();
@@ -281,10 +298,6 @@ export const MatriculaForm = () => {
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
   const [programas, setProgramas] = useState<Programa[]>([]);
   const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
-
-  // VALORES BASE REFERENCIALES (Simulando datos que vienen de la BD)
-  const [dbMontoMatriculaRef, setDbMontoMatriculaRef] = useState<number>(200.0);
-  const [dbMontoModuloRef, setDbMontoModuloRef] = useState<number>(150.0);
 
   const isEditMode = !!id;
 
@@ -321,7 +334,7 @@ export const MatriculaForm = () => {
     },
   });
 
-  const { isSubmitting, errors } = form.formState;
+  const { isSubmitting } = form.formState;
 
   const { fields, append, remove } = useFieldArray({
     control: form.control,
@@ -442,6 +455,17 @@ export const MatriculaForm = () => {
 
   const onSubmit = async (values: TFormValues) => {
     try {
+      const totalIngresado =
+        (values.montoOperacionMatricula || 0) +
+        (values.montoOperacionMatricula || 0);
+      if (totalIngresado > VALOR_MATRICULA) {
+        showToast(
+          "warning",
+          `El monto total ingresado (S/. ${totalIngresado.toFixed(2)}) excede el costo de la matrícula (S/. ${VALOR_MATRICULA}). Por favor, verifique.`,
+        );
+        return;
+      }
+
       const programasIds: number[] = values.programas
         .filter((p) => p.idPrograma !== "")
         .map((p) => +p.idPrograma);
@@ -797,7 +821,7 @@ export const MatriculaForm = () => {
                   {/* Label del costo referencial traído de BD */}
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center gap-1 font-medium">
                     <Info className="h-3 w-3" /> Costo Base: S/.{" "}
-                    {dbMontoMatriculaRef.toFixed(2)}
+                    {VALOR_MATRICULA}
                   </span>
                 </div>
 
@@ -918,7 +942,7 @@ export const MatriculaForm = () => {
                   {/* Label del costo referencial traído de BD */}
                   <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-md flex items-center gap-1 font-medium">
                     <Info className="h-3 w-3" /> Costo Base Módulo: S/.{" "}
-                    {dbMontoModuloRef.toFixed(2)}
+                    {VALOR_MODULO}
                   </span>
                 </div>
 
@@ -949,9 +973,7 @@ export const MatriculaForm = () => {
                     </span>
                     <span className="text-sm font-bold text-slate-800">
                       S/.{" "}
-                      {(form.watch("numeroModulos") * dbMontoModuloRef).toFixed(
-                        2,
-                      )}
+                      {(form.watch("numeroModulos") * VALOR_MODULO).toFixed(2)}
                     </span>
                   </div>
                 </div>

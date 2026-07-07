@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios'
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 
 // Crea una instancia de axios con la URL base
 const apiClient = axios.create({
@@ -30,15 +30,20 @@ apiClient.interceptors.request.use(
 apiClient.interceptors.response.use(
     (response) => response,
     (error: AxiosError) => {
+        // Validamos si la petición que falló fue específicamente la de login
+        const isLoginRequest = error.config?.url?.includes('/auth/login')
+
         // Verifica si el error es 401 (Unauthorized)
         if (error.response && error.response.status === 401) {
-            console.error('Error 401 detectado. Redirigiendo al login...');
+            if (!isLoginRequest) {
+                console.error('Sesión expirada (Error 401). Redirigiendo al login...');
 
-            localStorage.removeItem('auth');
+                localStorage.removeItem('auth');
 
-            const navigate = useNavigate();
-
-            navigate('/login/')
+                // const navigate = useNavigate();
+                // navigate('/login/')
+                window.location.href = '/login'
+            }
 
             // window.location.href = '/login';
         }

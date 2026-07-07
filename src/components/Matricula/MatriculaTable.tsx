@@ -20,6 +20,7 @@ import {
 import { MatriculaRow } from "./MatriculaRow";
 import { TableSpinner } from "../../components/Common/TableSpinner";
 import { Matricula, PaginationType } from "@/interfaces/IMatricula";
+import { MatriculaFilters, MatriculaFiltersData } from "./MatriculaFilters";
 
 export const MatriculaTable = () => {
   const [matriculas, setMatriculas] = useState<Matricula[]>([]);
@@ -36,35 +37,27 @@ export const MatriculaTable = () => {
     previousPage: null,
   });
 
+  const [searchFilters, setSearchFilters] = useState<MatriculaFiltersData>({
+    fechaInicio: "",
+    fechaFinal: "",
+    nombreCompleto: "",
+  });
+
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= paginationInfo.totalPages) {
       setCurrentPage(page);
     }
-    // console.log("---- page handlePageChange ----");
-    // console.log({ page });
-
-    // const validatePage = page > 0 && page <= pagination.totalPages;
-
-    // console.log({ validatePage });
-
-    // if (validatePage) {
-    //   setPagination((prev) => ({ ...prev, currentPage: page }));
-    // }
   };
 
   const fetchData = useCallback(
-    async (pageToFetch: number) => {
+    async (pageToFetch: number, filtersData: MatriculaFiltersData) => {
       setIsLoading(true);
 
-      // const { currentPage, limit } = pagination;
-
-      // console.log({ currentPage });
-
-      // console.log({ limit });
-
-      const filters = {};
-
-      // console.log({ filters });
+      const filters = {
+        fechaInicio: filtersData.fechaInicio,
+        fechaFinal: filtersData.fechaFinal,
+        nombreCompleto: filtersData.nombreCompleto,
+      };
 
       try {
         const response = await getMatriculasPaginate(
@@ -76,11 +69,9 @@ export const MatriculaTable = () => {
         const { result, data, pagination: newPagination } = response;
 
         if (result && data) {
-          // const dataMatriculas = data as Matricula[];
           setMatriculas(data as Matricula[]);
 
           if (newPagination) {
-            // setPagination(newPagination);
             setPaginationInfo({
               totalPages: newPagination.totalPages || 1,
               totalItems: newPagination.totalItems || 0,
@@ -103,8 +94,13 @@ export const MatriculaTable = () => {
   );
 
   useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, fetchData]);
+    fetchData(currentPage, searchFilters);
+  }, [currentPage, searchFilters, fetchData]);
+
+  const handleSearchSubmit = (newFilters: MatriculaFiltersData) => {
+    setSearchFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   const renderPaginationItems = (): JSX.Element[] => {
     const items: JSX.Element[] = [];
@@ -151,6 +147,8 @@ export const MatriculaTable = () => {
 
   return (
     <div className="w-full space-y-4 pt-2">
+      <MatriculaFilters onSearch={handleSearchSubmit}></MatriculaFilters>
+
       <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-x-auto">
         <Table className="w-full">
           <TableHeader>

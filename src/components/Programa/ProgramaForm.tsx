@@ -45,7 +45,7 @@ import {
   DetalleParametroFilters,
 } from "../../interfaces/IDetalleParametro";
 import { ParametroClase } from "../../params/parametroClase";
-import { parseDate } from "@/utils/dateUtils";
+import { parseDate } from "../../utils/dateUtils";
 
 const MAX_FILE_SIZE = 2097152;
 
@@ -66,11 +66,9 @@ const formSchema = z
     }),
     fechaInicio: z.date({
       message: "La fecha de inicio es requerida",
-      // invalid_type_error: "Formato de fecha inválido",
     }),
     fechaFinal: z.date({
       message: "La fecha final es requerida",
-      // invalid_type_error: "Formato de fecha inválido",
     }),
     duracion: z.string().optional().nullable(),
     horasAcademicas: z
@@ -360,15 +358,15 @@ export const ProgramaForm = () => {
             console.log({ programa });
 
             form.reset({
-              idSegmento: programa.id_segmento,
-              idTipoPrograma: programa.id_tipoprograma,
-              titulo: programa.titulo,
+              idSegmento: programa.id_segmento?.toString() ?? "",
+              idTipoPrograma: programa.id_tipoprograma?.toString() ?? "",
+              titulo: programa.titulo ?? "",
               fechaInicio: parseDate(programa.fecha_inicio),
               fechaFinal: parseDate(programa.fecha_final),
-              horasAcademicas: programa.horas_academicas,
-              duracion: programa.duracion,
-              modulos: programa.numero_modulos,
-              modalidad: programa.modalidad,
+              horasAcademicas: programa.horas_academicas ?? 0,
+              duracion: programa.duracion ?? "",
+              modulos: programa.numero_modulos ?? 0,
+              modalidad: programa.modalidad ?? "VIRTUAL",
             });
           }
         }
@@ -379,7 +377,7 @@ export const ProgramaForm = () => {
     };
 
     fetchData();
-  }, [id, form]);
+  }, [id, form, isEditMode]);
 
   return (
     <>
@@ -594,14 +592,12 @@ export const ProgramaForm = () => {
                       <label className="text-sm font-medium text-slate-700">
                         Módulos
                       </label>
-                      {/* <RequiredLabel>Módulos</RequiredLabel> */}
                       <FormControl>
                         <Input
                           placeholder="12"
                           autoComplete="off"
                           type="number"
                           min={0}
-                          {...field}
                           value={field.value ?? ""}
                           onChange={(e) => {
                             const value = e.target.value;

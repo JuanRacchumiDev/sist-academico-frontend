@@ -103,6 +103,7 @@ export const create = async (payload: Persona): Promise<PersonaResponse> => {
     try {
         const response = await apiClient.post('/personas', payload)
 
+        console.log('---- response create personaRepository ----')
         console.log({ response })
 
         const { data: { result, message, status, code } } = response
@@ -130,6 +131,7 @@ export const update = async (id: number, payload: Persona): Promise<PersonaRespo
 
         const response = await apiClient.patch(urlApi, payload)
 
+        console.log('---- response update personaRepository ----')
         console.log({ response })
 
         const { data: { result, data, message, error, status } } = response

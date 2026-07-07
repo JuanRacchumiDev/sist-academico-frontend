@@ -11,6 +11,7 @@ export interface Usuario {
     id_persona?: number
     perfil?: DetalleParametro
     persona?: Persona
+    estado?: boolean
 }
 
 export interface UsuarioResponse {
@@ -19,9 +20,11 @@ export interface UsuarioResponse {
     data?: Usuario | Usuario[]
     error?: string
     status?: number
+    pagination?: PaginationType
+    code?: string
 }
 
-export interface Pagination {
+export interface PaginationType {
     currentPage: number
     limit: number
     totalPages: number
@@ -32,8 +35,9 @@ export interface Pagination {
 
 export interface UsuarioPaginateResponse {
     result: boolean
+    message?: string
     data?: Usuario[]
-    pagination?: Pagination
     errors?: string
     status?: number
+    pagination?: PaginationType
 }

@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-import { Pago, PagoResponse, ModulosPorPagarResponse } from "@/interfaces/IPago";
+import { Pago, PagoResponse } from "@/interfaces/IPago";
 
 export const getAll = async (): Promise<PagoResponse> => {
     try {
@@ -88,10 +88,10 @@ export const create = async (payload: Pago): Promise<PagoResponse> => {
         console.log('response create pagoRepository')
         console.log({ response })
 
-        const { data: { success, message, data } } = response
+        const { data: { result, message, data } } = response
 
         return {
-            result: success,
+            result,
             message,
             data
         }

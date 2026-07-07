@@ -72,6 +72,8 @@ export const createPersona = async (payload: Persona) => {
 
 export const updatePersona = async (id: number, payload: Persona) => {
     const response = await update(id, payload)
+    console.log('response updatePersona')
+    console.log({ response })
 
     return {
         ...response

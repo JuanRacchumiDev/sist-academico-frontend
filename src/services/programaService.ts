@@ -59,7 +59,6 @@ export const downloadProgramaPlan = async (id: number): Promise<void> => {
 export const createPrograma = async (
     payload: FormData | Programa,
     config?: AxiosRequestConfig
-
 ) => {
     const response = await create(payload, config)
 
@@ -69,15 +68,6 @@ export const createPrograma = async (
 }
 
 export const updatePrograma = async (id: number, payload: FormData | Programa, config?: AxiosRequestConfig) => {
-    console.log('---- updatePrograma programaService ----')
-    console.log({ id })
-    console.log({ payload })
-    console.log({ config })
-
-    console.log(typeof id)
-    console.log(typeof payload)
-    console.log(typeof config)
-
     const response = await update(id, payload, config)
 
     return {

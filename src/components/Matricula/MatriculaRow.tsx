@@ -34,6 +34,7 @@ import {
   getCertificadoByParams,
   getCronogramaPagosByParams,
 } from "../../services/matriculaService";
+import { formatDate } from "../../utils/dateUtils";
 
 interface Props {
   matricula: Matricula;
@@ -199,13 +200,15 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
         className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
       >
         <TableCell className="py-3">
-          Id matrícula: {matricula.id} - {matricula.persona.nombre_completo}
+          {matricula.persona.nombre_completo}
         </TableCell>
         <TableCell className="py-3">
           {matricula.persona.numero_documento}
         </TableCell>
         <TableCell className="py-3">{matricula.institucion.nombre}</TableCell>
-        <TableCell className="py-3">{matricula.fecha_matricula}</TableCell>
+        <TableCell className="py-3">
+          {formatDate(matricula.fecha_matricula)}
+        </TableCell>
         <TableCell className="py-3">
           {matricula.estado ? (
             <CircleCheck className="text-green-500 w-5 h-5" />

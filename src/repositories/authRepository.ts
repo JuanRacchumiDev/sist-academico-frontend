@@ -8,47 +8,57 @@ export const login = async (email: string, password: string): Promise<TAuthRespo
             password
         }
 
-        // console.log({ credenciales })
+        console.log({ credenciales })
 
         const response = await apiClient.post('/auth/login', credenciales)
 
-        console.log('response authReposit')
+        console.log('---- response authRepository ----')
         console.log({ response })
 
-        const { data: dataAuth, status: statusAuth } = response
+        const { data: { access_token, result, message, usuario, error }, status } = response
 
-        console.log({ dataAuth })
-
-        const { access_token, result, error, message, usuario } = dataAuth
-
-        if (statusAuth === 200) {
-            if (result) {
-                localStorage.setItem('auth', JSON.stringify(
-                    {
-                        access_token,
-                        usuario
-                    }
-                ))
-            }
+        if (status === 200 && result) {
+            localStorage.setItem('auth', JSON.stringify({ access_token, usuario }));
 
             return {
                 result,
-                message,
+                message: message || "Sesión iniciada con éxito",
                 error,
-                status: statusAuth
-            }
+                status,
+                data: usuario
+            };
         }
 
         return {
-            result: false,
-            status: statusAuth,
-            message: message || "Error al iniciar sesión"
+            result,
+            message: message || "Error al iniciar sesión",
+            status,
+            data: null
+
         }
 
     } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Error de inicio de sesión'
+        console.log('Error capturado en el repositorio:', error);
+
+        if (error.response && error.response.data) {
+            const { message, error: resError, result } = error.response.data;
+            return {
+                result: result ?? false,
+                message: message || resError || "Credenciales inválidas",
+                status: error.response.status,
+                data: null
+            };
+        }
+
+        const errorMessage = error instanceof Error ? error.message : 'Error de red o conexión';
         console.log('errorMessage', errorMessage)
-        return { result: false, error: errorMessage, status: 500 }
+        return {
+            result: false,
+            message: errorMessage,
+            error: errorMessage,
+            status: 500,
+            data: null
+        }
     }
 }
 
