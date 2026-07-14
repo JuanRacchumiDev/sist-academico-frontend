@@ -4,37 +4,25 @@ import { Sidebar } from "./components/Layout/Sidebar";
 import { Header } from "./components/Layout/Header";
 import { LoginPage } from "./components/Auth/Page/LoginPage";
 import { NotFoundPage } from "./components/Layout/NotFoundPage";
-
 import { Dashboard } from "./components/Dashboard/Dashboard";
-
 import { PersonaListPage } from "./components/Persona/Page/PersonaListPage";
 import { PersonaFormPage } from "./components/Persona/Page/PersonaFormPage";
-
 import { EventoListPage } from "./components/Evento/Page/EventoListPage";
 import { EventoFormPage } from "./components/Evento/Page/EventoFormPage";
-
 import { MantenimientoPage } from "./components/Mantenimiento/MantenimientoPage";
-
 import { ProgramaListPage } from "./components/Programa/Page/ProgramaListPage";
 import { ProgramaFormPage } from "./components/Programa/Page/ProgramaFormPage";
-
 import { ModuloListPage } from "./components/Modulo/Page/ModuloListPage";
 import { ModuloFormPage } from "./components/Modulo/Page/ModuloFormPage";
-
 import { MatriculaListPage } from "./components/Matricula/Page/MatriculaListPage";
 import { MatriculaFormPage } from "./components/Matricula/Page/MatriculaFormPage";
-
 import { PagoListPage } from "./components/Pago/Page/PagoListPage";
 import { PagoFormPage } from "./components/Pago/Page/PagoFormPage";
-
 import { AdjuntoListPage } from "./components/Adjunto/Page/AdjuntoListPage";
 import { AdjuntoFormPage } from "./components/Adjunto/Page/AdjuntoFormPage";
-
 import { UsuarioListPage } from "./components/Usuario/Page/UsuarioListPage";
 import { UsuarioFormPage } from "./components/Usuario/Page/UsuarioFormPage";
-
 import { DashboardAlumno } from "./components/Alumno/DashboardAlumno";
-
 import { MisMatriculasListPage } from "./components/Alumno/Page/MisMatriculasListPage";
 
 function App() {
@@ -43,7 +31,6 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Verificamos si estamos en la página de login
   const isLoginPage =
     location.pathname === "/login" || location.pathname === "/";
 
@@ -53,7 +40,6 @@ function App() {
 
   useEffect(() => {
     const storedAuth = localStorage.getItem("auth");
-
     if (storedAuth) {
       setIsLoggedIn(true);
     } else if (!isLoginPage) {
@@ -63,12 +49,7 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen transition-all duration-500 
-      ${
-        isLoginPage
-          ? "bg-gray-50 flex items-center justify-center pl-4 pr-4" // Centra la página de Login
-          : "bg-gray-100" // Fondo neutro para el resto de la app
-      }`}
+      className={`min-h-screen ${isLoginPage ? "bg-slate-50 flex items-center justify-center p-4" : "bg-slate-100"}`}
     >
       <div className="flex h-screen overflow-hidden w-full max-w-full">
         {!isLoginPage && isLoggedIn && (
@@ -80,10 +61,7 @@ function App() {
         )}
 
         <div
-          className={
-            `flex-1 flex flex-col overflow-hidden 
-             ${isLoginPage ? "h-auto" : "h-screen"}` // Ajuste de altura para login page
-          }
+          className={`flex-1 flex flex-col overflow-hidden ${isLoginPage ? "h-auto" : "h-screen"}`}
         >
           {!isLoginPage && isLoggedIn && (
             <Header
@@ -93,12 +71,13 @@ function App() {
           )}
 
           <main className="flex-1 overflow-y-auto bg-transparent">
+            {/* Espaciado reducido de p-6 a p-4 y space-y-4 para un look más compacto y corporativo */}
             <div
-              className={`${
+              className={
                 isLoginPage
                   ? "p-0 h-full flex items-center justify-center"
-                  : "p-6 space-y-6"
-              }`}
+                  : "p-4 space-y-4"
+              }
             >
               <Routes>
                 <Route
@@ -116,108 +95,83 @@ function App() {
 
                 {isLoggedIn ? (
                   <>
-                    <Route path="/dashboard" element={<Dashboard />}></Route>
-
+                    <Route path="/dashboard" element={<Dashboard />} />
                     <Route
                       path="/personas/:nombreGrupo"
                       element={<PersonaListPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/personas/:nombreGrupo/nuevo"
                       element={<PersonaFormPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/personas/:nombreGrupo/editar/:id"
                       element={<PersonaFormPage />}
-                    ></Route>
-
-                    <Route path="/evento" element={<EventoListPage />}></Route>
-                    <Route
-                      path="/evento/nuevo"
-                      element={<EventoFormPage />}
-                    ></Route>
+                    />
+                    <Route path="/evento" element={<EventoListPage />} />
+                    <Route path="/evento/nuevo" element={<EventoFormPage />} />
                     <Route
                       path="/evento/editar/:id"
                       element={<EventoFormPage />}
-                    ></Route>
-
+                    />
                     <Route
                       path="/programa-academico"
                       element={<ProgramaListPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/programa-academico/nuevo"
                       element={<ProgramaFormPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/programa-academico/editar/:id"
                       element={<ProgramaFormPage />}
-                    ></Route>
-
-                    <Route path="/modulo" element={<ModuloListPage />}></Route>
-                    <Route
-                      path="/modulo/nuevo"
-                      element={<ModuloFormPage />}
-                    ></Route>
+                    />
+                    <Route path="/modulo" element={<ModuloListPage />} />
+                    <Route path="/modulo/nuevo" element={<ModuloFormPage />} />
                     <Route
                       path="/modulo/editar/:id"
                       element={<ModuloFormPage />}
-                    ></Route>
-
-                    <Route
-                      path="/matricula"
-                      element={<MatriculaListPage />}
-                    ></Route>
+                    />
+                    <Route path="/matricula" element={<MatriculaListPage />} />
                     <Route
                       path="/matricula/nuevo"
                       element={<MatriculaFormPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/matricula/editar/:id"
                       element={<MatriculaFormPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/matricula/:id/pago-modulo"
                       element={<PagoFormPage />}
-                    ></Route>
-
-                    <Route path="/pago" element={<PagoListPage />}></Route>
-
-                    <Route
-                      path="/adjunto"
-                      element={<AdjuntoListPage />}
-                    ></Route>
+                    />
+                    <Route path="/pago" element={<PagoListPage />} />
+                    <Route path="/adjunto" element={<AdjuntoListPage />} />
                     <Route
                       path="/adjunto/nuevo"
                       element={<AdjuntoFormPage />}
-                    ></Route>
+                    />
                     <Route
                       path="/adjunto/editar/:id"
                       element={<AdjuntoFormPage />}
-                    ></Route>
-
-                    <Route
-                      path="/usuario"
-                      element={<UsuarioListPage />}
-                    ></Route>
+                    />
+                    <Route path="/usuario" element={<UsuarioListPage />} />
                     <Route
                       path="/usuario/nuevo"
                       element={<UsuarioFormPage />}
-                    ></Route>
-
+                    />
                     <Route
                       path="/mantenimiento/*"
                       element={<MantenimientoPage />}
-                    ></Route>
-
+                    />
                     <Route
                       path="/dashboard-alumno"
                       element={<DashboardAlumno />}
-                    ></Route>
+                    />
                     <Route
                       path="/mis-matriculas"
                       element={<MisMatriculasListPage />}
-                    ></Route>
+                    />
                   </>
                 ) : (
                   <Route
@@ -227,7 +181,6 @@ function App() {
                     }
                   />
                 )}
-
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </div>

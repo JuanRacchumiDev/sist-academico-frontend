@@ -2,7 +2,7 @@ import { UsuarioList } from "../UsuarioList";
 
 export const UsuarioListPage = () => {
   return (
-    <div>
+    <div className="w-full">
       <UsuarioList />
     </div>
   );

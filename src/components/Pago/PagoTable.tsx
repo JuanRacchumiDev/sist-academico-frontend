@@ -126,69 +126,72 @@ export const PagoTable = () => {
   };
 
   return (
-    <div className="w-full space-y-4 pt-2">
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-x-auto">
-        <Table className="w-full">
-          <TableHeader>
-            <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-              <TableHead className="w-[12%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                Alumno
-              </TableHead>
-              <TableHead className="w-[12%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                Concepto
-              </TableHead>
-              <TableHead className="w-[12%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                Forma Pago
-              </TableHead>
-              <TableHead className="w-[12%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
-                Fecha
-              </TableHead>
-              <TableHead className="w-[7%] py-4 px-2 text-slate-600 font-semibold text-xs uppercase tracking-wider text-center">
-                Estado
-              </TableHead>
-              <TableHead className="w-[8%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider text-right">
-                Acciones
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableSpinner colSpan={6} />
-            ) : pagos.length > 0 ? (
-              pagos.map((pago) => <PagoRow key={pago.id} pago={pago} />)
-            ) : (
-              <TableRow>
-                <TableCell colSpan={6} className="h-32 text-center">
-                  <div className="flex flex-col items-center justify-center text-slate-400 space-y-2">
-                    <span className="text-sm font-medium">
-                      No se encontraron registros
-                    </span>
-                    <p className="text-xs">
-                      Intenta ajustar los filtros de búsqueda
-                    </p>
-                  </div>
-                </TableCell>
+    <div className="w-full space-y-3">
+      <div className="bg-white overflow-hidden">
+        <div className="overflow-x-auto border-t border-slate-100">
+          <Table className="w-full text-left border-collapse">
+            <TableHeader>
+              <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Alumno
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Concepto
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Forma Pago
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Fecha
+                </TableHead>
+                <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
+                  Estado
+                </TableHead>
+                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
+                  Acciones
+                </TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody>
+              {isLoading ? (
+                <TableSpinner colSpan={6} />
+              ) : pagos.length > 0 ? (
+                pagos.map((pago) => <PagoRow key={pago.id} pago={pago} />)
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
+                      <span className="text-xs font-medium text-slate-600">
+                        No se encontraron registros
+                      </span>
+                      <p className="text-[11px]">
+                        Intenta ajustar los filtros de búsqueda
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-      <div className="flex items-center justify-between px-2">
-        <div className="text-xs text-slate-500 font-medium">
-          Mostrando <span className="text-slate-900">{pagos.length}</span>{" "}
+
+      <div className="flex items-center justify-between px-3 pb-3">
+        <div className="text-[11px] text-slate-500 font-medium">
+          Mostrando{" "}
+          <span className="text-slate-800 font-semibold">{pagos.length}</span>{" "}
           registros de este grupo
         </div>
 
-        <Pagination className="justify-end">
-          <PaginationContent className="gap-1">
+        <Pagination className="justify-end w-auto m-0">
+          <PaginationContent className="gap-0.5">
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => handlePageChange(currentPage - 1)}
-                className={`
-                  cursor-pointer border border-slate-200 text-slate-600 transition-all
-                  hover:bg-slate-100 hover:text-slate-900
-                  ${currentPage === 1 ? "pointer-events-none opacity-40" : ""}
-                `}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === 1 ? "pointer-events-none opacity-30" : ""
+                }`}
               />
             </PaginationItem>
 
@@ -197,11 +200,11 @@ export const PagoTable = () => {
             <PaginationItem>
               <PaginationNext
                 onClick={() => handlePageChange(currentPage + 1)}
-                className={`
-                  cursor-pointer border border-slate-200 text-slate-600 transition-all
-                  hover:bg-slate-100 hover:text-slate-900
-                  ${currentPage === totalPages ? "pointer-events-none opacity-40" : ""}
-                `}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === paginationInfo.totalPages
+                    ? "pointer-events-none opacity-30"
+                    : ""
+                }`}
               />
             </PaginationItem>
           </PaginationContent>

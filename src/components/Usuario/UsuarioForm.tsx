@@ -39,7 +39,7 @@ import { getDetalleFiltered } from "@/services/detalleParametroService";
 import { getPersonas, getPersonaById } from "@/services/personaService";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
-import z, { email } from "zod";
+import z from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useToast } from "../../context/ToastContext";
 import { Spinner } from "../../components/Common/Spinner";
@@ -85,7 +85,6 @@ const getPersona = async (idPersona: number | string) => {
   let persona: Persona = null;
 
   const response = await getPersonaById(+idPersona);
-
   const { result, data } = response;
 
   if (result && data) {
@@ -97,7 +96,7 @@ const getPersona = async (idPersona: number | string) => {
 
 export const formSchema = z.object({
   name: z.string().min(10, {
-    message: "El nombre de usuario es requerido",
+    message: "El nombre de usuario es requerido (mínimo 10 caracteres)",
   }),
   email: z.string().email({
     message: "Por favor ingrese un correo válido",
@@ -135,11 +134,12 @@ export const UsuarioForm = () => {
   const isEditMode = !!id;
 
   const inputErrorClass = (invalid: boolean) =>
-    invalid ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500";
+    invalid
+      ? "border-red-400 focus-visible:ring-red-400 bg-red-50/10 focus:border-red-400 text-sm"
+      : "border-slate-200 focus-visible:ring-blue-600 focus:border-blue-600 text-slate-800 text-sm transition-colors";
 
   const handleGoBack = () => {
-    const urlBack = `/usuarios`;
-    navigate(urlBack);
+    navigate(`/usuario`);
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -153,14 +153,12 @@ export const UsuarioForm = () => {
   });
 
   const resetForm = () => {
-    const dataForm: TUsuario = {
+    form.reset({
       name: "",
       email: "",
       idPerfil: "",
       idPersona: "",
-    };
-
-    form.reset(dataForm);
+    });
   };
 
   const selectedPersona = async (idPersona: string) => {
@@ -170,15 +168,7 @@ export const UsuarioForm = () => {
 
     try {
       const persona = await getPersona(idPersona);
-      console.log("---- obteniendo persona desde selectedPersona ----");
-      console.log({ persona });
-      const {
-        nombres,
-        apellido_paterno,
-        apellido_materno,
-        email,
-        numero_documento,
-      } = persona;
+      const { nombres, apellido_paterno, apellido_materno, email } = persona;
 
       const usernameSugerido = generateUsername({
         nombres,
@@ -188,13 +178,11 @@ export const UsuarioForm = () => {
 
       form.setValue("name", usernameSugerido, { shouldValidate: true });
 
-      // Definiendo el valor de email en el formulario
       if (email) {
         form.setValue("email", email, { shouldValidate: true });
       }
 
       setDefinePassword(email || "");
-
       showToast("success", `Datos de ${persona.nombre_completo} cargados`);
     } catch (error) {
       console.error(error);
@@ -228,8 +216,6 @@ export const UsuarioForm = () => {
 
   const onSubmit = async (values: TFormValues) => {
     try {
-      console.log({ values });
-
       const { name, email, idPerfil, idPersona } = values;
 
       const payload: Usuario = {
@@ -239,9 +225,6 @@ export const UsuarioForm = () => {
         id_persona: +idPersona,
         ...(!isEditMode && { password: definePassword }),
       };
-
-      console.log("payload new usuario");
-      console.log({ payload });
 
       const response = isEditMode
         ? await updateUsuario(+id, payload)
@@ -269,169 +252,203 @@ export const UsuarioForm = () => {
   };
 
   return (
-    <div className="w-full max-w-2xl mx-auto bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Encabezado del Formulario */}
-      <div className="bg-slate-50 border-b border-slate-200 p-5 flex items-center gap-3">
-        <div className="p-2 bg-blue-50 text-blue-600 rounded-lg">
-          <UserPlus className="w-5 h-5" />
+    <div className="w-full max-w-2xl mx-auto bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+      {/* Encabezado del Formulario - Botón "Volver" alineado y estilizado correctamente */}
+      <div className="bg-slate-50/50 border-b border-slate-100 p-5 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="p-1.5 bg-blue-50 text-blue-600 rounded-md">
+            <UserPlus className="w-4 h-4" />
+          </div>
+          <div className="space-y-0.5">
+            <h3 className="text-base font-semibold text-slate-800 tracking-tight">
+              {isEditMode ? "Editar Usuario" : "Registrar Nuevo Usuario"}
+            </h3>
+            <p className="text-[11px] text-slate-500 font-normal">
+              Crea una cuenta e introduce los accesos correspondientes.
+            </p>
+          </div>
         </div>
-        <div>
-          <h3 className="text-base font-semibold text-slate-900">
-            Registrar Nuevo Usuario
-          </h3>
-          <p className="text-xs text-slate-500">
-            Crea una cuenta e introduce los accesos correspondientes.
-          </p>
-        </div>
+
+        <Button
+          variant="outline"
+          type="button"
+          disabled={isSubmitting}
+          onClick={handleGoBack}
+          className="border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg px-3 h-8 text-xs font-medium transition-colors shadow-none flex items-center"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
+          Volver
+        </Button>
       </div>
 
       {/* Formulario */}
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-5">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-4">
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg font-medium">
+            <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-xs rounded-lg font-medium animate-in fade-in duration-200">
               {error}
             </div>
           )}
 
-          <div className="space-y-1.5">
-            <FormField
-              control={form.control}
-              name="idPerfil"
-              render={({ field, fieldState }) => (
-                <FormItem className="flex flex-col">
-                  <RequiredLabel>Perfil</RequiredLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    value={field.value ?? ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger
-                        className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
-                      >
-                        <SelectValue placeholder="Seleccionar..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {perfiles.map((perfil) => (
-                        <SelectItem
-                          value={perfil.codigo!.toString()}
-                          key={perfil.codigo!.toString()}
-                        >
-                          {perfil.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <FormField
-              control={form.control}
-              name="idPersona"
-              render={({ field, fieldState }) => (
-                <FormItem className="flex flex-col">
-                  <RequiredLabel>Persona</RequiredLabel>
-                  <Select
-                    onValueChange={selectedPersona}
-                    value={field.value ?? ""}
-                  >
-                    <FormControl>
-                      <SelectTrigger
-                        className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
-                      >
-                        <SelectValue placeholder="Seleccionar..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {personas.map((persona) => (
-                        <SelectItem
-                          value={persona.id!.toString()}
-                          key={persona.id!.toString()}
-                        >
-                          {persona.nombre_completo}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field, fieldState }) => (
-                <FormItem>
-                  <RequiredLabel>Nombre de usuario</RequiredLabel>
+          <FormField
+            control={form.control}
+            name="idPerfil"
+            render={({ field, fieldState }) => (
+              <FormItem className="flex flex-col gap-1 w-full">
+                <RequiredLabel>
+                  <span className="text-xs font-medium text-slate-700">
+                    Perfil
+                  </span>
+                </RequiredLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  value={field.value ?? ""}
+                >
                   <FormControl>
-                    <Input
-                      placeholder="jperez"
-                      autoComplete="off"
-                      maxLength={10}
-                      {...field}
-                      value={field.value ?? ""}
-                      className={inputErrorClass(fieldState.invalid)}
-                    />
+                    <SelectTrigger
+                      className={`h-9 rounded-lg shadow-none w-full text-left ${inputErrorClass(fieldState.invalid)}`}
+                    >
+                      <SelectValue placeholder="Seleccionar perfil..." />
+                    </SelectTrigger>
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <div className="space-y-1.5">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field, fieldState }) => (
+                  <SelectContent className="rounded-lg shadow-md border-slate-200 max-h-52">
+                    {perfiles.map((perfil) => (
+                      <SelectItem
+                        value={perfil.codigo!.toString()}
+                        key={perfil.codigo!.toString()}
+                        className="cursor-pointer text-xs focus:bg-slate-50 rounded-md py-1.5"
+                      >
+                        {perfil.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormItem>
-                  <RequiredLabel>Email</RequiredLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="jperez@gmail.com"
-                      autoComplete="off"
-                      maxLength={60}
-                      {...field}
-                      value={field.value ?? ""}
-                      className={inputErrorClass(fieldState.invalid)}
-                    />
-                  </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-[11px] text-red-500 font-medium" />
                 </FormItem>
-              )}
-            />
-          </div>
+              </FormItem>
+            )}
+          />
 
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
+          <FormField
+            control={form.control}
+            name="idPersona"
+            render={({ field, fieldState }) => (
+              <FormItem className="flex flex-col gap-1 w-full">
+                <RequiredLabel>
+                  <span className="text-xs font-medium text-slate-700">
+                    Persona
+                  </span>
+                </RequiredLabel>
+                <Select
+                  onValueChange={selectedPersona}
+                  value={field.value ?? ""}
+                >
+                  <FormControl>
+                    <SelectTrigger
+                      className={`h-9 rounded-lg shadow-none w-full text-left ${inputErrorClass(fieldState.invalid)}`}
+                    >
+                      <SelectValue placeholder="Seleccionar persona..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent className="rounded-lg shadow-md border-slate-200 max-h-52">
+                    {personas.map((persona) => (
+                      <SelectItem
+                        value={persona.id!.toString()}
+                        key={persona.id!.toString()}
+                        className="cursor-pointer text-xs focus:bg-slate-50 rounded-md py-1.5"
+                      >
+                        {persona.nombre_completo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormItem>
+                  <FormMessage className="text-[11px] text-red-500 font-medium" />
+                </FormItem>
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field, fieldState }) => (
+              <FormItem className="flex flex-col gap-1 w-full">
+                <RequiredLabel>
+                  <span className="text-xs font-medium text-slate-700">
+                    Nombre de usuario
+                  </span>
+                </RequiredLabel>
+                <FormControl>
+                  <Input
+                    placeholder="jperez"
+                    autoComplete="off"
+                    maxLength={20}
+                    {...field}
+                    value={field.value ?? ""}
+                    className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(fieldState.invalid)}`}
+                  />
+                </FormControl>
+                <FormMessage className="text-[11px] text-red-500 font-medium" />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field, fieldState }) => (
+              <FormItem className="flex flex-col gap-1 w-full">
+                <RequiredLabel>
+                  <span className="text-xs font-medium text-slate-700">
+                    Email
+                  </span>
+                </RequiredLabel>
+                <FormControl>
+                  <Input
+                    placeholder="jperez@gmail.com"
+                    autoComplete="off"
+                    maxLength={60}
+                    {...field}
+                    value={field.value ?? ""}
+                    className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(fieldState.invalid)}`}
+                  />
+                </FormControl>
+                <FormMessage className="text-[11px] text-red-500 font-medium" />
+              </FormItem>
+            )}
+          />
+
+          {/* Botones de acción inferiores limpios */}
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-slate-100">
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={isSubmitting}
+              onClick={() => resetForm()}
+              className="w-full sm:w-auto h-9 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium px-4 text-xs transition-colors shadow-none"
+            >
+              <XCircle className="h-3.5 w-3.5 mr-1.5" />
+              Cancelar
+            </Button>
+
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 transition-all active:scale-95"
+              className="w-full sm:w-auto h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 text-xs font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none shadow-none"
             >
               {isSubmitting ? (
-                <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                <>
+                  <Spinner className="mr-1.5 h-3.5 w-3.5 animate-spin text-white" />
+                  Procesando...
+                </>
               ) : (
-                <Save className="h-4 w-4 mr-2" />
+                <>
+                  <Save className="h-3.5 w-3.5 mr-1.5" />
+                  {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
+                </>
               )}
-              {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              disabled={isSubmitting}
-              onClick={() => resetForm()}
-              className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
-            >
-              <XCircle className="h-4 w-4 mr-2" />
-              Cancelar
             </Button>
           </div>
         </form>

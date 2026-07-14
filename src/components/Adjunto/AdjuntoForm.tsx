@@ -91,6 +91,7 @@ export const AdjuntoForm = () => {
   const [existingOriginalName, setExistingOriginalName] = useState<
     string | null
   >(null);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   const isEditMode = !!id;
 
@@ -157,6 +158,7 @@ export const AdjuntoForm = () => {
 
   useEffect(() => {
     const fetchInitialData = async () => {
+      setIsLoadingData(true);
       try {
         const responseProgramas = await getProgramas();
         if (responseProgramas.result && responseProgramas.data) {
@@ -185,6 +187,8 @@ export const AdjuntoForm = () => {
       } catch (error) {
         console.error("Error al obtener datos iniciales", error);
         showToast("error", "Error al cargar los datos del formulario.");
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -269,56 +273,69 @@ export const AdjuntoForm = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
-      <Card className="shadow-xl border border-slate-100 bg-white rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-2xl">
-        <CardHeader className="border-b border-slate-100 p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-gradient-to-r from-slate-50/50 to-white gap-4">
-          <div className="space-y-1.5">
-            <CardTitle className="text-2xl font-bold text-slate-900 tracking-tight flex items-center gap-2">
-              <span className="p-2 rounded-lg bg-blue-50 text-blue-600">
-                <FileText className="h-6 w-6" />
+    // Reducción de márgenes y sombras agresivas para integrarse al look corporativo y plano
+    <div className="max-w-3xl mx-auto py-5 px-4 sm:px-6">
+      <Card className="shadow-sm border border-slate-200/80 bg-white rounded-xl overflow-hidden">
+        {/* Cabecera compacta y balanceada */}
+        <CardHeader className="border-b border-slate-100 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50/50 gap-3">
+          <div className="space-y-0.5">
+            <CardTitle className="text-base font-semibold text-slate-800 tracking-tight flex items-center gap-2">
+              <span className="p-1.5 rounded-md bg-blue-50 text-blue-600">
+                <FileText className="h-4 w-4" />
               </span>
-              {isEditMode ? `Editar Adjunto` : `Nuevo Archivo Adjunto`}
+              {isEditMode ? "Editar Adjunto" : "Nuevo Archivo Adjunto"}
             </CardTitle>
-            <CardDescription className="text-slate-500 text-sm font-normal pl-11">
+            <CardDescription className="text-slate-500 text-[11px] font-normal pl-8">
               {isEditMode
-                ? `Modifique el archivo o ubicación del adjunto en el sistema`
-                : `Asigne y cargue un adjunto a un programa o módulo específico`}
+                ? "Modifique el archivo o ubicación del adjunto en el sistema"
+                : "Asigne y cargue un adjunto a un programa o módulo específico"}
             </CardDescription>
           </div>
           <Button
             variant="outline"
             onClick={handleGoBack}
-            className="border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-xl px-4 py-2 text-sm font-medium transition-all shadow-sm"
+            className="border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg px-3 h-8 text-xs font-medium transition-colors shadow-none"
           >
-            <ArrowLeft className="h-4 w-4 mr-2 text-slate-500" />
+            <ArrowLeft className="h-3.5 w-3.5 mr-1.5 text-slate-500" />
             Volver al listado
           </Button>
         </CardHeader>
 
-        <CardContent className="p-8">
+        {/* Cuerpo del formulario con p-6 para mejor flujo visual */}
+        <CardContent className="px-6 sm:px-8 relative">
+          {isLoadingData && (
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+              <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
+            </div>
+          )}
+
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              {/* Sección 01 */}
-              <div className="space-y-6">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-semibold shadow-sm shadow-blue-200">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Sección 01: Relación Institucional */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
                     1
                   </span>
-                  <h3 className="text-base font-semibold text-slate-900 tracking-tight">
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Relación Institucional y Metadatos
                   </h3>
                   <div className="h-px bg-slate-100 flex-1"></div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-6">
+                <div className="grid grid-cols-1 gap-4">
                   <FormField
                     control={form.control}
                     name="idPrograma"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <RequiredLabel>Programa académico</RequiredLabel>
+                        <RequiredLabel>
+                          <span className="text-xs font-medium text-slate-700">
+                            Programa académico
+                          </span>
+                        </RequiredLabel>
                         <SearchableCombobox<Programa>
-                          placeholder="Buscar un programa"
+                          placeholder="Buscar un programa..."
                           options={programas}
                           value={field.value}
                           onChange={field.onChange}
@@ -327,12 +344,12 @@ export const AdjuntoForm = () => {
                           searchKeys={["titulo"]}
                           isInvalid={fieldState.invalid}
                           renderOption={(programa) => (
-                            <span className="font-semibold text-gray-900">
+                            <span className="text-xs font-medium text-slate-800">
                               {programa.titulo}
                             </span>
                           )}
                         />
-                        <FormMessage />
+                        <FormMessage className="text-[11px] text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -342,9 +359,9 @@ export const AdjuntoForm = () => {
                       control={form.control}
                       name="idModulo"
                       render={({ field, fieldState }) => (
-                        <FormItem className="flex flex-col gap-1 w-full transition-all duration-300 animate-in fade-in slide-in-from-top-2">
+                        <FormItem className="flex flex-col gap-1 w-full animate-in fade-in slide-in-from-top-1 duration-200">
                           <RequiredLabel>
-                            <span className="text-slate-700 font-medium">
+                            <span className="text-xs font-medium text-slate-700">
                               Módulo del Programa
                             </span>
                           </RequiredLabel>
@@ -354,24 +371,24 @@ export const AdjuntoForm = () => {
                           >
                             <FormControl>
                               <SelectTrigger
-                                className={`h-11 rounded-xl shadow-sm w-full text-left ${inputErrorClass(fieldState.invalid)}`}
+                                className={`h-9 rounded-lg shadow-none w-full text-left ${inputErrorClass(fieldState.invalid)}`}
                               >
                                 <SelectValue placeholder="Seleccione el módulo correspondiente..." />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="rounded-xl shadow-lg border-slate-100 max-h-60">
+                            <SelectContent className="rounded-lg shadow-md border-slate-200 max-h-52">
                               {modulos.map((m) => (
                                 <SelectItem
                                   value={m.id.toString()}
                                   key={m.id}
-                                  className="cursor-pointer focus:bg-slate-50 rounded-lg whitespace-normal py-2"
+                                  className="cursor-pointer text-xs focus:bg-slate-50 rounded-md py-1.5"
                                 >
                                   {m.titulo || `Módulo ${m.id}`}
                                 </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormMessage className="text-xs text-red-500 font-medium" />
+                          <FormMessage className="text-[11px] text-red-500 font-medium" />
                         </FormItem>
                       )}
                     />
@@ -383,7 +400,7 @@ export const AdjuntoForm = () => {
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col gap-1 w-full">
                         <RequiredLabel>
-                          <span className="text-slate-700 font-medium">
+                          <span className="text-xs font-medium text-slate-700">
                             Nombre del Documento / Adjunto
                           </span>
                         </RequiredLabel>
@@ -393,23 +410,23 @@ export const AdjuntoForm = () => {
                             autoComplete="off"
                             maxLength={150}
                             {...field}
-                            className={`h-11 rounded-xl shadow-sm placeholder:text-slate-400 ${inputErrorClass(fieldState.invalid)}`}
+                            className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(fieldState.invalid)}`}
                           />
                         </FormControl>
-                        <FormMessage className="text-xs text-red-500 font-medium" />
+                        <FormMessage className="text-[11px] text-red-500 font-medium" />
                       </FormItem>
                     )}
                   />
                 </div>
               </div>
 
-              {/* Sección 02 */}
-              <div className="space-y-6 pt-2">
-                <div className="flex items-center gap-3">
-                  <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-semibold shadow-sm shadow-blue-200">
+              {/* Sección 02: Carga del Archivo */}
+              <div className="space-y-4 pt-1">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
                     2
                   </span>
-                  <h3 className="text-base font-semibold text-slate-900 tracking-tight">
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Carga del Archivo Binario
                   </h3>
                   <div className="h-px bg-slate-100 flex-1"></div>
@@ -427,8 +444,8 @@ export const AdjuntoForm = () => {
                           onDragOver={handleDrag}
                           onDrop={handleDrop}
                           onClick={() => fileInputRef.current?.click()}
-                          className={`relative border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200 group text-center
-                            ${isDragActive ? "border-blue-500 bg-blue-50/40" : "border-slate-200 hover:border-blue-400 hover:bg-slate-50/50"}
+                          className={`relative border border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group text-center
+                            ${isDragActive ? "border-blue-500 bg-blue-50/30" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"}
                             ${fieldState.invalid ? "border-red-300 bg-red-50/10 hover:border-red-400" : ""}
                           `}
                         >
@@ -444,14 +461,14 @@ export const AdjuntoForm = () => {
 
                           {watchFile ? (
                             <>
-                              <div className="p-4 rounded-full bg-emerald-50 text-emerald-600 group-hover:scale-105 transition-transform duration-200 shadow-sm">
-                                <FileCheck className="h-8 w-8" />
+                              <div className="p-2.5 rounded-full bg-emerald-50 text-emerald-600 shadow-none">
+                                <FileCheck className="h-6 w-6" />
                               </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-semibold text-slate-800 line-clamp-1 max-w-md px-4">
+                              <div className="space-y-0.5">
+                                <p className="text-xs font-medium text-slate-800 line-clamp-1 max-w-md px-4">
                                   {watchFile.name}
                                 </p>
-                                <p className="text-xs text-slate-400 font-medium">
+                                <p className="text-[11px] text-slate-400 font-medium">
                                   Tamaño: {formatBytes(watchFile.size)}
                                 </p>
                               </div>
@@ -465,22 +482,21 @@ export const AdjuntoForm = () => {
                                   if (fileInputRef.current)
                                     fileInputRef.current.value = "";
                                 }}
-                                className="mt-1 h-8 rounded-lg text-red-500 hover:text-red-600 hover:bg-red-50 text-xs px-3 font-medium"
+                                className="mt-0.5 h-7 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 text-[11px] px-2.5 font-medium shadow-none"
                               >
                                 Quitar archivo seleccionado
                               </Button>
                             </>
                           ) : existingFilepath ? (
                             <>
-                              {/* AQUÍ SE MUESTRA EL ARCHIVO SI EXISTE EN EL FILEPATH */}
-                              <div className="p-4 rounded-full bg-blue-50 text-blue-600 shadow-sm">
-                                <FileText className="h-8 w-8" />
+                              <div className="p-2.5 rounded-full bg-blue-50 text-blue-600 shadow-none">
+                                <FileText className="h-6 w-6" />
                               </div>
-                              <div className="space-y-1">
-                                <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                              <div className="space-y-0.5">
+                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
                                   Archivo actualmente guardado:
                                 </p>
-                                <p className="text-sm font-medium text-slate-700 line-clamp-1 max-w-md px-4">
+                                <p className="text-xs font-medium text-slate-700 line-clamp-1 max-w-md px-4">
                                   {existingOriginalName || "Ver archivo actual"}
                                 </p>
                                 <a
@@ -488,30 +504,33 @@ export const AdjuntoForm = () => {
                                   target="_blank"
                                   rel="noreferrer"
                                   onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 mt-2 text-xs text-blue-600 hover:text-blue-800 underline font-medium"
+                                  className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 hover:text-blue-800 underline font-medium"
                                 >
                                   Visualizar archivo actual{" "}
                                   <ExternalLink className="h-3 w-3" />
                                 </a>
                               </div>
-                              <p className="text-xs text-slate-400 mt-2 italic">
-                                Siga arrastrando o haga click aquí si desea
-                                **reemplazar** este archivo.
+                              <p className="text-[11px] text-slate-400 mt-1 italic">
+                                Arrastre o haga click aquí si desea{" "}
+                                <span className="font-medium text-slate-500">
+                                  reemplazar
+                                </span>{" "}
+                                este archivo.
                               </p>
                             </>
                           ) : (
                             <>
-                              <div className="p-4 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 group-hover:scale-105 transition-all duration-200 shadow-sm">
-                                <UploadCloud className="h-8 w-8" />
+                              <div className="p-2.5 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors shadow-none">
+                                <UploadCloud className="h-6 w-6" />
                               </div>
-                              <div className="space-y-1">
-                                <p className="text-sm font-semibold text-slate-700">
+                              <div className="space-y-0.5">
+                                <p className="text-xs font-medium text-slate-700">
                                   Suelte su archivo aquí o{" "}
                                   <span className="text-blue-600 group-hover:text-blue-700 underline underline-offset-2">
                                     explore localmente
                                   </span>
                                 </p>
-                                <p className="text-xs text-slate-400 font-normal">
+                                <p className="text-[11px] text-slate-400 font-normal">
                                   Soporta formatos PDF, Word o Excel de hasta
                                   5MB.
                                 </p>
@@ -520,14 +539,14 @@ export const AdjuntoForm = () => {
                           )}
                         </div>
                       </FormControl>
-                      <FormMessage className="text-xs text-red-500 font-medium mt-1.5" />
+                      <FormMessage className="text-[11px] text-red-500 font-medium mt-1" />
                     </FormItem>
                   )}
                 />
               </div>
 
-              {/* Botones de acción */}
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-slate-100">
+              {/* Botones de acción limpios y proporcionales */}
+              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-slate-100">
                 <Button
                   type="button"
                   variant="ghost"
@@ -536,24 +555,24 @@ export const AdjuntoForm = () => {
                     form.reset();
                     if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
-                  className="w-full sm:w-auto h-11 rounded-xl text-slate-500 hover:text-slate-800 hover:bg-slate-100 font-medium px-5 text-sm transition-all"
+                  className="w-full sm:w-auto h-9 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium px-4 text-xs transition-colors shadow-none"
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-3.5 w-3.5 mr-1.5" />
                   Limpiar campos
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto h-11 bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/10 rounded-xl px-6 text-sm font-medium transition-all active:scale-[0.98] disabled:opacity-70 disabled:pointer-events-none"
+                  className="w-full sm:w-auto h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 text-xs font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none shadow-none"
                 >
                   {isSubmitting ? (
                     <>
-                      <Spinner className="mr-2 h-4 w-4 animate-spin text-white" />
+                      <Spinner className="mr-1.5 h-3.5 w-3.5 animate-spin text-white" />
                       Procesando carga...
                     </>
                   ) : (
                     <>
-                      <Save className="h-4 w-4 mr-2" />
+                      <Save className="h-3.5 w-3.5 mr-1.5" />
                       {isEditMode
                         ? "Actualizar Registro"
                         : "Guardar y Publicar"}

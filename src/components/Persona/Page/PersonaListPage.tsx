@@ -4,7 +4,7 @@ import { PersonaList } from "../PersonaList";
 export const PersonaListPage = () => {
   const { nombreGrupo } = useParams<{ nombreGrupo: string }>();
   return (
-    <div>
+    <div className="w-full">
       <PersonaList nombreGrupo={nombreGrupo} />
     </div>
   );

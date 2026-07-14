@@ -127,6 +127,7 @@ export const ProgramaForm = () => {
   const { showToast } = useToast();
   const [segmentos, setSegmentos] = useState<DetalleParametro[]>([]);
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   const isEditMode = !!id;
 
@@ -296,6 +297,8 @@ export const ProgramaForm = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoadingData(true);
+
       try {
         let listSegmentos: DetalleParametro[] = [];
         let listTipoProgramas: DetalleParametro[] = [];
@@ -373,6 +376,8 @@ export const ProgramaForm = () => {
       } catch (error) {
         console.error("Error al obtener datos", error);
         showToast("error", "Error al cargar los datos del formulario.");
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -402,7 +407,13 @@ export const ProgramaForm = () => {
             Volver
           </Button>
         </CardHeader>
-        <CardContent className="px-8">
+        <CardContent className="px-6 sm:px-8 relative">
+          {isLoadingData && (
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+              <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
+            </div>
+          )}
+
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
               <div className="relative">

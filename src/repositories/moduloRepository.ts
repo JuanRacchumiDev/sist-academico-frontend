@@ -140,10 +140,15 @@ export const create = async (payload: Modulo): Promise<ModuloResponse> => {
 
 export const updateMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]): Promise<ModuloResponse> => {
     try {
-        const urlApi = `${'/programas/'}${idPrograma}${'/'}`
+        const urlApi = `${'/programas/'}${idPrograma}${'/actualizar-modulos'}`
         console.log({ urlApi })
 
-        const response = await apiClient.patch(urlApi, modulos)
+        const response = await apiClient.post(urlApi, {
+            modulos: modulos
+        })
+
+        console.log('---- response moduloRepository ----')
+        console.log({ response })
 
         const { data: { result, message, data } } = response
 

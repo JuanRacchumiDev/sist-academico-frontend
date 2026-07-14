@@ -6,6 +6,8 @@ export interface Modulo {
     titulo?: string
     titulo_url?: string
     descripcion?: string | null
+    temario?: string
+    nota?: number
     adjunto?: string
     video?: string | null
     orden?: number

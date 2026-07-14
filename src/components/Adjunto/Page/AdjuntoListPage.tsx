@@ -2,7 +2,7 @@ import { AdjuntoList } from "../AdjuntoList";
 
 export const AdjuntoListPage = () => {
   return (
-    <div>
+    <div className="w-full">
       <AdjuntoList />
     </div>
   );

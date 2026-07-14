@@ -1,4 +1,4 @@
-import { JSX, useCallback, useEffect, useState, useRef } from "react";
+import { JSX, useCallback, useEffect, useState } from "react";
 import { getPersonasPaginate } from "../../services/personaService";
 import {
   Pagination,
@@ -31,7 +31,6 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
   const [personas, setPersonas] = useState<Persona[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
 
   const [paginationInfo, setPaginationInfo] = useState<
@@ -57,13 +56,11 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
   const fetchData = useCallback(
     async (pageToFetch: number, filtersData: PersonaFiltersData) => {
       setIsLoading(true);
-
       const filters = {
         parametro_clase: ParametroClase.GRUPO,
         search: filtersData.search,
         numero_documento: filtersData.documento,
       };
-
       const tipoPersona = `grupo-${nombreGrupo || ""}`;
 
       try {
@@ -73,12 +70,10 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
           tipoPersona,
           filters,
         );
-
         const { result, data, pagination: newPagination } = response;
 
         if (result && data) {
           setPersonas(data as Persona[]);
-
           if (newPagination) {
             setPaginationInfo({
               totalPages: newPagination.totalPages || 1,
@@ -86,8 +81,6 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setPersonas([]);
@@ -106,9 +99,8 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
   }, [currentPage, searchFilters, fetchData]);
 
   const handleSearchSubmit = (newFilters: PersonaFiltersData) => {
-    console.log({ newFilters });
     setSearchFilters(newFilters);
-    setCurrentPage(1); // Reiniciar a la primera página en cada búsqueda
+    setCurrentPage(1);
   };
 
   const renderPaginationItems = (): JSX.Element[] => {
@@ -130,13 +122,11 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`
-              ${
-                i === currentPage
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200 transition-colors"
-              }
-            `}
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
+              i === currentPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
+            }`}
           >
             {i}
           </PaginationLink>
@@ -155,33 +145,35 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
   };
 
   return (
-    <div className="w-full space-y-4 pt-2">
-      <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    // Ajuste de separaciones internas y reducción de sombras duplicadas
+    <div className="w-full space-y-3">
+      <div className="bg-white overflow-hidden">
         <PersonaFilters onSearch={handleSearchSubmit} />
 
-        <div className="overflow-x-auto">
-          <Table className="w-full">
+        <div className="overflow-x-auto border-t border-slate-100">
+          <Table className="w-full text-left border-collapse">
             <TableHeader>
-              <TableRow className="bg-slate-50/50 hover:bg-slate-50/50">
-                <TableHead className="w-[32%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
+              {/* Relleno py-4 reducido a py-2.5 para optimizar filas de cabecera */}
+              <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
+                <TableHead className="w-[32%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Nombres y apellidos
                 </TableHead>
-                <TableHead className="w-[15%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Documento
                 </TableHead>
-                <TableHead className="w-[15%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Número documento
                 </TableHead>
-                <TableHead className="w-[15%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Email
                 </TableHead>
-                <TableHead className="w-[8%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider">
+                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Teléfono
                 </TableHead>
-                <TableHead className="w-[7%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider text-center">
+                <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
                   Estado
                 </TableHead>
-                <TableHead className="w-[8%] py-4 px-4 text-slate-600 font-semibold text-xs uppercase tracking-wider text-right">
+                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
                   Acciones
                 </TableHead>
               </TableRow>
@@ -200,12 +192,12 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-32 text-center">
-                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-2">
-                      <span className="text-sm font-medium">
+                  <TableCell colSpan={7} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
+                      <span className="text-xs font-medium text-slate-600">
                         No se encontraron registros
                       </span>
-                      <p className="text-xs">
+                      <p className="text-[11px]">
                         Intenta ajustar los filtros de búsqueda
                       </p>
                     </div>
@@ -216,22 +208,25 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
           </Table>
         </div>
       </div>
-      <div className="flex items-center justify-between px-2">
-        <div className="text-xs text-slate-500 font-medium">
-          Mostrando <span className="text-slate-900">{personas.length}</span>{" "}
+
+      {/* Sección inferior de paginación más integrada y limpia */}
+      <div className="flex items-center justify-between px-3 pb-3">
+        <div className="text-[11px] text-slate-500 font-medium">
+          Mostrando{" "}
+          <span className="text-slate-800 font-semibold">
+            {personas.length}
+          </span>{" "}
           registros de este grupo
         </div>
 
-        <Pagination className="justify-end">
-          <PaginationContent className="gap-1">
+        <Pagination className="justify-end w-auto m-0">
+          <PaginationContent className="gap-0.5">
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => handlePageChange(currentPage - 1)}
-                className={`
-                  cursor-pointer border border-slate-200 text-slate-600 transition-all
-                  hover:bg-slate-100 hover:text-slate-900
-                  ${currentPage === 1 ? "pointer-events-none opacity-40" : ""}
-                `}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === 1 ? "pointer-events-none opacity-30" : ""
+                }`}
               />
             </PaginationItem>
 
@@ -240,11 +235,11 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
             <PaginationItem>
               <PaginationNext
                 onClick={() => handlePageChange(currentPage + 1)}
-                className={`
-                  cursor-pointer border border-slate-200 text-slate-600 transition-all
-                  hover:bg-slate-100 hover:text-slate-900
-                  ${currentPage === totalPages ? "pointer-events-none opacity-40" : ""}
-                `}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === paginationInfo.totalPages
+                    ? "pointer-events-none opacity-30"
+                    : ""
+                }`}
               />
             </PaginationItem>
           </PaginationContent>

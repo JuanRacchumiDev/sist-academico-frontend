@@ -2,7 +2,7 @@ import { MatriculaList } from "../MatriculaList";
 
 export const MatriculaListPage = () => {
   return (
-    <div>
+    <div className="w-full">
       <MatriculaList />
     </div>
   );

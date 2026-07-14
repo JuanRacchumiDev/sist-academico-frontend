@@ -2,7 +2,7 @@ import { PagoList } from "../PagoList";
 
 export const PagoListPage = () => {
   return (
-    <div>
+    <div className="w-full">
       <PagoList />
     </div>
   );

@@ -72,6 +72,9 @@ export const createModulosMultiple = async (idPrograma: number, modulos: Partial
 export const updateModulosMultiple = async (idPrograma: number, modulos: { id?: number; titulo: string }[]) => {
     const response = await updateMultiple(idPrograma, modulos)
 
+    console.log('---- updateModulosMultiple ----')
+    console.log({ response })
+
     return {
         ...response
     }

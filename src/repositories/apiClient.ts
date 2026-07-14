@@ -1,5 +1,5 @@
 import axios, { AxiosError } from 'axios'
-// import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 // Crea una instancia de axios con la URL base
 const apiClient = axios.create({
@@ -40,9 +40,9 @@ apiClient.interceptors.response.use(
 
                 localStorage.removeItem('auth');
 
-                // const navigate = useNavigate();
-                // navigate('/login/')
-                window.location.href = '/login'
+                const navigate = useNavigate();
+                navigate('/login/')
+                // window.location.href = '/login'
             }
 
             // window.location.href = '/login';

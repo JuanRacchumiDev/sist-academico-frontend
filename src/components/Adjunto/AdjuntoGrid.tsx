@@ -239,48 +239,61 @@ export const AdjuntoGrid = () => {
   };
 
   return (
-    <div className="w-full space-y-6 pt-2">
-      <AdjuntoFilters onSearch={handleSearchSubmit} programas={programas} />
+    // Reducción del espacio vertical (space-y-6 a space-y-3) para alinearse con PersonaTable
+    <div className="w-full space-y-3">
+      <div className="bg-white overflow-hidden">
+        <AdjuntoFilters onSearch={handleSearchSubmit} programas={programas} />
 
-      {isLoading ? (
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+        {/* Contenedor de contenido principal con borde superior sutil idéntico al de la tabla */}
+        <div className="pt-3 border-t border-slate-100">
+          {isLoading ? (
+            <div className="flex flex-col items-center justify-center h-48 space-y-2">
+              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-blue-600"></div>
+              <span className="text-[11px] text-slate-400 font-medium">
+                Cargando archivos...
+              </span>
+            </div>
+          ) : adjuntos.length > 0 ? (
+            // Grid optimizado con espaciado consistente y alineación limpia
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start px-3">
+              {adjuntos.map((adjunto) => (
+                <AdjuntoItem key={adjunto.id} adjunto={adjunto} />
+              ))}
+            </div>
+          ) : (
+            // Estado vacío rediseñado con textos compactos y profesionales basados en PersonaTable
+            <div className="flex flex-col items-center justify-center rounded-xl h-48 bg-slate-50/50 border border-dashed border-slate-200">
+              <div className="text-center space-y-1 max-w-sm px-4">
+                <span className="text-xs font-medium text-slate-600 block">
+                  No se encontraron registros
+                </span>
+                <p className="text-[11px] text-slate-400">
+                  Aún no hay archivos registrados en esta categoría o los
+                  filtros aplicados no arrojaron resultados.
+                </p>
+              </div>
+            </div>
+          )}
         </div>
-      ) : adjuntos.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 items-start">
-          {adjuntos.map((adjunto) => (
-            <AdjuntoItem key={adjunto.id} adjunto={adjunto} />
-          ))}
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center border border-dashed border-slate-200 rounded-xl h-64 bg-slate-50/50">
-          <div className="text-center space-y-2 max-w-sm px-4">
-            <span className="text-base font-semibold text-slate-700 block">
-              No se encontraron registros
-            </span>
-            <p className="text-xs text-slate-400">
-              Aún no hay archivos registrados en esta categoría o los filtros
-              aplicados no arrojaron resultados.
-            </p>
-          </div>
-        </div>
-      )}
+      </div>
 
-      {/* Controles de Paginación */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-100 px-2">
-        <div className="text-xs text-slate-500 font-medium order-2 sm:order-1">
+      {/* Sección inferior de paginación integrada y limpia, calco exacto de PersonaTable */}
+      <div className="flex items-center justify-between px-3 pb-3">
+        <div className="text-[11px] text-slate-500 font-medium">
           Mostrando{" "}
-          <span className="text-slate-900 font-bold">{adjuntos.length}</span>{" "}
-          registros de este bloque
+          <span className="text-slate-800 font-semibold">
+            {adjuntos.length}
+          </span>{" "}
+          registros de este grupo
         </div>
 
-        <Pagination className="justify-end order-1 sm:order-2">
-          <PaginationContent className="gap-1">
+        <Pagination className="justify-end w-auto m-0">
+          <PaginationContent className="gap-0.5">
             <PaginationItem>
               <PaginationPrevious
                 onClick={() => handlePageChange(currentPage - 1)}
-                className={`cursor-pointer border border-slate-200 text-slate-600 transition-all hover:bg-slate-100 ${
-                  currentPage === 1 ? "pointer-events-none opacity-40" : ""
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === 1 ? "pointer-events-none opacity-30" : ""
                 }`}
               />
             </PaginationItem>
@@ -290,11 +303,11 @@ export const AdjuntoGrid = () => {
             <PaginationItem>
               <PaginationNext
                 onClick={() => handlePageChange(currentPage + 1)}
-                className={`
-                  cursor-pointer border border-slate-200 text-slate-600 transition-all
-                  hover:bg-slate-100 hover:text-slate-900
-                  ${currentPage === totalPages ? "pointer-events-none opacity-40" : ""}
-                `}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === paginationInfo.totalPages
+                    ? "pointer-events-none opacity-30"
+                    : ""
+                }`}
               />
             </PaginationItem>
           </PaginationContent>
