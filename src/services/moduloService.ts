@@ -62,7 +62,12 @@ export const createModulo = async (payload: Modulo) => {
 }
 
 export const createModulosMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]) => {
+    console.log('---- method createModulosMultiple in ModuloSheetForm ----')
+
     const response = await createMultiple(idPrograma, modulos)
+
+    console.log('---- response createModulosMultiple ----')
+    console.log({ response })
 
     return {
         ...response
@@ -70,9 +75,11 @@ export const createModulosMultiple = async (idPrograma: number, modulos: Partial
 }
 
 export const updateModulosMultiple = async (idPrograma: number, modulos: { id?: number; titulo: string }[]) => {
+    console.log('---- method updateModulosMultiple in ModuloSheetForm ----')
+
     const response = await updateMultiple(idPrograma, modulos)
 
-    console.log('---- updateModulosMultiple ----')
+    console.log('---- response updateModulosMultiple ----')
     console.log({ response })
 
     return {

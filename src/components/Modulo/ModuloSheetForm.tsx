@@ -197,7 +197,7 @@ export const ModuloSheetForm: React.FC<Props> = ({
               <SheetTitle className="text-base font-bold text-slate-800 leading-snug">
                 Configuración y Módulos
               </SheetTitle>
-              <SheetDescription className="text-slate-500 text-xs mt-0.5 font-medium break-words">
+              <SheetDescription className="text-slate-500 text-xs mt-0.5 font-medium wrap-break-word">
                 {programa.titulo}
               </SheetDescription>
             </div>
@@ -269,7 +269,7 @@ export const ModuloSheetForm: React.FC<Props> = ({
                           <span className="inline-flex items-center justify-center bg-blue-100 text-blue-700 font-bold text-xs px-2.5 py-1 rounded-md shrink-0 mt-0.5">
                             Módulo {index + 1}
                           </span>
-                          <span className="text-xs font-semibold text-slate-800 leading-snug flex-1 whitespace-normal break-words">
+                          <span className="text-xs font-semibold text-slate-800 leading-snug flex-1 whitespace-normal wrap-break-word">
                             {tituloActual?.trim() ? (
                               tituloActual
                             ) : (

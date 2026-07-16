@@ -2,18 +2,7 @@ import { Persona } from "./IPersona"
 import { DetalleParametro } from "./IDetalleParametro"
 import { Institucion } from "./IInstitucion"
 import { DetalleMatricula } from "./IDetalleMatricula";
-import { Programa } from "./IPrograma";
-
-export interface MatriculaDetalle {
-    id: number;
-    id_matricula: number;
-    id_programa: number;
-    nombre_programa: string;
-    nombre_alumno: string;
-    promedio: number | null;
-    estado: boolean;
-    programa?: Programa
-}
+import { Pago } from "./IPago"
 
 export interface Matricula {
     id?: number
@@ -27,7 +16,8 @@ export interface Matricula {
     user_crea?: string
     user_actualiza?: string
     user_elimina?: string
-    estado?: boolean
+    estado?: boolean,
+    pagarPrimerModulo?: boolean
 
     // Datos de matrícula
     monto_matricula?: number
@@ -35,6 +25,7 @@ export interface Matricula {
     numero_operacion_matricula?: string
     monto_efectivo_matricula?: number
     monto_operacion_matricula?: number
+    concepto_matricula?: string
 
     // Datos de módulo
     numero_modulos?: number
@@ -43,9 +34,12 @@ export interface Matricula {
     numero_operacion_modulo?: string
     monto_efectivo_modulo?: number
     monto_operacion_modulo?: number
+    concepto_modulo?: string
 
-    detalles?: MatriculaDetalle[]
+    detalles?: DetalleMatricula[]
     programas?: number[]
+    pago_matricula?: Pago[]
+    pago_modulos?: Pago[]
 
     persona?: Persona
     estadoMatricula?: DetalleParametro

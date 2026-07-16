@@ -60,7 +60,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   console.log({ matricula });
 
   const handleShowDetail = () => {
-    navigate(`/matriculas/editar/${matricula.id}`);
+    navigate(`/matricula/editar/${matricula.id}`);
   };
 
   // Abre el modal

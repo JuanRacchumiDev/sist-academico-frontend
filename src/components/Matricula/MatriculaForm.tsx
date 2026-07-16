@@ -3,6 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { format, parseISO } from "date-fns";
+import { formatInTimeZone } from "date-fns-tz";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Card,
@@ -27,40 +28,53 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../ui/select";
-import {
-  createMatricula,
-  getMatriculaById,
-  updateMatricula,
-} from "../../services/matriculaService"; // Se asumen métodos para el Modo Edición
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
+import { Switch } from "../ui/switch"; // Componente Switch de shadcn/ui
 import { RequiredLabel } from "../Common/RequiredLabel";
-import { Matricula, MatriculaResponse } from "../../interfaces/IMatricula";
 import {
-  Plus,
-  Trash2,
   ArrowLeft,
   Save,
   CreditCard,
   BookOpen,
   Info,
+  Calculator,
+  XCircle,
+  Plus,
+  Trash2,
 } from "lucide-react";
-import { getDetalleFiltered } from "../../services/detalleParametroService";
-import { getPersonas } from "../../services/personaService";
-import { getProgramas } from "../../services/programaService";
-import { getInstituciones } from "../../services/institucionService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
 } from "../../interfaces/IDetalleParametro";
-import { Persona } from "../../interfaces/IPersona";
-import { Programa } from "../../interfaces/IPrograma";
-import { Institucion } from "../../interfaces/IInstitucion";
-import SearchableCombobox from "../../components/Common/SearchableCombobox";
-import { ParametroClase } from "../../params/parametroClase";
-import { VALOR_MATRICULA, VALOR_MODULO } from "@/params/constants";
+import {
+  VALOR_MATRICULA,
+  VALOR_MODULO,
+  TIMEZONE_AMERICA_LIMA,
+} from "@/params/constants";
+import { getPersonas } from "@/services/personaService";
+import { Persona } from "@/interfaces/IPersona";
+import { getInstituciones } from "@/services/institucionService";
+import { Institucion } from "@/interfaces/IInstitucion";
+import { ParametroClase } from "@/params/parametroClase";
+import {
+  getDetalle,
+  getDetalleById,
+  getDetalleFiltered,
+} from "@/services/detalleParametroService";
+import { getProgramas } from "@/services/programaService";
+import { Programa } from "@/interfaces/IPrograma";
+import {
+  createMatricula,
+  getMatriculaById,
+  updateMatricula,
+} from "@/services/matriculaService";
+import { Matricula, MatriculaResponse } from "@/interfaces/IMatricula";
+import SearchableCombobox from "../Common/SearchableCombobox";
+import { DetalleMatricula } from "@/interfaces/IDetalleMatricula";
+import { Pago } from "@/interfaces/IPago";
 
-// --- ESQUEMAS DE VALIDACIÓN (ZOD) ---
+// --- ESQUEMA DE VALIDACIÓN ZOD ---
 const ProgramaMatriculaSchema = z.object({
   idTipoPrograma: z
     .number({ message: "Debe seleccionar un tipo de programa" })
@@ -85,7 +99,7 @@ export const formSchema = z
         message: "La fecha de matrícula es requerida",
       }),
 
-    // Matrícula
+    // Matrícula (OBLIGATORIA)
     montoMatricula: z
       .number({ message: "Debe ser un número válido" })
       .min(0, "El monto no puede ser negativo"),
@@ -96,16 +110,19 @@ export const formSchema = z
     montoEfectivoMatricula: z.number().catch(0),
     montoOperacionMatricula: z.number().catch(0),
 
-    // Módulo
+    // Configuración del Módulo
     numeroModulos: z
-      .number({ message: "Debe ser un número válido" })
+      .number({ message: "Debe ingresar la cantidad de módulos" })
       .min(0, "La cantidad no puede ser negativa"),
-    montoModulo: z
-      .number({ message: "Debe ser un número válido" })
-      .min(0, "El monto no puede ser negativo"),
-    idFormaPagoModulo: z
-      .string({ message: "Seleccione una forma de pago" })
-      .min(1, "Seleccione una forma de pago"),
+    montoPorModulo: z
+      .number({ message: "Ingrese un precio por módulo válido" })
+      .min(0, "El valor no puede ser negativo")
+      .max(VALOR_MODULO, `El monto no puede exceder los S/. ${VALOR_MODULO}`),
+    pagarPrimerModulo: z.boolean(),
+
+    // Pago del Módulo
+    montoModulo: z.number().catch(0),
+    idFormaPagoModulo: z.string().catch(""),
     numeroOperacionModulo: z.string().catch(""),
     montoEfectivoModulo: z.number().catch(0),
     montoOperacionModulo: z.number().catch(0),
@@ -115,8 +132,10 @@ export const formSchema = z
       .min(1, "Debe agregar al menos un programa"),
   })
   .superRefine((data, ctx) => {
-    // Validaciones condicionales para MATRÍCULA
-    const formaPagoMat = data.idFormaPagoMatricula.toUpperCase();
+    // ----------------------------------------------------
+    // 1. VALIDACIONES CONDICIONALES PARA MATRÍCULA
+    // ----------------------------------------------------
+    const formaPagoMat = (data.idFormaPagoMatricula || "").toUpperCase();
 
     if (formaPagoMat.includes("EFECTIVO")) {
       if (data.montoEfectivoMatricula <= 0) {
@@ -142,7 +161,7 @@ export const formSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "El número de operación es requerido",
-          path: ["numOperacionMatricula"],
+          path: ["numeroOperacionMatricula"],
         });
       }
     } else if (formaPagoMat.includes("MIXTO")) {
@@ -164,60 +183,7 @@ export const formSchema = z
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "El número de operación es requerido",
-          path: ["numOperacionMatricula"],
-        });
-      }
-    }
-
-    // Validaciones condicionales para MÓDULO
-    const formaPagoMod = data.idFormaPagoModulo.toUpperCase();
-    if (formaPagoMod.includes("EFECTIVO")) {
-      if (data.montoEfectivoModulo <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Ingrese el monto en efectivo",
-          path: ["montoEfectivoModulo"],
-        });
-      }
-    } else if (
-      formaPagoMod.includes("TRANSFERENCIA") ||
-      formaPagoMod.includes("YAPE") ||
-      formaPagoMod.includes("PLIN")
-    ) {
-      if (data.montoOperacionModulo <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Ingrese el monto de la operación",
-          path: ["montoOperacionModulo"],
-        });
-      }
-      if (!data.numeroOperacionModulo.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El número de operación es requerido",
-          path: ["numOperacionModulo"],
-        });
-      }
-    } else if (formaPagoMod.includes("MIXTO")) {
-      if (data.montoEfectivoModulo <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Ingrese el monto en efectivo",
-          path: ["montoEfectivoModulo"],
-        });
-      }
-      if (data.montoOperacionModulo <= 0) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "Ingrese el monto de operación",
-          path: ["montoOperacionModulo"],
-        });
-      }
-      if (!data.numeroOperacionModulo.trim()) {
-        ctx.addIssue({
-          code: z.ZodIssueCode.custom,
-          message: "El número de operación es requerido",
-          path: ["numOperacionModulo"],
+          path: ["numeroOperacionMatricula"],
         });
       }
     }
@@ -227,67 +193,184 @@ export const formSchema = z
     if (sumaMontosMatricula > VALOR_MATRICULA) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `La suma de los montos no puede exceder el valor de la matrícula (S/. ${VALOR_MATRICULA})`,
+        message: `La suma excede el valor base (S/. ${VALOR_MATRICULA})`,
         path: ["montoEfectivoMatricula"],
       });
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `La suma de los montos no puede exceder el valor de la matrícula (S/. ${VALOR_MATRICULA})`,
-        path: ["montoOperacionMatricula"],
-      });
+    }
+
+    // ----------------------------------------------------
+    // 2. VALIDACIONES PARA PAGO DE MÓDULO (SI SWITCH ACTIVADO Y N° MÓDULOS > 0)
+    // ----------------------------------------------------
+    if (data.pagarPrimerModulo && data.numeroModulos > 0) {
+      if (!data.idFormaPagoModulo) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Seleccione la forma de pago del módulo",
+          path: ["idFormaPagoModulo"],
+        });
+      }
+
+      const formaPagoMod = (data.idFormaPagoModulo || "").toUpperCase();
+
+      if (formaPagoMod.includes("EFECTIVO")) {
+        if (data.montoEfectivoModulo <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Ingrese el monto en efectivo",
+            path: ["montoEfectivoModulo"],
+          });
+        }
+      } else if (
+        formaPagoMod.includes("TRANSFERENCIA") ||
+        formaPagoMod.includes("YAPE") ||
+        formaPagoMod.includes("PLIN")
+      ) {
+        if (data.montoOperacionModulo <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Ingrese el monto de la operación",
+            path: ["montoOperacionModulo"],
+          });
+        }
+        if (!data.numeroOperacionModulo.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El número de operación es requerido",
+            path: ["numeroOperacionModulo"],
+          });
+        }
+      } else if (formaPagoMod.includes("MIXTO")) {
+        if (data.montoEfectivoModulo <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Ingrese el monto en efectivo",
+            path: ["montoEfectivoModulo"],
+          });
+        }
+        if (data.montoOperacionModulo <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Ingrese el monto de operación",
+            path: ["montoOperacionModulo"],
+          });
+        }
+        if (!data.numeroOperacionModulo.trim()) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "El número de operación es requerido",
+            path: ["numeroOperacionModulo"],
+          });
+        }
+      }
     }
   });
 
-// --- FUNCIONES DE CARGA DE DATOS (MOCKED/API REST) ---
 const loadAlumnos = async () => {
+  let alumnos: Persona[] = [];
+
   const response = await getPersonas("grupo-alumno");
-  return response.result && response.data ? (response.data as Persona[]) : [];
+
+  const { result, data } = response;
+
+  if (result && data) {
+    alumnos = data as Persona[];
+  }
+
+  return alumnos;
 };
 
 const loadInstituciones = async () => {
+  let instituciones: Institucion[] = [];
+
   const response = await getInstituciones();
-  return response.result && response.data
-    ? (response.data as Institucion[])
-    : [];
+
+  const { result, data } = response;
+
+  if (result && data) {
+    instituciones = data as Institucion[];
+  }
+
+  return instituciones;
 };
 
 const loadTipoProgramas = async () => {
+  let tipoProgramas: DetalleParametro[] = [];
+
   const filters: DetalleParametroFilters = {
     parametro_clase: ParametroClase.TIPO_PROGRAMA,
     en_persona: false,
     en_empresa: false,
     estado: true,
   };
+
   const response = await getDetalleFiltered(filters);
-  return response.result && response.data
-    ? (response.data as DetalleParametro[])
-    : [];
+
+  const { result, data } = response;
+
+  if (result && data) {
+    tipoProgramas = data as DetalleParametro[];
+  }
+
+  return tipoProgramas;
 };
 
 const loadFormasPago = async () => {
+  let formasPago: DetalleParametro[] = [];
+
   const filters: DetalleParametroFilters = {
     parametro_clase: ParametroClase.FORMA_PAGO,
     en_persona: false,
     en_empresa: false,
     estado: true,
   };
+
   const response = await getDetalleFiltered(filters);
-  return response.result && response.data
-    ? (response.data as DetalleParametro[])
-    : [];
+
+  const { result, data } = response;
+
+  if (result && data) {
+    formasPago = data as DetalleParametro[];
+  }
+
+  return formasPago;
 };
 
 const loadProgramas = async () => {
+  let programas: Programa[] = [];
+
   const response = await getProgramas();
-  return response.result && response.data ? (response.data as Programa[]) : [];
+
+  const { result, data } = response;
+
+  if (result && data) {
+    programas = data as Programa[];
+  }
+
+  return programas;
+};
+
+const formaPago = async (id: number) => {
+  let uniqueFormaPago: DetalleParametro = null;
+
+  const clase: string = "forma-pago";
+
+  const response = await getDetalleById(clase, id);
+
+  const { result, data } = response;
+
+  if (result && data) {
+    uniqueFormaPago = data as DetalleParametro;
+  }
+
+  return uniqueFormaPago;
 };
 
 type TFormValues = z.infer<typeof formSchema>;
 
 const today = new Date();
+
 const minDateString = format(today, "yyyy-MM-dd");
 
-// --- COMPONENTE PRINCIPAL ---
 export const MatriculaForm = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -323,7 +406,10 @@ export const MatriculaForm = () => {
       montoEfectivoMatricula: 0,
       montoOperacionMatricula: 0,
 
-      numeroModulos: 0,
+      numeroModulos: 1,
+      montoPorModulo: VALOR_MODULO,
+      pagarPrimerModulo: false,
+
       montoModulo: 0,
       idFormaPagoModulo: "",
       numeroOperacionModulo: "",
@@ -335,27 +421,6 @@ export const MatriculaForm = () => {
   });
 
   const { isSubmitting } = form.formState;
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "programas",
-  });
-
-  // Observadores dinámicos para renderizado condicional de pasarelas de pago
-  const watchPagoMatricula = form.watch("idFormaPagoMatricula").toUpperCase();
-  const watchPagoModulo = form.watch("idFormaPagoModulo").toUpperCase();
-
-  const handleAddPrograma = () => {
-    append({ idTipoPrograma: undefined as any, idPrograma: "" });
-  };
-
-  const getProgramasFiltrados = (selectedTipoId: number | null): Programa[] => {
-    if (!selectedTipoId) return [];
-    return programas.filter(
-      (p) =>
-        p.id_tipoprograma !== null && +p.id_tipoprograma! === selectedTipoId,
-    );
-  };
 
   // Carga de catálogos y datos de edición en un solo flujo maestro
   useEffect(() => {
@@ -383,35 +448,141 @@ export const MatriculaForm = () => {
 
         // Si estamos en modo edición, recuperamos la matrícula por ID
         if (isEditMode && id) {
+          // Obtener detalle de una matrícula
           const res = await getMatriculaById(+id);
-          if (res.result && res.data) {
-            const mat = res.data as Matricula;
+          console.log("---- res MatriculaForm ----");
+          console.log({ res });
 
+          // Obteniendo propiedades result y data
+          const { result, data } = res;
+
+          // Validando si existe data
+          if (result && data) {
+            // Seteando la data obtenida del tipo Matricula
+            const mat = data as Matricula;
+
+            console.log("---- data matrícula ----");
+
+            console.log({ mat });
+
+            const {
+              id_persona,
+              id_institucion,
+              fecha_matricula,
+              detalles,
+              numero_modulos,
+              pago_matricula,
+              pago_modulos,
+            } = mat;
+
+            // Validando el primer pago de un módulo
+            const validarPrimerPagoModulo =
+              pago_modulos &&
+              Array.isArray(pago_modulos) &&
+              pago_modulos.length > 0;
+
+            // Obteniendo el monto por módulo
+            const montoPorModulo: number = Number(
+              detalles[0].valor_modulo || 0,
+            );
+
+            // Obteniendo em monto por matrícula
+            const montoMatricula: number = Number(
+              detalles[0].valor_matricula || 0,
+            );
+
+            console.log({ montoMatricula });
+
+            // Obteniendo el pago de matrícula
+            const pagoMatricula: Pago = pago_matricula?.[0];
+
+            console.log({ pagoMatricula });
+
+            // Obteniendo el detalle del pago de matrícula
+            const {
+              cantidad_efectivo: cantidadEfectivoMat,
+              cantidad_operacion: cantidadOperacionMat,
+              numero_operacion: numeroOperacionMat,
+              id_formapago: idFormaPagoMat,
+            } = pagoMatricula;
+
+            // Obteniendo el id de forma de pago de matrícula
+            const idFormaPagoMatricula: string =
+              idFormaPagoMat !== undefined ? idFormaPagoMat.toString() : "";
+
+            const detalleFormaPagoMatricula: DetalleParametro =
+              await formaPago(+idFormaPagoMatricula);
+
+            console.log({ detalleFormaPagoMatricula });
+
+            // Obteniendo forma de pago de módulo
+            const idFormaPagoModulo: string = validarPrimerPagoModulo
+              ? pago_modulos[0].id_formapago.toString()
+              : "";
+
+            let nombreFormaPagoModulo: string = "";
+
+            if (idFormaPagoModulo !== "") {
+              const detalleFormaPagoModulo: DetalleParametro =
+                await formaPago(+idFormaPagoModulo);
+
+              nombreFormaPagoModulo = detalleFormaPagoModulo.nombre;
+            }
+
+            // Definiendo el primer pago del módulo
+            let definirPrimerPago: boolean = false;
+
+            if (validarPrimerPagoModulo) {
+              definirPrimerPago = true;
+            }
+
+            // Definiendo el detalle de pago de primer módulo
+            let cantidadEfectivoModulo: number = undefined;
+            let cantidadOperacionModulo: number = undefined;
+            let numeroOperacionModulo: string = undefined;
+
+            if (validarPrimerPagoModulo) {
+              const primerPago: Pago = pago_modulos[0];
+              const {
+                cantidad_efectivo,
+                cantidad_operacion,
+                numero_operacion,
+              } = primerPago;
+
+              cantidadEfectivoModulo = cantidad_efectivo;
+              cantidadOperacionModulo = cantidad_operacion;
+              numeroOperacionModulo = numero_operacion;
+            }
+
+            // Seteando valores al formulario
             form.reset({
-              idPersona: mat.id_persona.toString() ?? "",
-              idInstitucion: mat.id_institucion.toString() ?? "",
-              fechaMatricula: mat.fecha_matricula
-                ? parseISO(mat.fecha_matricula)
+              idPersona: id_persona.toString() ?? "",
+              idInstitucion: id_institucion.toString() ?? "",
+              fechaMatricula: fecha_matricula
+                ? parseISO(fecha_matricula)
                 : null,
 
-              montoMatricula: mat.monto_matricula || 0,
-              idFormaPagoMatricula: mat.id_formapago_matricula.toString() ?? "",
-              numeroOperacionMatricula: mat.numero_operacion_matricula || "",
-              montoEfectivoMatricula: mat.monto_efectivo_matricula || 0,
-              montoOperacionMatricula: mat.monto_operacion_matricula || 0,
+              montoMatricula: Number(montoMatricula) || 0,
 
-              numeroModulos: mat.numero_modulos || 0,
-              montoModulo: mat.monto_modulo || 0,
-              idFormaPagoModulo: mat.id_formapago_modulo.toString() ?? "",
-              numeroOperacionModulo: mat.numero_operacion_modulo || "",
-              montoEfectivoModulo: mat.monto_efectivo_modulo || 0,
-              montoOperacionModulo: mat.monto_operacion_modulo || 0,
+              idFormaPagoMatricula: detalleFormaPagoMatricula.nombre || "",
+              montoEfectivoMatricula: cantidadEfectivoMat ?? 0,
+              montoOperacionMatricula: cantidadOperacionMat ?? 0,
+              numeroOperacionMatricula: numeroOperacionMat ?? "",
 
-              // Asumiendo que tu backend retorna los programas con sus respectivos tipos en la relación
-              programas: mat.programas
-                ? mat.programas.map((p: any) => ({
-                    idTipoPrograma: Number(p.id_tipoprograma),
-                    idPrograma: p.id_programa.toString(),
+              numeroModulos: numero_modulos,
+              montoPorModulo: montoPorModulo,
+              montoModulo: montoPorModulo,
+
+              idFormaPagoModulo: nombreFormaPagoModulo,
+              pagarPrimerModulo: definirPrimerPago,
+              montoEfectivoModulo: cantidadEfectivoModulo ?? 0,
+              montoOperacionModulo: cantidadOperacionModulo ?? 0,
+              numeroOperacionModulo: numeroOperacionModulo ?? "",
+
+              programas: detalles
+                ? detalles.map((p: DetalleMatricula) => ({
+                    idTipoPrograma: +p.programa.id_tipoprograma,
+                    idPrograma: p.programa.id.toString(),
                   }))
                 : [{ idTipoPrograma: 0, idPrograma: "" }],
             });
@@ -426,22 +597,49 @@ export const MatriculaForm = () => {
     fetchData();
   }, [id, isEditMode, form]);
 
-  // Sincronizar automáticamente el "Monto Total" en base al desglose ingresado
-  const efectivoMat = form.watch("montoEfectivoMatricula");
-  const operacionMat = form.watch("montoOperacionMatricula");
+  // Watchers para de las formas de pago
+  const watchPagoMatricula = form.watch("idFormaPagoMatricula").toUpperCase();
+  const watchPagoModulo = form.watch("idFormaPagoModulo").toUpperCase();
+
+  // Watchers de cantidades
+  const watchNumeroModulos = form.watch("numeroModulos") || 0;
+  const watchMontoPorModulo = form.watch("montoPorModulo") || 0;
+  const watchPagarPrimerModulo = form.watch("pagarPrimerModulo");
+  const watchMontoMatricula = Number(form.watch("montoMatricula")) || 0;
+  const watchMontoModulo = Number(form.watch("montoModulo")) || 0;
+
+  // Sincronizar montos de Matrícula
+  const efectivoMat = Number(form.watch("montoEfectivoMatricula")) || 0;
+  const operacionMat = Number(form.watch("montoOperacionMatricula")) || 0;
+
+  // Sincronizar montos de Módulo
+  const efectivoMod = Number(form.watch("montoEfectivoModulo")) || 0;
+  const operacionMod = Number(form.watch("montoOperacionModulo")) || 0;
+
+  // Si se deshabilita el switch o la cantidad de módulos es 0, resetear los pagos del módulo
+  useEffect(() => {
+    if (!watchPagarPrimerModulo || watchNumeroModulos === 0) {
+      form.setValue("idFormaPagoModulo", "");
+      form.setValue("montoModulo", 0);
+      form.setValue("montoEfectivoModulo", 0);
+      form.setValue("montoOperacionModulo", 0);
+      form.setValue("numeroOperacionModulo", "");
+    }
+  }, [watchPagarPrimerModulo, watchNumeroModulos, form]);
 
   useEffect(() => {
-    if (watchPagoMatricula.includes("MIXTO")) {
-      form.setValue("montoMatricula", (efectivoMat || 0) + (operacionMat || 0));
-    } else if (watchPagoMatricula.includes("EFECTIVO")) {
-      form.setValue("montoMatricula", efectivoMat || 0);
-    } else {
-      form.setValue("montoMatricula", operacionMat || 0);
-    }
-  }, [efectivoMat, operacionMat, watchPagoMatricula]);
+    let nuevoMonto = 0;
 
-  const efectivoMod = form.watch("montoEfectivoModulo");
-  const operacionMod = form.watch("montoOperacionModulo");
+    if (watchPagoMatricula.includes("MIXTO")) {
+      nuevoMonto = efectivoMat + operacionMat;
+    } else if (watchPagoMatricula.includes("EFECTIVO")) {
+      nuevoMonto = efectivoMat;
+    } else {
+      nuevoMonto = operacionMat;
+    }
+
+    form.setValue("montoMatricula", nuevoMonto);
+  }, [efectivoMat, operacionMat, watchPagoMatricula, form]);
 
   useEffect(() => {
     if (watchPagoModulo.includes("MIXTO")) {
@@ -451,76 +649,130 @@ export const MatriculaForm = () => {
     } else {
       form.setValue("montoModulo", operacionMod || 0);
     }
-  }, [efectivoMod, operacionMod, watchPagoModulo]);
+  }, [efectivoMod, operacionMod, watchPagoModulo, form]);
+
+  // Totales Calculados
+  const totalEsperadoModulos = watchNumeroModulos * watchMontoPorModulo;
+  const totalGeneralCobrado =
+    watchMontoMatricula + (watchPagarPrimerModulo ? watchMontoModulo : 0);
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "programas",
+  });
+
+  const handleAddPrograma = () => {
+    append({ idTipoPrograma: undefined as any, idPrograma: "" });
+  };
+
+  const getProgramasFiltrados = (selectedTipoId: number | null): Programa[] => {
+    if (!selectedTipoId) return [];
+    return programas.filter(
+      (p) =>
+        p.id_tipoprograma !== null && +p.id_tipoprograma! === selectedTipoId,
+    );
+  };
 
   const onSubmit = async (values: TFormValues) => {
     try {
+      console.log("---- values onSubmit registro matrícula ----");
+      console.log({ values });
+
+      const {
+        fechaMatricula,
+        idFormaPagoMatricula,
+        idFormaPagoModulo,
+        idInstitucion,
+        idPersona,
+        montoEfectivoMatricula,
+        montoEfectivoModulo,
+        montoMatricula,
+        montoOperacionMatricula,
+        montoOperacionModulo,
+        montoPorModulo,
+        numeroModulos,
+        numeroOperacionMatricula,
+        numeroOperacionModulo,
+        pagarPrimerModulo,
+        programas,
+      } = values;
+
       const totalIngresado =
-        (values.montoOperacionMatricula || 0) +
-        (values.montoOperacionMatricula || 0);
+        (montoEfectivoMatricula || 0) + (montoOperacionMatricula || 0);
+
       if (totalIngresado > VALOR_MATRICULA) {
         showToast(
           "warning",
-          `El monto total ingresado (S/. ${totalIngresado.toFixed(2)}) excede el costo de la matrícula (S/. ${VALOR_MATRICULA}). Por favor, verifique.`,
+          `El monto total ingresado (S/. ${totalIngresado.toFixed(2)}) excede el costo de la matrícula (S/. ${VALOR_MATRICULA}). Por favor verifique`,
         );
         return;
       }
 
-      const programasIds: number[] = values.programas
+      const programaIds: number[] = programas
         .filter((p) => p.idPrograma !== "")
         .map((p) => +p.idPrograma);
 
-      if (programasIds.length === 0) {
+      if (programaIds.length === 0) {
         showToast("error", "Debe agregar al menos un programa válido");
         return;
       }
 
       const targetFormaPagoMat = formasPago.find(
-        (f) =>
-          f.nombre.toUpperCase() === values.idFormaPagoMatricula.toUpperCase(),
-      );
-      const targetFormaPagoMod = formasPago.find(
-        (f) =>
-          f.nombre.toUpperCase() === values.idFormaPagoModulo.toUpperCase(),
+        (f) => f.nombre.toUpperCase() === idFormaPagoMatricula.toUpperCase(),
       );
 
-      const fechaMatriculaStr = values.fechaMatricula
-        ? format(values.fechaMatricula, "yyyy-MM-dd")
-        : format(new Date(), "yyyy-MM-dd");
+      const targetFormaPagoMod = formasPago.find(
+        (f) => f.nombre.toUpperCase() === idFormaPagoModulo.toUpperCase(),
+      );
+
+      const fechaMatriculaStr = fechaMatricula
+        ? format(fechaMatricula, "yyyy-MM-dd")
+        : formatInTimeZone(new Date(), TIMEZONE_AMERICA_LIMA, "yyyy-MM-dd");
 
       let payload: Matricula = {
-        id_persona: +values.idPersona,
-        id_institucion: +values.idInstitucion,
+        id_persona: +idPersona,
+        id_institucion: +idInstitucion,
         fecha_matricula: fechaMatriculaStr,
-        id_estadomatricula: 34, // Estado matriculado por defecto
-        programas: programasIds,
+        id_estadomatricula: 37, // Estado matrícula ACTIVA por defecto
+        programas: programaIds,
 
         // Asignación estructurada Matrícula
-        monto_matricula: values.montoMatricula,
+        monto_matricula: montoMatricula,
         id_formapago_matricula: targetFormaPagoMat
           ? targetFormaPagoMat.codigo
           : 0,
-        numero_operacion_matricula:
-          values.numeroOperacionMatricula || undefined,
-        monto_efectivo_matricula: values.montoEfectivoMatricula || undefined,
-        monto_operacion_matricula: values.montoOperacionMatricula || undefined,
+        numero_operacion_matricula: numeroOperacionMatricula || undefined,
+        monto_efectivo_matricula: montoEfectivoMatricula || undefined,
+        monto_operacion_matricula: montoOperacionMatricula || undefined,
+        concepto_matricula: "PAGO DE MATRÍCULA",
 
         // Asignación estructurada Módulo
-        numero_modulos: values.numeroModulos,
-        monto_modulo: values.montoModulo,
-        id_formapago_modulo: targetFormaPagoMod ? targetFormaPagoMod.codigo : 0,
-        numero_operacion_modulo: values.numeroOperacionModulo || undefined,
-        monto_efectivo_modulo: values.montoEfectivoModulo || undefined,
-        monto_operacion_modulo: values.montoOperacionModulo || undefined,
+        numero_modulos: numeroModulos,
+        monto_modulo: montoPorModulo,
 
         estado: true,
       };
 
+      if (pagarPrimerModulo) {
+        ((payload.pagarPrimerModulo = pagarPrimerModulo),
+          ((payload.id_formapago_modulo = targetFormaPagoMod
+            ? targetFormaPagoMod.codigo
+            : 0),
+          (payload.numero_operacion_modulo =
+            numeroOperacionModulo || undefined),
+          (payload.monto_efectivo_modulo = montoEfectivoModulo || undefined),
+          (payload.monto_operacion_modulo = montoOperacionModulo || undefined),
+          (payload.concepto_modulo = "PAGO DE MÓDULO #1")));
+      }
+
       console.log({ payload });
 
       const response = isEditMode
-        ? await updateMatricula(+id!, payload)
+        ? await updateMatricula(+id, payload)
         : await createMatricula(payload);
+
+      console.log("---- response in MatriculaForm ----");
+      console.log({ response });
 
       const { result, message } = response as MatriculaResponse;
 
@@ -528,7 +780,7 @@ export const MatriculaForm = () => {
         showToast(
           "success",
           message ||
-            `Matrícula ${isEditMode ? "actualizada" : "registrada"} con éxito`,
+            `Matrícula ${isEditMode ? "actualizada" : "creada"} con éxito`,
         );
         navigate("/matricula");
       } else {
@@ -544,29 +796,27 @@ export const MatriculaForm = () => {
   };
 
   return (
-    <Card className="shadow-xl border-none bg-white w-full">
-      <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
+    <Card className="shadow-xl border-none bg-white overflow-hidden rounded-xl">
+      <CardHeader className="border-b border-slate-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50/50">
         <div className="space-y-1">
           <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
             {isEditMode ? "Editar Matrícula" : "Nuevo Registro de Matrícula"}
           </CardTitle>
           <CardDescription className="text-slate-500 font-medium">
-            {isEditMode
-              ? "Actualización de la información general de la matrícula"
-              : "Complete la información para registrar una matrícula"}
+            Configure las condiciones académicas y el desglose de pagos
           </CardDescription>
         </div>
         <Button
           variant="ghost"
           onClick={handleGoBack}
-          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all font-medium"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
         </Button>
       </CardHeader>
 
-      <CardContent className="px-8 py-6">
+      <CardContent className="p-6 sm:p-8 relative space-y-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* SECCIÓN 01: INFORMACIÓN DE REGISTRO */}
@@ -809,239 +1059,171 @@ export const MatriculaForm = () => {
               </div>
             </div>
 
-            {/* SECCIÓN 03: DETALLE DE LOS PAGOS */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-4 border-t border-gray-100">
-              {/* BLOQUE A: PAGO DE MATRÍCULA */}
-              <div className="p-6 border border-slate-100 bg-slate-50/40 rounded-2xl space-y-4 shadow-sm">
-                <div className="flex items-center justify-between text-blue-700 font-bold border-b border-blue-100 pb-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <CreditCard className="h-5 w-5" />
-                    <h4>Pago de Matrícula</h4>
-                  </div>
-                  {/* Label del costo referencial traído de BD */}
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-md flex items-center gap-1 font-medium">
-                    <Info className="h-3 w-3" /> Costo Base: S/.{" "}
-                    {VALOR_MATRICULA}
-                  </span>
+            {/* SECCIÓN 01: CONFIGURACIÓN MÓDULO & SWITCH DE PAGO */}
+            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-6">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-3">
+                <div className="flex items-center gap-2 text-indigo-900 font-bold">
+                  <BookOpen className="h-5 w-5 text-indigo-600" />
+                  <h3>Configuración de Módulos del Programa</h3>
                 </div>
-
-                <FormField
-                  control={form.control}
-                  name="idFormaPagoMatricula"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <RequiredLabel>Forma de Pago</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Seleccionar método..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {/* Renderiza dinámicamente incluyendo Yape/Plin/Efectivo/Transferencia/Mixto desde BD */}
-                          {formasPago.map((f) => (
-                            <SelectItem key={f.codigo} value={f.nombre}>
-                              {f.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {/* RENDERIZADO CONDICIONAL DE CAMPOS EN BASE A LA SELECCIÓN */}
-                {(watchPagoMatricula.includes("EFECTIVO") ||
-                  watchPagoMatricula.includes("MIXTO")) && (
-                  <FormField
-                    control={form.control}
-                    name="montoEfectivoMatricula"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Monto en Efectivo (S/.)</RequiredLabel>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          {...field}
-                          value={field.value ?? ""}
-                          onChange={(e) =>
-                            field.onChange(parseFloat(e.target.value) || 0)
-                          }
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
-
-                {(watchPagoMatricula.includes("TRANSFERENCIA") ||
-                  watchPagoMatricula.includes("YAPE") ||
-                  watchPagoMatricula.includes("PLIN") ||
-                  watchPagoMatricula.includes("MIXTO")) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-slate-100/50 rounded-xl border border-slate-200/50">
-                    <FormField
-                      control={form.control}
-                      name="montoOperacionMatricula"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <RequiredLabel>Monto Digital/Banco</RequiredLabel>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            {...field}
-                            value={field.value ?? ""}
-                            onChange={(e) =>
-                              field.onChange(parseFloat(e.target.value) || 0)
-                            }
-                            className={inputErrorClass(fieldState.invalid)}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="numeroOperacionMatricula"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <RequiredLabel>N° Operación</RequiredLabel>
-                          <Input
-                            placeholder="Código de transacción"
-                            {...field}
-                            className={inputErrorClass(fieldState.invalid)}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
-
-                {/* Mostrar siempre el total de la matrícula calculado */}
-                <div className="pt-2 flex justify-between items-center text-sm font-semibold text-slate-700">
-                  <span>Total Cobrado Matrícula:</span>
-                  <span className="text-base text-slate-900 font-bold">
-                    S/. {form.watch("montoMatricula").toFixed(2)}
-                  </span>
-                </div>
+                <span className="text-xs bg-indigo-100 text-indigo-800 px-2.5 py-1 rounded-md font-medium flex items-center gap-1">
+                  <Info className="h-3.5 w-3.5" /> Valor Base Referencial: S/.{" "}
+                  {VALOR_MODULO}
+                </span>
               </div>
 
-              {/* BLOQUE B: PAGO DE MÓDULO */}
-              <div className="p-6 border border-slate-100 bg-slate-50/40 rounded-2xl space-y-4 shadow-sm">
-                <div className="flex items-center justify-between text-emerald-700 font-bold border-b border-emerald-100 pb-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <BookOpen className="h-5 w-5" />
-                    <h4>Pago de Módulos</h4>
-                  </div>
-                  {/* Label del costo referencial traído de BD */}
-                  <span className="text-xs bg-emerald-100 text-emerald-800 px-2 py-1 rounded-md flex items-center gap-1 font-medium">
-                    <Info className="h-3 w-3" /> Costo Base Módulo: S/.{" "}
-                    {VALOR_MODULO}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="numeroModulos"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <FormLabel>N° Módulos</FormLabel>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* 1. N° Módulos */}
+                <FormField
+                  control={form.control}
+                  name="numeroModulos"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>N° Total de Módulos</RequiredLabel>
+                      <FormControl>
                         <Input
                           type="number"
+                          min={0}
+                          placeholder="1"
                           {...field}
-                          value={field.value ?? ""}
+                          value={field.value ?? 0}
                           onChange={(e) =>
                             field.onChange(parseInt(e.target.value, 10) || 0)
                           }
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`bg-white font-semibold text-slate-800 ${inputErrorClass(
+                            fieldState.invalid,
+                          )}`}
                         />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex flex-col justify-end pb-2">
-                    <span className="text-xs text-slate-500 font-medium">
-                      Monto Esperado Calculado:
-                    </span>
-                    <span className="text-sm font-bold text-slate-800">
-                      S/.{" "}
-                      {(form.watch("numeroModulos") * VALOR_MODULO).toFixed(2)}
-                    </span>
-                  </div>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="idFormaPagoModulo"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <RequiredLabel>Forma de Pago</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Seleccionar método..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {formasPago.map((f) => (
-                            <SelectItem key={f.codigo} value={f.nombre}>
-                              {f.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
 
-                {/* RENDERIZADO CONDICIONAL DE CAMPOS EN BASE A LA SELECCIÓN */}
-                {(watchPagoModulo.includes("EFECTIVO") ||
-                  watchPagoModulo.includes("MIXTO")) && (
-                  <FormField
-                    control={form.control}
-                    name="montoEfectivoModulo"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Monto en Efectivo (S/.)</RequiredLabel>
+                {/* 2. Valor Pago por Módulo */}
+                <FormField
+                  control={form.control}
+                  name="montoPorModulo"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <RequiredLabel>Costo Unitario Módulo (S/.)</RequiredLabel>
+                      <FormControl>
                         <Input
                           type="number"
                           step="0.01"
+                          min={0}
+                          max={VALOR_MODULO}
                           {...field}
-                          value={field.value ?? ""}
+                          value={field.value ?? 0}
                           onChange={(e) =>
                             field.onChange(parseFloat(e.target.value) || 0)
                           }
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`bg-white font-semibold text-slate-800 ${inputErrorClass(
+                            fieldState.invalid,
+                          )}`}
                         />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                {/* Resumen del Valor General */}
+                <div className="flex flex-col justify-center bg-white p-3 rounded-xl border border-slate-200/60 shadow-sm">
+                  <span className="text-xs text-slate-500 font-medium">
+                    Monto Esperado Módulos ({watchNumeroModulos} × S/.{" "}
+                    {watchMontoPorModulo.toFixed(2)}):
+                  </span>
+                  <span className="text-lg font-bold text-slate-800">
+                    S/. {totalEsperadoModulos.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* 3. SWITCH CONDICIONAL PAGO PRIMER MÓDULO */}
+              <div className="pt-2">
+                <FormField
+                  control={form.control}
+                  name="pagarPrimerModulo"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-xl bg-white p-4 border border-indigo-100 shadow-sm">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base font-bold text-slate-800 cursor-pointer">
+                          ¿Registrar Pago del Primer Módulo Ahora?
+                        </FormLabel>
+                        <p className="text-xs text-slate-500">
+                          Active esta casilla únicamente si el alumno va a
+                          efectuar el pago del módulo en esta transacción.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          disabled={watchNumeroModulos === 0}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+
+            {/* SECCIÓN 02: PAGO DE MATRÍCULA Y MÓDULO */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-2">
+              {/* BLOQUE A: PAGO DE MATRÍCULA (SIEMPRE VISIBLE Y REQUERIDO) */}
+              <div className="p-6 border border-blue-100 bg-blue-50/20 rounded-2xl space-y-4 shadow-sm flex flex-col justify-between">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between text-blue-700 font-bold border-b border-blue-100 pb-3">
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="h-5 w-5" />
+                      <h4>Pago de Matrícula</h4>
+                    </div>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2.5 py-1 rounded-md flex items-center gap-1 font-semibold">
+                      <Info className="h-3.5 w-3.5" /> Valor Base: S/.{" "}
+                      {VALOR_MATRICULA}
+                    </span>
+                  </div>
+
+                  <FormField
+                    control={form.control}
+                    name="idFormaPagoMatricula"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col w-full">
+                        <RequiredLabel>Forma de Pago Matrícula</RequiredLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          value={field.value || ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`w-full ${inputErrorClass(fieldState.invalid)}`}
+                            >
+                              <SelectValue placeholder="Seleccionar método..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="w-full">
+                            {formasPago.map((f) => (
+                              <SelectItem key={f.codigo} value={f.nombre}>
+                                {f.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
-                )}
 
-                {(watchPagoModulo.includes("TRANSFERENCIA") ||
-                  watchPagoModulo.includes("YAPE") ||
-                  watchPagoModulo.includes("PLIN") ||
-                  watchPagoModulo.includes("MIXTO")) && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-slate-100/50 rounded-xl border border-slate-200/50">
+                  {/* CAMPOS DINÁMICOS MATRÍCULA */}
+                  {(watchPagoMatricula.includes("EFECTIVO") ||
+                    watchPagoMatricula.includes("MIXTO")) && (
                     <FormField
                       control={form.control}
-                      name="montoOperacionModulo"
+                      name="montoEfectivoMatricula"
                       render={({ field, fieldState }) => (
                         <FormItem>
-                          <RequiredLabel>Monto Digital/Banco</RequiredLabel>
+                          <RequiredLabel>Monto en Efectivo (S/.)</RequiredLabel>
                           <Input
                             type="number"
                             step="0.01"
@@ -1050,54 +1232,252 @@ export const MatriculaForm = () => {
                             onChange={(e) =>
                               field.onChange(parseFloat(e.target.value) || 0)
                             }
-                            className={inputErrorClass(fieldState.invalid)}
+                            className={`bg-white ${inputErrorClass(fieldState.invalid)}`}
                           />
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+                  )}
 
-                    <FormField
-                      control={form.control}
-                      name="numeroOperacionModulo"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <RequiredLabel>N° Operación</RequiredLabel>
-                          <Input
-                            placeholder="Código de transacción"
-                            {...field}
-                            className={inputErrorClass(fieldState.invalid)}
-                          />
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                )}
+                  {(watchPagoMatricula.includes("TRANSFERENCIA") ||
+                    watchPagoMatricula.includes("YAPE") ||
+                    watchPagoMatricula.includes("PLIN") ||
+                    watchPagoMatricula.includes("MIXTO")) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-white/80 rounded-xl border border-blue-100">
+                      <FormField
+                        control={form.control}
+                        name="montoOperacionMatricula"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <RequiredLabel>Monto Digital/Banco</RequiredLabel>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
+                              className={inputErrorClass(fieldState.invalid)}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
 
-                <div className="pt-2 flex justify-between items-center text-sm font-semibold text-slate-700">
-                  <span>Total Cobrado Módulos:</span>
-                  <span className="text-base text-slate-900 font-bold">
-                    S/. {form.watch("montoModulo").toFixed(2)}
+                      <FormField
+                        control={form.control}
+                        name="numeroOperacionMatricula"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <RequiredLabel>N° Operación</RequiredLabel>
+                            <Input
+                              placeholder="Código de transacción"
+                              {...field}
+                              className={inputErrorClass(fieldState.invalid)}
+                              autoComplete="off"
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-blue-100 flex justify-between items-center text-sm font-semibold text-slate-700">
+                  <span>Total Cobrado Matrícula:</span>
+                  <span className="text-base text-blue-900 font-extrabold">
+                    S/. {watchMontoMatricula.toFixed(2)}
                   </span>
                 </div>
               </div>
+
+              {/* BLOQUE B: PAGO DE MÓDULO (CONDICIONAL: SWITCH === TRUE && N° MÓDULOS > 0) */}
+              {watchPagarPrimerModulo && watchNumeroModulos > 0 ? (
+                <div className="p-6 border border-emerald-100 bg-emerald-50/20 rounded-2xl space-y-4 shadow-sm flex flex-col justify-between transition-all animate-in fade-in-50">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between text-emerald-700 font-bold border-b border-emerald-100 pb-3">
+                      <div className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5" />
+                        <h4>Pago del Primer Módulo</h4>
+                      </div>
+                      <span className="text-xs bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-md flex items-center gap-1 font-semibold">
+                        <Info className="h-3.5 w-3.5" /> Por Módulo: S/.{" "}
+                        {watchMontoPorModulo.toFixed(2)}
+                      </span>
+                    </div>
+
+                    <FormField
+                      control={form.control}
+                      name="idFormaPagoModulo"
+                      render={({ field }) => (
+                        <FormItem>
+                          <RequiredLabel>Forma de Pago Módulo</RequiredLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full bg-white">
+                                <SelectValue placeholder="Seleccionar método..." />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {formasPago.map((f) => (
+                                <SelectItem key={f.codigo} value={f.nombre}>
+                                  {f.nombre}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    {/* CAMPOS DINÁMICOS MÓDULO */}
+                    {(watchPagoModulo.includes("EFECTIVO") ||
+                      watchPagoModulo.includes("MIXTO")) && (
+                      <FormField
+                        control={form.control}
+                        name="montoEfectivoModulo"
+                        render={({ field, fieldState }) => (
+                          <FormItem>
+                            <RequiredLabel>
+                              Monto en Efectivo (S/.)
+                            </RequiredLabel>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              {...field}
+                              value={field.value ?? ""}
+                              onChange={(e) =>
+                                field.onChange(parseFloat(e.target.value) || 0)
+                              }
+                              className={`bg-white ${inputErrorClass(
+                                fieldState.invalid,
+                              )}`}
+                            />
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    )}
+
+                    {(watchPagoModulo.includes("TRANSFERENCIA") ||
+                      watchPagoModulo.includes("YAPE") ||
+                      watchPagoModulo.includes("PLIN") ||
+                      watchPagoModulo.includes("MIXTO")) && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-3 bg-white/80 rounded-xl border border-emerald-100">
+                        <FormField
+                          control={form.control}
+                          name="montoOperacionModulo"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <RequiredLabel>Monto Digital/Banco</RequiredLabel>
+                              <Input
+                                type="number"
+                                step="0.01"
+                                {...field}
+                                value={field.value ?? ""}
+                                onChange={(e) =>
+                                  field.onChange(
+                                    parseFloat(e.target.value) || 0,
+                                  )
+                                }
+                                className={inputErrorClass(fieldState.invalid)}
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="numeroOperacionModulo"
+                          render={({ field, fieldState }) => (
+                            <FormItem>
+                              <RequiredLabel>N° Operación</RequiredLabel>
+                              <Input
+                                placeholder="Código de transacción"
+                                {...field}
+                                className={inputErrorClass(fieldState.invalid)}
+                                autoComplete="off"
+                              />
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-4 border-t border-emerald-100 flex justify-between items-center text-sm font-semibold text-slate-700">
+                    <span>Total Cobrado Módulo:</span>
+                    <span className="text-base text-emerald-900 font-extrabold">
+                      S/. {watchMontoModulo.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                /* ESTADO VACÍO CUANDO NO SE REGISTRA PAGO DE MÓDULO */
+                <div className="p-6 border border-dashed border-slate-200 bg-slate-50/50 rounded-2xl flex flex-col items-center justify-center text-center space-y-2">
+                  <div className="p-3 bg-slate-100 rounded-full text-slate-400">
+                    <XCircle className="h-6 w-6" />
+                  </div>
+                  <h4 className="text-sm font-semibold text-slate-600">
+                    Sin Pago de Módulo Inicial
+                  </h4>
+                  <p className="text-xs text-slate-400 max-w-xs">
+                    El alumno solo registrará la matrícula. Para agregar el
+                    primer módulo active el switch superior.
+                  </p>
+                </div>
+              )}
             </div>
 
-            {/* BOTÓN PRINCIPAL DE ACCIÓN */}
-            <div className="flex justify-end pt-4 border-t border-gray-100">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700 px-6 py-2 h-11 text-base font-semibold text-white shadow-md rounded-xl transition-all flex items-center gap-2"
-              >
-                <Save className="h-5 w-5" />
-                {isSubmitting
-                  ? "Guardando..."
-                  : isEditMode
-                    ? "Actualizar Matrícula"
-                    : "Registrar Matrícula"}
-              </Button>
+            {/* RESUMEN Y TOTAL CONSOLIDADO */}
+            <div className="p-6 bg-slate-900 text-white rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-white/10 rounded-xl text-blue-400">
+                  <Calculator className="h-8 w-8" />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold tracking-tight">
+                    Resumen Total a Pagar
+                  </h4>
+                  <p className="text-xs text-slate-400">
+                    Matrícula (S/. {watchMontoMatricula.toFixed(2)}) + Módulo
+                    (S/.{" "}
+                    {watchPagarPrimerModulo
+                      ? watchMontoModulo.toFixed(2)
+                      : "0.00"}
+                    )
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-4 md:pt-0 border-slate-800">
+                <div className="text-right">
+                  <span className="text-xs uppercase tracking-wider text-slate-400 block font-medium">
+                    Total a Cobrar Hoy
+                  </span>
+                  <span className="text-3xl font-black text-emerald-400 tracking-tight">
+                    S/. {totalGeneralCobrado.toFixed(2)}
+                  </span>
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-6 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2"
+                >
+                  <Save className="h-5 w-5" />
+                  {isSubmitting ? "Guardando..." : "Guardar Matrícula"}
+                </Button>
+              </div>
             </div>
           </form>
         </Form>

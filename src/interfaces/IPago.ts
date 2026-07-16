@@ -6,7 +6,7 @@ import { Modulo } from "./IModulo"
 export interface Pago {
     id?: number
     id_matricula?: number
-    // id_modulo?: number
+    id_modulo?: number
     id_estadopago?: number
     id_formapago?: number
     id_institucion?: number
@@ -23,7 +23,6 @@ export interface Pago {
     estado?: boolean
 
     matricula?: Matricula
-    // modulo?: Modulo
     estado_pago?: DetalleParametro
     forma_pago?: DetalleParametro
     institucion?: Institucion

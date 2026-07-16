@@ -96,6 +96,7 @@ function App() {
                 {isLoggedIn ? (
                   <>
                     <Route path="/dashboard" element={<Dashboard />} />
+
                     <Route
                       path="/personas/:nombreGrupo"
                       element={<PersonaListPage />}
@@ -108,12 +109,14 @@ function App() {
                       path="/personas/:nombreGrupo/editar/:id"
                       element={<PersonaFormPage />}
                     />
+
                     <Route path="/evento" element={<EventoListPage />} />
                     <Route path="/evento/nuevo" element={<EventoFormPage />} />
                     <Route
                       path="/evento/editar/:id"
                       element={<EventoFormPage />}
                     />
+
                     <Route
                       path="/programa-academico"
                       element={<ProgramaListPage />}
@@ -126,12 +129,14 @@ function App() {
                       path="/programa-academico/editar/:id"
                       element={<ProgramaFormPage />}
                     />
+
                     <Route path="/modulo" element={<ModuloListPage />} />
                     <Route path="/modulo/nuevo" element={<ModuloFormPage />} />
                     <Route
                       path="/modulo/editar/:id"
                       element={<ModuloFormPage />}
                     />
+
                     <Route path="/matricula" element={<MatriculaListPage />} />
                     <Route
                       path="/matricula/nuevo"
@@ -145,6 +150,7 @@ function App() {
                       path="/matricula/:id/pago-modulo"
                       element={<PagoFormPage />}
                     />
+
                     <Route path="/pago" element={<PagoListPage />} />
                     <Route path="/adjunto" element={<AdjuntoListPage />} />
                     <Route

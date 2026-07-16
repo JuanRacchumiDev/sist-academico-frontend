@@ -98,12 +98,15 @@ export const getByPrograma = async (idPrograma: number) => {
 
 export const createMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]): Promise<ModuloResponse> => {
     try {
-        const payload = {
-            id_programa: idPrograma,
-            modulos
-        }
+        const urlApi = `${'/programas/'}${idPrograma}${'/actualizar-modulos'}`
+        console.log({ urlApi })
 
-        const response = await apiClient.post('/modulos', payload)
+        const response = await apiClient.post(urlApi, {
+            modulos: modulos
+        })
+
+        console.log('---- response moduloRepository ----')
+        console.log({ response })
 
         const { data: { result, message, data } } = response
 
@@ -163,27 +166,3 @@ export const updateMultiple = async (idPrograma: number, modulos: Partial<Modulo
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
-
-// export const update = async (id: number, payload: Evento): Promise<EventoResponse> => {
-//     try {
-//         const urlApi = `${'/eventos/'}${id}`
-
-//         const response = await apiClient.patch(urlApi, payload)
-
-//         console.log({ response })
-
-//         const { data: { result, data, message, error, status } } = response
-
-//         return {
-//             result,
-//             data,
-//             message,
-//             error,
-//             status
-//         }
-//     } catch (error) {
-//         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-//         console.log('errorMessage', errorMessage)
-//         return { result: false, data: [], error: errorMessage, status: 500 }
-//     }
-// }
