@@ -87,6 +87,7 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
             <Input
               name="titulo"
               placeholder="Nombre del programa..."
+              autoComplete="off"
               value={filters.titulo}
               onChange={handleInputChange}
               className="pl-9 bg-white border-slate-200 focus:ring-blue-500 w-full"

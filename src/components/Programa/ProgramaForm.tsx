@@ -39,7 +39,10 @@ import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Programa, ProgramaResponse } from "../../interfaces/IPrograma";
 import { ArrowLeft, Save, XCircle } from "lucide-react";
-import { getDetalleFiltered } from "../../services/detalleParametroService";
+import {
+  getDetalleFiltered,
+  getDetalleById,
+} from "../../services/detalleParametroService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
@@ -47,7 +50,51 @@ import {
 import { ParametroClase } from "../../params/parametroClase";
 import { parseDate } from "../../utils/dateUtils";
 
+const loadSegmentos = async () => {
+  let listSegmentos: DetalleParametro[] = [];
+
+  const filters: DetalleParametroFilters = {
+    parametro_clase: ParametroClase.SEGMENTO,
+    en_persona: false,
+    en_empresa: false,
+    estado: true,
+  };
+
+  const response = await getDetalleFiltered(filters);
+
+  const { result, data } = response;
+
+  if (result && data) {
+    listSegmentos = data as DetalleParametro[];
+  }
+
+  return listSegmentos;
+};
+
+const loadTipoProgramas = async () => {
+  let listTipoProgramas: DetalleParametro[] = [];
+
+  const filters: DetalleParametroFilters = {
+    parametro_clase: ParametroClase.TIPO_PROGRAMA,
+    en_persona: false,
+    en_empresa: false,
+    estado: true,
+  };
+
+  const response = await getDetalleFiltered(filters);
+
+  const { result, data } = response;
+
+  if (result && data) {
+    listTipoProgramas = data as DetalleParametro[];
+  }
+
+  return listTipoProgramas;
+};
+
 const MAX_FILE_SIZE = 2097152;
+
+const TIPO_PROGRAMA_ESPECIALIZACION = "especializacion";
 
 const formSchema = z
   .object({
@@ -107,18 +154,17 @@ const formSchema = z
     }
   });
 
-type TPrograma = {
-  idSegmento?: string;
-  idTipoPrograma?: string;
-  titulo?: string;
-  fechaInicio?: Date | null;
-  fechaFinal?: Date | null;
-  duracion?: string;
-  horasAcademicas?: number;
-  modulos?: number;
-  creditos?: number;
-  modalidad?: string;
-  plan_file?: null;
+const defaultValues = {
+  idSegmento: "",
+  idTipoPrograma: "",
+  titulo: "",
+  fechaInicio: new Date(),
+  fechaFinal: new Date(),
+  duracion: "",
+  horasAcademicas: 0,
+  modulos: 0,
+  modalidad: "VIRTUAL",
+  plan_file: null,
 };
 
 export const ProgramaForm = () => {
@@ -141,36 +187,106 @@ export const ProgramaForm = () => {
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      idSegmento: "",
-      idTipoPrograma: "",
-      titulo: "",
-      fechaInicio: new Date(),
-      fechaFinal: new Date(),
-      duracion: "",
-      horasAcademicas: 0,
-      modulos: 0,
-      modalidad: "VIRTUAL",
-      plan_file: null,
-    },
+    defaultValues,
   });
 
   const watchFechaInicio = form.watch("fechaInicio");
   const watchFechaFinal = form.watch("fechaFinal");
+  const watchIdTipoPrograma = form.watch("idTipoPrograma");
+
+  console.log({ watchIdTipoPrograma });
+
+  const selectedTipo = tipoProgramas.find(
+    (item) => item.codigo?.toString() === watchIdTipoPrograma,
+  );
+
+  const isEspecializacion =
+    selectedTipo?.nombre_url?.toLowerCase() === TIPO_PROGRAMA_ESPECIALIZACION;
+
+  useEffect(() => {
+    if (!isEspecializacion) {
+      form.setValue("duracion", "", { shouldValidate: true });
+      form.setValue("modulos", 0, { shouldValidate: true });
+      return;
+    }
+
+    if (watchFechaInicio && watchFechaFinal) {
+      // Cálculo de diferencia de meses
+      const start = new Date(watchFechaInicio);
+      const end = new Date(watchFechaFinal);
+
+      let months = (end.getFullYear() - start.getFullYear()) * 12;
+      months -= start.getMonth();
+      months += end.getMonth();
+
+      const diffMeses = months <= 0 ? 0 : months;
+
+      if (diffMeses > 0) {
+        const mesesFormateados =
+          diffMeses < 10 ? `0${diffMeses}` : `${diffMeses}`;
+
+        // Actualizar campos automáticamente
+        form.setValue("duracion", `${mesesFormateados} MESES`, {
+          shouldValidate: true,
+        });
+        form.setValue("modulos", diffMeses, { shouldValidate: true });
+      } else {
+        form.setValue("duracion", "", { shouldValidate: true });
+        form.setValue("modulos", 0, { shouldValidate: true });
+      }
+    }
+  }, [watchFechaFinal, watchFechaInicio, isEspecializacion, form]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoadingData(true);
+
+      try {
+        const [listSegmentos, listTipoProgramas] = await Promise.all([
+          loadSegmentos(),
+          loadTipoProgramas(),
+        ]);
+
+        setSegmentos(listSegmentos);
+        setTipoProgramas(listTipoProgramas);
+
+        if (isEditMode && id) {
+          const responsePrograma = await getProgramaById(+id);
+          console.log({ responsePrograma });
+
+          const { result, data } = responsePrograma;
+
+          if (result && data) {
+            const programa = data as Programa;
+
+            console.log({ programa });
+
+            form.reset({
+              idSegmento: programa.id_segmento?.toString() ?? "",
+              idTipoPrograma: programa.id_tipoprograma?.toString() ?? "",
+              titulo: programa.titulo ?? "",
+              fechaInicio: parseDate(programa.fecha_inicio),
+              fechaFinal: parseDate(programa.fecha_final),
+              horasAcademicas: programa.horas_academicas ?? 0,
+              duracion: programa.duracion ?? "",
+              modulos: programa.numero_modulos ?? 0,
+              modalidad: programa.modalidad ?? "VIRTUAL",
+            });
+          }
+        }
+      } catch (error) {
+        console.error("Error al obtener datos", error);
+        showToast("error", "Error al cargar los datos del formulario.");
+      } finally {
+        setIsLoadingData(false);
+      }
+    };
+
+    fetchData();
+  }, [id, isEditMode]);
 
   const resetForm = () => {
-    const dataForm: TPrograma = {
-      idSegmento: "",
-      idTipoPrograma: "",
-      titulo: "",
-      fechaInicio: new Date(),
-      fechaFinal: new Date(),
-      duracion: "",
-      horasAcademicas: 0,
-      modulos: 0,
-      modalidad: "VIRTUAL",
-      plan_file: null,
-    };
+    const dataForm = defaultValues;
 
     form.reset(dataForm);
   };
@@ -212,7 +328,7 @@ export const ProgramaForm = () => {
       formData.append("titulo", titulo);
       formData.append("fecha_inicio", fechaInicioStr);
       formData.append("fecha_final", fechaFinalStr);
-      formData.append("duracion", duracion);
+      formData.append("duracion", duracion || "");
       formData.append("horas_academicas", (horasAcademicas ?? 0).toString());
       formData.append("numero_modulos", modulos.toString());
       formData.append("is_vigente", "1");
@@ -237,7 +353,7 @@ export const ProgramaForm = () => {
 
       console.log({ isEditMode });
 
-      if (isEditMode) {
+      if (isEditMode && id) {
         console.log("---- actualizar programa ----");
         response = await updatePrograma(+id, formData, config);
       } else {
@@ -247,9 +363,11 @@ export const ProgramaForm = () => {
 
       console.log("response create/update", response);
       const { result, message, data } = response as ProgramaResponse;
+
       console.log({ result });
       console.log({ message });
       console.log({ data });
+
       if (result && data) {
         showToast(
           "success",
@@ -266,123 +384,6 @@ export const ProgramaForm = () => {
       showToast("error", "Error al registrar el programa");
     }
   };
-
-  useEffect(() => {
-    if (watchFechaInicio && watchFechaFinal) {
-      // Cálculo de diferencia de meses
-      const start = new Date(watchFechaInicio);
-      const end = new Date(watchFechaFinal);
-
-      let months = (end.getFullYear() - start.getFullYear()) * 12;
-      months -= start.getMonth();
-      months += end.getMonth();
-
-      const diffMeses = months <= 0 ? 0 : months;
-
-      if (diffMeses > 0) {
-        const mesesFormateados =
-          diffMeses < 10 ? `0${diffMeses}` : `${diffMeses}`;
-
-        // Actualizar campos automáticamente
-        form.setValue("duracion", `${mesesFormateados} MESES`, {
-          shouldValidate: true,
-        });
-        form.setValue("modulos", diffMeses, { shouldValidate: true });
-      } else {
-        form.setValue("duracion", "", { shouldValidate: true });
-        form.setValue("modulos", 0, { shouldValidate: true });
-      }
-    }
-  }, [watchFechaFinal, watchFechaInicio, form]);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      setIsLoadingData(true);
-
-      try {
-        let listSegmentos: DetalleParametro[] = [];
-        let listTipoProgramas: DetalleParametro[] = [];
-
-        // Obteniendo datos para crear el listado de segmentos
-        const filters: DetalleParametroFilters = {
-          parametro_clase: ParametroClase.SEGMENTO,
-          en_persona: false,
-          en_empresa: false,
-          estado: true,
-        };
-
-        const [responseSegmentos] = await Promise.all([
-          getDetalleFiltered(filters),
-        ]);
-
-        console.log({ responseSegmentos });
-
-        const { result: resultSegmentos, data: dataSegmentos } =
-          responseSegmentos;
-
-        if (resultSegmentos && dataSegmentos) {
-          listSegmentos = dataSegmentos as DetalleParametro[];
-        }
-
-        setSegmentos(listSegmentos);
-
-        // Obteniendo datos para crear el listado de tipo de programas
-        const filtersTipoPrograma: DetalleParametroFilters = {
-          parametro_clase: ParametroClase.TIPO_PROGRAMA,
-          en_persona: false,
-          en_empresa: false,
-          estado: true,
-        };
-
-        const [responseTipoProgramas] = await Promise.all([
-          getDetalleFiltered(filtersTipoPrograma),
-        ]);
-
-        console.log({ responseTipoProgramas });
-
-        const { result: resultTipoProgramas, data: dataTipoProgramas } =
-          responseTipoProgramas;
-
-        if (resultTipoProgramas && dataTipoProgramas) {
-          listTipoProgramas = dataTipoProgramas as DetalleParametro[];
-        }
-
-        setTipoProgramas(listTipoProgramas);
-
-        if (isEditMode) {
-          const responsePrograma = await getProgramaById(+id);
-          console.log({ responsePrograma });
-
-          const { result, data } = responsePrograma;
-
-          if (result && data) {
-            const programa = data as Programa;
-
-            console.log({ programa });
-
-            form.reset({
-              idSegmento: programa.id_segmento?.toString() ?? "",
-              idTipoPrograma: programa.id_tipoprograma?.toString() ?? "",
-              titulo: programa.titulo ?? "",
-              fechaInicio: parseDate(programa.fecha_inicio),
-              fechaFinal: parseDate(programa.fecha_final),
-              horasAcademicas: programa.horas_academicas ?? 0,
-              duracion: programa.duracion ?? "",
-              modulos: programa.numero_modulos ?? 0,
-              modalidad: programa.modalidad ?? "VIRTUAL",
-            });
-          }
-        }
-      } catch (error) {
-        console.error("Error al obtener datos", error);
-        showToast("error", "Error al cargar los datos del formulario.");
-      } finally {
-        setIsLoadingData(false);
-      }
-    };
-
-    fetchData();
-  }, [id, form, isEditMode]);
 
   return (
     <>
@@ -524,6 +525,7 @@ export const ProgramaForm = () => {
                       <FormControl>
                         <Input
                           type="date"
+                          autoComplete="off"
                           value={
                             field.value instanceof Date &&
                             !isNaN(field.value.getTime())
@@ -552,6 +554,7 @@ export const ProgramaForm = () => {
                       <FormControl>
                         <Input
                           type="date"
+                          autoComplete="off"
                           value={
                             field.value instanceof Date &&
                             !isNaN(field.value.getTime())
@@ -571,58 +574,62 @@ export const ProgramaForm = () => {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="duracion"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <label className="text-sm font-medium text-slate-700">
-                        Duración
-                      </label>
-                      {/* <RequiredLabel>Duración</RequiredLabel> */}
-                      <FormControl>
-                        <Input
-                          placeholder="12 MESES"
-                          autoComplete="off"
-                          maxLength={20}
-                          {...field}
-                          value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                {isEspecializacion && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="duracion"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <label className="text-sm font-medium text-slate-700">
+                            Duración
+                          </label>
+                          {/* <RequiredLabel>Duración</RequiredLabel> */}
+                          <FormControl>
+                            <Input
+                              placeholder="12 MESES"
+                              autoComplete="off"
+                              maxLength={20}
+                              {...field}
+                              value={field.value ?? ""}
+                              className={inputErrorClass(fieldState.invalid)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
 
-                <FormField
-                  control={form.control}
-                  name="modulos"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <label className="text-sm font-medium text-slate-700">
-                        Módulos
-                      </label>
-                      <FormControl>
-                        <Input
-                          placeholder="12"
-                          autoComplete="off"
-                          type="number"
-                          min={0}
-                          value={field.value ?? ""}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            field.onChange(
-                              value === "" ? null : parseInt(value, 10),
-                            );
-                          }}
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    <FormField
+                      control={form.control}
+                      name="modulos"
+                      render={({ field, fieldState }) => (
+                        <FormItem>
+                          <label className="text-sm font-medium text-slate-700">
+                            Módulos
+                          </label>
+                          <FormControl>
+                            <Input
+                              placeholder="12"
+                              autoComplete="off"
+                              type="number"
+                              min={0}
+                              value={field.value ?? ""}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                field.onChange(
+                                  value === "" ? null : parseInt(value, 10),
+                                );
+                              }}
+                              className={inputErrorClass(fieldState.invalid)}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
 
                 <FormField
                   control={form.control}
@@ -686,7 +693,7 @@ export const ProgramaForm = () => {
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white shadow-md shadow-blue-200 transition-all active:scale-95"
+                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
                 >
                   {isSubmitting ? (
                     <Spinner className="mr-2 h-4 w-4 animate-spin" />
@@ -699,10 +706,10 @@ export const ProgramaForm = () => {
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}
-                  onClick={() => resetForm()}
-                  className="w-full sm:w-auto border-gray-300 text-gray-700 hover:bg-gray-50"
+                  onClick={resetForm}
+                  className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
                 >
-                  <XCircle className="h-4 w-4 mr-2" />
+                  <XCircle className="h-4 w-4 mr-2 text-slate-500" />
                   Cancelar
                 </Button>
               </div>

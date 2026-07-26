@@ -87,24 +87,13 @@ const formSchema = z.object({
   }),
 });
 
-type TPersona = {
-  idTipoDocumento?: string;
-  numeroDocumento?: string;
-  nombres?: string;
-  apellidoPaterno?: string;
-  apellidoMaterno?: string;
-  fechaNacimiento?: Date | null;
-  email?: string;
-  sexo?: string;
-  telefono?: string;
-};
-
 export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
   const [tipoDocumentos, setTipoDocumentos] = useState<DetalleParametro[]>([]);
   const [camposHabilitados, setCamposHabilitados] = useState(false);
+  const [campoFecNacHabilitado, setCampoFecNacHabilitado] = useState(false);
   const [idPersona, setIdPersona] = useState(0);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
@@ -142,6 +131,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
       telefono: "",
     });
     setCamposHabilitados(false);
+    setCampoFecNacHabilitado(false);
     setIdPersona(0);
   };
 
@@ -259,6 +249,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
             const persona = dataPers as Persona;
             if (persona.id) setIdPersona(persona.id);
             setCamposHabilitados(true);
+            setCampoFecNacHabilitado(true);
 
             form.reset({
               idTipoDocumento: String(persona.id_tipodocumento),
@@ -410,35 +401,60 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
 
                                 if (result && data) {
                                   const persona = data as Persona;
-                                  setIdPersona(persona.id as number);
 
-                                  form.setValue(
-                                    "nombres",
-                                    persona.nombres as string,
-                                    { shouldValidate: true },
-                                  );
+                                  const {
+                                    id,
+                                    nombres,
+                                    apellido_paterno,
+                                    apellido_materno,
+                                    fecha_nacimiento,
+                                  } = persona;
+
+                                  setIdPersona(id);
+
+                                  form.setValue("nombres", nombres, {
+                                    shouldValidate: true,
+                                  });
+
                                   form.setValue(
                                     "apellidoPaterno",
-                                    persona.apellido_paterno as string,
-                                    { shouldValidate: true },
-                                  );
-                                  form.setValue(
-                                    "apellidoMaterno",
-                                    persona.apellido_materno as string,
+                                    apellido_paterno,
                                     { shouldValidate: true },
                                   );
 
-                                  if (persona.fecha_nacimiento) {
+                                  form.setValue(
+                                    "apellidoMaterno",
+                                    apellido_materno,
+                                    { shouldValidate: true },
+                                  );
+
+                                  if (fecha_nacimiento) {
                                     form.setValue(
                                       "fechaNacimiento",
-                                      parseISO(persona.fecha_nacimiento),
+                                      parseISO(fecha_nacimiento),
                                       { shouldValidate: true },
                                     );
+                                    setCampoFecNacHabilitado(false);
+                                  } else {
+                                    form.setValue("fechaNacimiento", null, {
+                                      shouldValidate: true,
+                                    });
+                                    setCampoFecNacHabilitado(true);
                                   }
-                                  setCamposHabilitados(false);
+
+                                  // if (persona.fecha_nacimiento) {
+                                  //   form.setValue(
+                                  //     "fechaNacimiento",
+                                  //     parseISO(persona.fecha_nacimiento),
+                                  //     { shouldValidate: true },
+                                  //   );
+                                  // }
+                                  // setCamposHabilitados(false);
+
                                   showToast("success", message as string);
                                 } else {
                                   setCamposHabilitados(true);
+
                                   showToast(
                                     "warning",
                                     "No se encontraron registros previos. Complete los datos manualmente.",
@@ -556,17 +572,18 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                           value={
                             field.value ? format(field.value, "yyyy-MM-dd") : ""
                           }
+                          autoComplete="off"
                           onChange={(e) =>
                             field.onChange(
                               e.target.value ? parseISO(e.target.value) : null,
                             )
                           }
-                          disabled={!camposHabilitados || isSubmitting}
+                          disabled={!campoFecNacHabilitado || isSubmitting}
                           className={`transition-all ${
                             fieldState.invalid
                               ? "border-red-400 focus-visible:ring-red-100"
                               : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
-                          } ${!camposHabilitados ? "bg-slate-50 text-slate-500 cursor-not-allowed" : "bg-white"}`}
+                          } ${!campoFecNacHabilitado ? "bg-slate-50 text-slate-500 cursor-not-allowed" : "bg-white"}`}
                         />
                       </FormControl>
                       <FormMessage className="text-xs font-medium text-red-500" />

@@ -31,9 +31,10 @@ import { formatDate } from "../../utils/dateUtils";
 interface Props {
   programa: Programa;
   onStatusChange?: (programaId: number) => void;
+  onRefresh?: () => void;
 }
 
-export const ProgramaRow: React.FC<Props> = ({ programa }) => {
+export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
@@ -102,6 +103,9 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
     ? "hover:bg-red-50/70"
     : "hover:bg-green-50/70";
 
+  // Verificación de cantidad de módulos mayor que 0
+  const tieneModulos = (programa.numero_modulos ?? 0) > 0;
+
   return (
     <>
       <TableRow
@@ -118,7 +122,7 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
         </TableCell>
 
         <TableCell
-          className="py-2 px-3 text-xs text-slate-900 max-w-[280px] truncate"
+          className="py-2 px-3 text-xs text-slate-900 whitespace-normal break-words min-w-[200px]"
           title={programa.titulo}
         >
           {programa.titulo ?? "--"}
@@ -185,28 +189,34 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
                 <span>Ver/Editar detalle</span>
               </DropdownMenuItem>
 
-              <DropdownMenuSeparator className="bg-slate-100" />
-
               {programa.plan && (
-                <DropdownMenuItem
-                  onClick={handleDownloadPlan}
-                  className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
-                >
-                  <Download className="h-3.5 w-3.5 text-slate-400" />
-                  <span>Descargar Plan</span>
-                </DropdownMenuItem>
+                <>
+                  <DropdownMenuSeparator className="bg-slate-100" />
+                  <DropdownMenuItem
+                    onClick={handleDownloadPlan}
+                    className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
+                  >
+                    <Download className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Descargar Plan</span>
+                  </DropdownMenuItem>
+                </>
               )}
 
-              <DropdownMenuItem
-                onClick={() => {
-                  setIsDropdownOpen(false);
-                  setIsModuloSheetOpen(true);
-                }}
-                className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
-              >
-                <Layers className="h-3.5 w-3.5 text-slate-400" />
-                <span>Configurar módulos</span>
-              </DropdownMenuItem>
+              {tieneModulos && (
+                <>
+                  <DropdownMenuSeparator className="bg-slate-100" />
+                  <DropdownMenuItem
+                    onClick={() => {
+                      setIsDropdownOpen(false);
+                      setIsModuloSheetOpen(true);
+                    }}
+                    className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
+                  >
+                    <Layers className="h-3.5 w-3.5 text-slate-400" />
+                    <span>Configurar módulos</span>
+                  </DropdownMenuItem>
+                </>
+              )}
 
               <DropdownMenuSeparator className="bg-slate-100" />
 
@@ -237,11 +247,18 @@ export const ProgramaRow: React.FC<Props> = ({ programa }) => {
         }
       />
 
-      <ModuloSheetForm
-        programa={programa}
-        isOpen={isModuloSheetOpen}
-        onClose={() => setIsModuloSheetOpen(false)}
-      />
+      {tieneModulos && (
+        <ModuloSheetForm
+          programa={programa}
+          isOpen={isModuloSheetOpen}
+          onClose={() => setIsModuloSheetOpen(false)}
+          onSuccess={() => {
+            if (onRefresh) {
+              onRefresh();
+            }
+          }}
+        />
+      )}
     </>
   );
 };

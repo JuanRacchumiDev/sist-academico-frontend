@@ -1,17 +1,15 @@
-// /src/utils/menuItems.ts
 import {
     Home,
     UserIcon,
     BookOpen,
     GraduationCap,
     Settings,
-    Briefcase,
     Award,
-    CreditCard,    // Nuevo: Ideal para Pagos / Transacciones
-    Paperclip,     // Nuevo: Ideal para Archivos Adjuntos / Sílabos
-    UserCog,       // Nuevo: Ideal para Usuarios / Credenciales del Sistema
-    Layers,        // Nuevo: Ideal para Segmentos / Estructuras
-    FileCheck      // Nuevo: Ideal para Tipo de Documento / Validaciones
+    CreditCard,
+    Paperclip,
+    UserCog,
+    Layers,
+    FileCheck
 } from "lucide-react";
 
 export const ADMIN_MENU_ITEMS = [
@@ -20,7 +18,6 @@ export const ADMIN_MENU_ITEMS = [
         icon: Home,
         label: "Dashboard",
         active: true,
-        badge: "New",
         path: "/dashboard"
     },
     {
@@ -46,21 +43,28 @@ export const ADMIN_MENU_ITEMS = [
     },
     {
         id: "pago",
-        icon: CreditCard, // Actualizado
+        icon: CreditCard,
         label: "Pago",
         active: false,
         path: "/pago"
     },
     {
         id: "adjunto",
-        icon: Paperclip, // Actualizado
+        icon: Paperclip,
         label: "Adjunto",
         active: false,
         path: "/adjunto"
     },
     {
+        id: "certificado",
+        icon: Award, // Cambiado de Paperclip a Award para ser único
+        label: "Certificado",
+        active: false,
+        path: "/certificado"
+    },
+    {
         id: "usuario",
-        icon: UserCog, // Actualizado
+        icon: UserCog,
         label: "Usuario",
         active: false,
         path: "/usuario"
@@ -73,15 +77,15 @@ export const ADMIN_MENU_ITEMS = [
             {
                 id: "segmento",
                 label: "Segmento",
-                icon: Layers, // Actualizado para no repetir con Tipo Documento
+                icon: Layers,
                 path: "/mantenimiento/segmento"
             },
             {
                 id: "tipo-documento",
                 label: "Tipo Documento",
-                icon: FileCheck, // Actualizado
+                icon: FileCheck,
                 path: "/mantenimiento/tipo-documento"
-            },
+            }
         ]
     }
 ];
@@ -92,7 +96,6 @@ export const ALUMNO_MENU_ITEMS = [
         icon: Home,
         label: "Dashboard",
         active: true,
-        badge: "New",
         path: "/dashboard-alumno"
     },
     {

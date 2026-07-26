@@ -1,16 +1,16 @@
 import { Link } from "react-router-dom";
-import { AdjuntoGrid } from "./AdjuntoGrid";
+import { CertificadoGrid } from "./CertificadoGrid";
 import { Plus, FolderOpen, ArrowLeft } from "lucide-react";
 import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
 
-export const AdjuntoList = () => {
-  const newRoute = `/adjunto/nuevo`;
+export const CertificadoList = () => {
+  const newRoute = `/certificado/nuevo`;
 
   return (
-    <div className="animate-in fade-in duration-200">
+    <div className="animate-in fade-in duration-200 space-y-4">
       {/* Cabecera */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
         <div className="space-y-0.5">
           <div className="flex items-center gap-1.5 text-slate-500">
             <FolderOpen className="w-3.5 h-3.5" />
@@ -19,11 +19,10 @@ export const AdjuntoList = () => {
             </span>
           </div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Repositorio de <span className="text-indigo-600">Adjuntos</span>
+            Repositorio de <span className="text-indigo-600">certificados</span>
           </h1>
           <p className="text-xs text-slate-500">
-            Administra, visualiza y descarga la documentación cargada en los
-            programas y módulos.
+            Administra, visualiza y descarga los certificados emitidos
           </p>
         </div>
 
@@ -40,21 +39,21 @@ export const AdjuntoList = () => {
             Panel Principal
           </Link>
 
-          <Link
+          {/* <Link
             to={newRoute}
             className={cn(
-              buttonVariants({ size: "sm" }), // Tamaño ajustado a 'sm' para entorno compacto
-              "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs gap-1.5 px-3 h-8 text-xs font-medium transition-colors",
+              buttonVariants({ size: "sm" }),
+              "bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs gap-1.5 px-3 h-8 text-xs font-medium transition-colors",
             )}
           >
-            <Plus className="w-4 h-4" /> Nuevo adjunto
-          </Link>
+            <Plus className="w-4 h-4" /> Nuevo certificado
+          </Link> */}
         </div>
       </div>
 
-      {/* Renderizado directo del mosaico (Removido el Card global rígido para dejar que las tarjetas resalten) */}
-      <div className="border-slate-200 shadow-sm rounded-lg overflow-hidden bg-white">
-        <AdjuntoGrid />
+      {/* Grid de Contenido */}
+      <div className="border border-slate-200 shadow-2xs rounded-lg overflow-hidden bg-white">
+        <CertificadoGrid />
       </div>
     </div>
   );

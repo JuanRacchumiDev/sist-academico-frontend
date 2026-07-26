@@ -192,6 +192,10 @@ export const ProgramaTable = () => {
     return items;
   };
 
+  const handleRefresh = useCallback(() => {
+    fetchData(currentPage, searchFilters);
+  }, [fetchData, currentPage, searchFilters]);
+
   return (
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
@@ -239,7 +243,11 @@ export const ProgramaTable = () => {
                 <TableSpinner colSpan={9} />
               ) : programas.length > 0 ? (
                 programas.map((programa) => (
-                  <ProgramaRow key={programa.id} programa={programa} />
+                  <ProgramaRow
+                    key={programa.id}
+                    programa={programa}
+                    onRefresh={handleRefresh}
+                  />
                 ))
               ) : (
                 <TableRow>

@@ -48,6 +48,7 @@ export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
           <Input
             name="search"
             placeholder="Ej. Juan Perez..."
+            autoComplete="off"
             value={filters.search}
             onChange={handleInputChange}
             className="pl-9 bg-white border-slate-200 focus:ring-blue-500"
@@ -62,6 +63,7 @@ export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
         <Input
           name="documento"
           placeholder="DNI / RUC"
+          autoComplete="off"
           value={filters.documento}
           onChange={handleInputChange}
           className="bg-white border-slate-200 focus:ring-blue-500"

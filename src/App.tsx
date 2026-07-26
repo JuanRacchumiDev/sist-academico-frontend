@@ -24,6 +24,7 @@ import { UsuarioListPage } from "./components/Usuario/Page/UsuarioListPage";
 import { UsuarioFormPage } from "./components/Usuario/Page/UsuarioFormPage";
 import { DashboardAlumno } from "./components/Alumno/DashboardAlumno";
 import { MisMatriculasListPage } from "./components/Alumno/Page/MisMatriculasListPage";
+import { CertificadoListPage } from "./components/Certificado/Page/CertificadoListPage";
 
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
@@ -152,6 +153,7 @@ function App() {
                     />
 
                     <Route path="/pago" element={<PagoListPage />} />
+
                     <Route path="/adjunto" element={<AdjuntoListPage />} />
                     <Route
                       path="/adjunto/nuevo"
@@ -161,11 +163,18 @@ function App() {
                       path="/adjunto/editar/:id"
                       element={<AdjuntoFormPage />}
                     />
+
                     <Route path="/usuario" element={<UsuarioListPage />} />
                     <Route
                       path="/usuario/nuevo"
                       element={<UsuarioFormPage />}
                     />
+
+                    <Route
+                      path="/certificado"
+                      element={<CertificadoListPage />}
+                    />
+
                     <Route
                       path="/mantenimiento/*"
                       element={<MantenimientoPage />}

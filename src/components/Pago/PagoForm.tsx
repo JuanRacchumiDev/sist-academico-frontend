@@ -12,6 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { useToast } from "../../context/ToastContext";
+import { Spinner } from "../../components/Common/Spinner";
 import {
   Form,
   FormControl,
@@ -51,6 +52,7 @@ import {
   DetalleParametro,
   DetalleParametroFilters,
 } from "../../interfaces/IDetalleParametro";
+import { DetalleMatricula } from "../../interfaces/IDetalleMatricula";
 import { ParametroClase } from "../../params/parametroClase";
 import * as z from "zod";
 import { format, parseISO } from "date-fns";
@@ -63,37 +65,63 @@ import { padString } from "@/utils/stringUtils";
 import { VALOR_MODULO } from "@/params/constants";
 
 const loadFormasPago = async () => {
+  let formasPago: DetalleParametro[] = [];
+
   const filters: DetalleParametroFilters = {
     parametro_clase: ParametroClase.FORMA_PAGO,
     en_persona: false,
     en_empresa: false,
     estado: true,
   };
+
   const response = await getDetalleFiltered(filters);
-  return response.result && response.data
-    ? (response.data as DetalleParametro[])
-    : [];
+
+  const { result, data } = response;
+
+  if (result && data) {
+    formasPago = data as DetalleParametro[];
+  }
+
+  return formasPago;
 };
 
 const loadModulosPendientes = async (matriculaId: number) => {
+  let modulosPendientes: ModuloPendiente[] = [];
+
   const response = await getModulosPendientes(matriculaId);
-  return response.result && response.data
-    ? (response.data.modulos as ModuloPendiente[])
-    : [];
+
+  const {
+    result,
+    data: { modulos },
+  } = response;
+
+  if (result && modulos) {
+    modulosPendientes = modulos as ModuloPendiente[];
+  }
+
+  return modulosPendientes;
 };
 
 const loadModulosPagados = async (matriculaId: number) => {
+  let modulosPagados: ModuloPagado[] = [];
+
   const response = await getModulosCancelados(matriculaId);
-  return response.result && response.data
-    ? (response.data.modulos as ModuloPagado[])
-    : [];
+
+  const {
+    result,
+    data: { modulos },
+  } = response;
+
+  if (result && modulos) {
+    modulosPagados = modulos as ModuloPagado[];
+  }
+
+  return modulosPagados;
 };
 
 interface FormularioPagoProps {
   matriculaSeleccionada: Matricula;
-  idModulo?: number;
   idInstitucion: number;
-  onSave?: (pago: Pago) => void;
   onCancel: () => void;
 }
 
@@ -177,9 +205,7 @@ const today = new Date();
 
 export const PagoForm: React.FC<FormularioPagoProps> = ({
   matriculaSeleccionada,
-  idModulo,
   idInstitucion,
-  onSave,
   onCancel,
 }) => {
   const navigate = useNavigate();
@@ -189,12 +215,18 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
     [],
   );
   const [modulosPagados, setModulosPagados] = useState<ModuloPagado[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isLoadingData, setIsLoadingData] = useState(false);
+  const [valorPorModulo, setValorPorModulo] = useState<number>(VALOR_MODULO);
 
   const inputErrorClass = (invalid: boolean) =>
     invalid
       ? "border-destructive focus-visible:ring-destructive focus:ring-destructive"
       : "focus:ring-indigo-500";
+
+  console.log({ matriculaSeleccionada });
+
+  // Obteniendo id de la matrícula y detalles
+  const { id: idMatricula, persona, detalles } = matriculaSeleccionada;
 
   const form = useForm<TFormInput>({
     resolver: zodResolver(formSchema),
@@ -222,28 +254,48 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoadingData(true);
+
       try {
-        setLoading(true);
         const [listFormasPago, listModulosPendientes, listModulosPagados] =
           await Promise.all([
             loadFormasPago(),
-            loadModulosPendientes(matriculaSeleccionada.id),
-            loadModulosPagados(matriculaSeleccionada.id),
+            loadModulosPendientes(idMatricula),
+            loadModulosPagados(idMatricula),
           ]);
 
         setFormasPago(listFormasPago);
         setModulosPendientes(listModulosPendientes);
         setModulosPagados(listModulosPagados);
+
+        // Obteniendo el valor de un  módulo
+        if (detalles && detalles.length > 0) {
+          const detalleMatricula = detalles[0] as DetalleMatricula;
+
+          const { valor_modulo: valorModuloDefined } = detalleMatricula;
+
+          console.log({ detalleMatricula });
+
+          console.log({ valorModuloDefined });
+
+          if (valorModuloDefined) {
+            setValorPorModulo(Number(valorModuloDefined));
+          } else {
+            setValorPorModulo(VALOR_MODULO);
+          }
+        } else {
+          setValorPorModulo(VALOR_MODULO);
+        }
       } catch (error) {
         console.error("Error al cargar los catálogos formulario", error);
         showToast("error", "Error al cargar los catálogos del formulario.");
       } finally {
-        setLoading(false);
+        setIsLoadingData(false);
       }
     };
 
     fetchData();
-  }, [matriculaSeleccionada.id]);
+  }, [idMatricula]);
 
   const handleFormaPagoChange = (val: string) => {
     setValue("idFormaPago", val);
@@ -255,10 +307,13 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
   const onSubmit: SubmitHandler<TFormOutput> = async (values) => {
     try {
-      if (totalRecibido > VALOR_MODULO) {
+      console.log({ totalRecibido });
+      console.log({ valorPorModulo });
+
+      if (totalRecibido > valorPorModulo) {
         showToast(
           "error",
-          `El monto total ingresado (S/. ${totalRecibido.toFixed(2)}) no puede ser mayor al costo del módulo (S/. ${VALOR_MODULO.toFixed(2)})`,
+          `El monto total ingresado (S/. ${totalRecibido.toFixed(2)}) no puede ser mayor al costo del módulo (S/. ${valorPorModulo.toFixed(2)})`,
         );
         return;
       }
@@ -268,8 +323,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
         : format(new Date(), "yyyy-MM-dd");
 
       const payload: Pago = {
-        id_matricula: matriculaSeleccionada.id,
-        id_institucion: matriculaSeleccionada.id_institucion ?? idInstitucion,
+        id_matricula: idMatricula,
+        id_institucion: idInstitucion,
         id_formapago: +values.idFormaPago,
         concepto: values.concepto,
         numero_modulo: values.numeroModulo,
@@ -280,17 +335,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
         estado: true,
       };
 
-      console.log("payload nuevo pago");
-      console.log({ payload });
-
       const response = await createPago(payload);
-      console.log("---- response createPago ----");
-      console.log({ response });
       const { result, message } = response as PagoResponse;
-
-      console.log({ result });
-
-      console.log({ message });
 
       if (result) {
         showToast("success", message || "Pago registrado");
@@ -332,19 +378,17 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
     nombreForma.includes("deposito") ||
     nombreForma.includes("mixto");
 
-  if (loading) {
-    return (
-      <div className="flex h-72 w-full items-center justify-center gap-2">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-        <span className="text-sm font-medium text-muted-foreground">
-          Cargando información del formulario...
-        </span>
-      </div>
-    );
-  }
-
   return (
-    <Card className="mx-auto max-w-6xl overflow-hidden border-slate-200 shadow-xl">
+    <Card className="relative mx-auto max-w-6xl overflow-hidden border-slate-200 shadow-xl">
+      {isLoadingData && (
+        <div className="absolute inset-0 bg-white/75 backdrop-blur-xs flex flex-col gap-2 items-center justify-center z-50">
+          <Spinner className="h-10 w-10 text-indigo-600 animate-spin" />
+          <span className="text-sm font-semibold text-slate-600 animate-pulse">
+            Cargando información...
+          </span>
+        </div>
+      )}
+
       <CardHeader className="bg-slate-950 px-6 py-5 text-white">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-3">
@@ -364,7 +408,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
               <CardDescription className="text-slate-400">
                 Estudiante:{" "}
                 <span className="font-semibold text-slate-200">
-                  {matriculaSeleccionada?.persona?.nombre_completo}
+                  {persona?.nombre_completo}
                 </span>
               </CardDescription>
             </div>
@@ -375,7 +419,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
               Matrícula Ref:
             </span>
             <span className="font-mono text-sm font-bold text-indigo-400">
-              #{padString(4, matriculaSeleccionada?.id, "left")}
+              #{padString(4, idMatricula, "left")}
             </span>
           </div>
         </div>
@@ -404,7 +448,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                         field.onChange(val);
                         setValue(
                           "concepto",
-                          val ? `Pago de Módulo N° ${val}` : "",
+                          val ? `PAGO DE MÓDULO #${val}` : "",
                         );
                       }}
                       value={field.value?.toString() || ""}
@@ -448,6 +492,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                       <Input
                         {...field}
                         placeholder="Ej. Pago de Matrícula - Modulo I"
+                        autoComplete="off"
                         className={inputErrorClass(fieldState.invalid)}
                       />
                     </FormControl>
@@ -512,6 +557,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                                 step="0.01"
                                 {...field}
                                 value={(field.value as number | string) ?? ""}
+                                autoComplete="off"
                                 onChange={(e) =>
                                   field.onChange(
                                     parseFloat(e.target.value) || 0,
@@ -544,6 +590,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                                   step="0.01"
                                   {...field}
                                   value={(field.value as number | string) ?? ""}
+                                  autoComplete="off"
                                   onChange={(e) =>
                                     field.onChange(
                                       parseFloat(e.target.value) || 0,
@@ -569,6 +616,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                               <FormControl>
                                 <Input
                                   placeholder="Ej: OPE-987123"
+                                  autoComplete="off"
                                   className={`font-mono uppercase ${inputErrorClass(fieldState.invalid)}`}
                                   {...field}
                                 />
@@ -588,7 +636,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 <span>
                   El costo estándar estipulado por módulo es de{" "}
                   <strong className="font-semibold text-blue-900">
-                    S/. {VALOR_MODULO.toFixed(2)}
+                    S/. {valorPorModulo.toFixed(2)}
                   </strong>
                   .
                 </span>
@@ -596,7 +644,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
               <div className="mt-2 flex items-center justify-between rounded-xl bg-slate-900 p-4 text-white shadow-inner">
                 <span className="text-xs font-bold uppercase tracking-widest text-slate-400">
-                  Total Neto a Recibir:
+                  Total neto a recibir:
                 </span>
                 <span className="font-mono text-2xl font-black text-emerald-400">
                   S/. {totalRecibido.toFixed(2)}
@@ -614,7 +662,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || isLoadingData}
                   className="rounded-xl bg-indigo-600 font-bold text-white shadow-md hover:bg-indigo-700"
                 >
                   {isSubmitting ? (
@@ -671,7 +719,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                           <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-emerald-500" />
                           <span className="text-xs font-bold leading-tight text-slate-800">
                             {modPagado.concepto ||
-                              `Pago de Módulo N° ${modPagado.numero_modulo}`}
+                              `PAGO DE MÓDULO #${modPagado.numero_modulo}`}
                           </span>
                         </div>
                         <span className="shrink-0 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-bold text-emerald-700">

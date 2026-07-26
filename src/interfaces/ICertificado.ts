@@ -1,5 +1,6 @@
 import { DetalleParametro } from "./IDetalleParametro"
 import { Institucion } from "./IInstitucion"
+import { Modulo } from "./IModulo"
 import { Persona } from "./IPersona"
 import { Plantilla } from "./IPlantilla"
 import { Programa } from "./IPrograma"
@@ -11,17 +12,24 @@ export interface Certificado {
     id_institucion?: number
     id_plantilla?: number
     id_programa?: number
+    id_modulo?: number
+
     codigo_verificacion?: string
     codigo_qr_path?: string
     path_file?: string
     filename?: string
     nombre_impresion?: string
-    estado?: boolean
+    user_crea?: string
+    user_actualiza?: string
+    user_elimina?: string
+    estado?: boolean,
+
     persona?: Persona
     tipoCertificado?: DetalleParametro
     institucion?: Institucion
     plantilla?: Plantilla
     programa?: Programa
+    modulo?: Modulo
 }
 
 export interface CertificadoResponse {
@@ -30,9 +38,11 @@ export interface CertificadoResponse {
     data?: Certificado | Certificado[]
     error?: string
     status?: number
+    pagination?: PaginationType
+    code?: string
 }
 
-export interface Pagination {
+export interface PaginationType {
     currentPage: number
     limit: number
     totalPages: number
@@ -43,8 +53,9 @@ export interface Pagination {
 
 export interface CertificadoPaginateResponse {
     result: boolean
+    message?: string
     data?: Certificado[]
-    pagination?: Pagination
     errors?: string
     status?: number
+    pagination?: PaginationType
 }

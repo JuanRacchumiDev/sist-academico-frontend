@@ -293,6 +293,7 @@ export const ModuloSheetForm: React.FC<Props> = ({
                                 <FormControl>
                                   <Input
                                     placeholder="Ej. Fundamentos Técnicos e Introducción"
+                                    autoComplete="off"
                                     {...inputField}
                                     className="border-slate-200 text-xs focus:ring-blue-500 focus:border-blue-500"
                                   />
@@ -317,6 +318,7 @@ export const ModuloSheetForm: React.FC<Props> = ({
                                     placeholder="Escribe los temas detallados del módulo..."
                                     {...textareaField}
                                     value={textareaField.value || ""}
+                                    autoComplete="off"
                                     className="border-slate-200 text-xs focus:ring-blue-500 focus:border-blue-500 resize-none"
                                   />
                                 </FormControl>

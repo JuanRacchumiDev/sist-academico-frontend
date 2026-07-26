@@ -101,6 +101,7 @@ export const UsuarioFilters: React.FC<UsuarioFilterProps> = ({
             <Input
               name="email"
               placeholder="Email de usuario"
+              autoComplete="off"
               value={filters.email}
               onChange={handleInputChange}
               className="pl-9 bg-white border-slate-200 focus:ring-blue-500 w-full"

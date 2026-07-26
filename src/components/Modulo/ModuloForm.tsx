@@ -339,35 +339,6 @@ export const ModuloForm = () => {
                       </FormItem>
                     )}
                   />
-
-                  {/* <FormField
-                    control={form.control}
-                    name="video"
-                    render={({ field, fieldState }) => (
-                      <FormItem>
-                        <RequiredLabel>Video</RequiredLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="URL del módulo"
-                            autoComplete="off"
-                            maxLength={150}
-                            {...field}
-                            value={field.value ?? ""}
-                            className={`
-                              ${
-                                fieldState.invalid
-                                  ? "border-red-500 focus:ring-red-500"
-                                  : "focus:ring-blue-500"
-                              }
-                                transition-all duration-300
-                                placeholder-gray-400
-                            `}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  /> */}
                 </div>
               </fieldset>
 

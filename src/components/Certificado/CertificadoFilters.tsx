@@ -2,34 +2,24 @@ import { Search, Calendar, RefreshCw } from "lucide-react";
 import React, { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../ui/select";
-import { Programa } from "../../interfaces/IPrograma";
 
-export interface AdjuntoFiltersData {
-  idPrograma: string;
+export interface CertificadoFiltersData {
   fechaInicio: string;
   fechaFinal: string;
+  search: string;
 }
 
-interface AdjuntoFiltersProps {
-  onSearch: (filters: AdjuntoFiltersData) => void;
-  programas: Programa[];
+interface CertificadoFiltersProps {
+  onSearch: (filters: CertificadoFiltersData) => void;
 }
 
-export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({
+export const CertificadoFilters: React.FC<CertificadoFiltersProps> = ({
   onSearch,
-  programas,
 }) => {
-  const [filters, setFilters] = useState<AdjuntoFiltersData>({
-    idPrograma: "all",
+  const [filters, setFilters] = useState<CertificadoFiltersData>({
     fechaInicio: "",
     fechaFinal: "",
+    search: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -37,28 +27,19 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectChange = (name: string, value: string) => {
-    setFilters((prev) => ({ ...prev, [name]: value }));
-  };
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    // Limpiamos los valores "all" antes de enviar al servicio
-    const cleanFilters = {
-      ...filters,
-      idPrograma: filters.idPrograma === "all" ? "" : filters.idPrograma,
-    };
-    onSearch(cleanFilters);
+    onSearch({ ...filters });
   };
 
   const handleReset = () => {
     const resetValues = {
-      idPrograma: "all",
       fechaInicio: "",
       fechaFinal: "",
+      search: "",
     };
     setFilters(resetValues);
-    onSearch({ idPrograma: "", fechaInicio: "", fechaFinal: "" });
+    onSearch(resetValues);
   };
 
   return (
@@ -67,28 +48,6 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({
       className="p-4 bg-slate-50/50 border-b border-slate-200 rounded-xl w-full"
     >
       <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-        <div className="md:col-span-3 space-y-1.5">
-          <label className="text-[10px] font-bold uppercase text-slate-500 ml-1 tracking-wider flex items-center gap-1">
-            Programa
-          </label>
-          <Select
-            value={filters.idPrograma}
-            onValueChange={(value) => handleSelectChange("idPrograma", value)}
-          >
-            <SelectTrigger className="bg-white border-slate-200 w-full">
-              <SelectValue placeholder="Todos" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los programas</SelectItem>
-              {programas.map((item) => (
-                <SelectItem key={item.id} value={item.id?.toString() || ""}>
-                  {item.titulo}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
         <div className="md:col-span-3 space-y-1.5">
           <label className="text-[10px] font-bold uppercase text-slate-500 ml-1 tracking-wider flex items-center gap-1">
             <Calendar className="w-3 h-3" />
@@ -120,6 +79,24 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({
               onChange={handleInputChange}
               autoComplete="off"
               className="bg-white border-slate-200 focus:ring-blue-500 w-full"
+            />
+          </div>
+        </div>
+
+        <div className="md:col-span-4 space-y-1.5">
+          <label className="text-[10px] font-bold uppercase text-slate-500 ml-1 tracking-wider flex items-center gap-1">
+            Criterio de búsqueda
+          </label>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              type="text"
+              name="search"
+              placeholder="Criterio de búsqueda..."
+              value={filters.search}
+              onChange={handleInputChange}
+              autoComplete="off"
+              className="pl-9 bg-white border-slate-200 focus:ring-blue-500 w-full"
             />
           </div>
         </div>

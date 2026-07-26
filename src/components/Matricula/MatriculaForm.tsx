@@ -13,6 +13,7 @@ import {
   CardTitle,
 } from "../ui/card";
 import { useToast } from "../../context/ToastContext";
+import { Spinner } from "../../components/Common/Spinner";
 import {
   Form,
   FormControl,
@@ -371,6 +372,30 @@ const today = new Date();
 
 const minDateString = format(today, "yyyy-MM-dd");
 
+const defaultValues = {
+  idPersona: "",
+  idInstitucion: "",
+  fechaMatricula: today,
+
+  montoMatricula: 0,
+  idFormaPagoMatricula: "",
+  numeroOperacionMatricula: "",
+  montoEfectivoMatricula: 0,
+  montoOperacionMatricula: 0,
+
+  numeroModulos: 1,
+  montoPorModulo: VALOR_MODULO,
+  pagarPrimerModulo: false,
+
+  montoModulo: 0,
+  idFormaPagoModulo: "",
+  numeroOperacionModulo: "",
+  montoEfectivoModulo: 0,
+  montoOperacionModulo: 0,
+
+  programas: [{ idTipoPrograma: 0, idPrograma: "" }],
+};
+
 export const MatriculaForm = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -381,6 +406,7 @@ export const MatriculaForm = () => {
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
   const [programas, setProgramas] = useState<Programa[]>([]);
   const [formasPago, setFormasPago] = useState<DetalleParametro[]>([]);
+  const [isLoadingData, setIsLoadingData] = useState(false);
 
   const isEditMode = !!id;
 
@@ -395,36 +421,20 @@ export const MatriculaForm = () => {
 
   const form = useForm<TFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      idPersona: "",
-      idInstitucion: "",
-      fechaMatricula: today,
-
-      montoMatricula: 0,
-      idFormaPagoMatricula: "",
-      numeroOperacionMatricula: "",
-      montoEfectivoMatricula: 0,
-      montoOperacionMatricula: 0,
-
-      numeroModulos: 1,
-      montoPorModulo: VALOR_MODULO,
-      pagarPrimerModulo: false,
-
-      montoModulo: 0,
-      idFormaPagoModulo: "",
-      numeroOperacionModulo: "",
-      montoEfectivoModulo: 0,
-      montoOperacionModulo: 0,
-
-      programas: [{ idTipoPrograma: 0, idPrograma: "" }],
-    },
+    defaultValues,
   });
+
+  const resetForm = () => {
+    form.reset(defaultValues);
+  };
 
   const { isSubmitting } = form.formState;
 
   // Carga de catálogos y datos de edición en un solo flujo maestro
   useEffect(() => {
     const fetchData = async () => {
+      setIsLoadingData(true);
+
       try {
         const [
           listAlumnos,
@@ -591,6 +601,8 @@ export const MatriculaForm = () => {
       } catch (error) {
         console.error("Error al cargar los catálogos formulario", error);
         showToast("error", "Error al cargar los catálogos del formulario.");
+      } finally {
+        setIsLoadingData(false);
       }
     };
 
@@ -816,7 +828,13 @@ export const MatriculaForm = () => {
         </Button>
       </CardHeader>
 
-      <CardContent className="p-6 sm:p-8 relative space-y-8">
+      <CardContent className="px-6 sm:px-8 relative space-y-8">
+        {isLoadingData && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+            <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
+          </div>
+        )}
+
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             {/* SECCIÓN 01: INFORMACIÓN DE REGISTRO */}
@@ -911,6 +929,7 @@ export const MatriculaForm = () => {
                             e.target.value ? parseISO(e.target.value) : null,
                           )
                         }
+                        autoComplete="off"
                         className={inputErrorClass(fieldState.invalid)}
                       />
                       <FormMessage />
@@ -1090,6 +1109,7 @@ export const MatriculaForm = () => {
                           onChange={(e) =>
                             field.onChange(parseInt(e.target.value, 10) || 0)
                           }
+                          autoComplete="off"
                           className={`bg-white font-semibold text-slate-800 ${inputErrorClass(
                             fieldState.invalid,
                           )}`}
@@ -1115,6 +1135,7 @@ export const MatriculaForm = () => {
                           max={VALOR_MODULO}
                           {...field}
                           value={field.value ?? 0}
+                          autoComplete="off"
                           onChange={(e) =>
                             field.onChange(parseFloat(e.target.value) || 0)
                           }
@@ -1229,6 +1250,7 @@ export const MatriculaForm = () => {
                             step="0.01"
                             {...field}
                             value={field.value ?? ""}
+                            autoComplete="off"
                             onChange={(e) =>
                               field.onChange(parseFloat(e.target.value) || 0)
                             }
@@ -1256,6 +1278,7 @@ export const MatriculaForm = () => {
                               step="0.01"
                               {...field}
                               value={field.value ?? ""}
+                              autoComplete="off"
                               onChange={(e) =>
                                 field.onChange(parseFloat(e.target.value) || 0)
                               }
@@ -1353,6 +1376,7 @@ export const MatriculaForm = () => {
                               step="0.01"
                               {...field}
                               value={field.value ?? ""}
+                              autoComplete="off"
                               onChange={(e) =>
                                 field.onChange(parseFloat(e.target.value) || 0)
                               }
@@ -1381,6 +1405,7 @@ export const MatriculaForm = () => {
                                 type="number"
                                 step="0.01"
                                 {...field}
+                                autoComplete="off"
                                 value={field.value ?? ""}
                                 onChange={(e) =>
                                   field.onChange(
@@ -1439,16 +1464,17 @@ export const MatriculaForm = () => {
             </div>
 
             {/* RESUMEN Y TOTAL CONSOLIDADO */}
-            <div className="p-6 bg-slate-900 text-white rounded-2xl shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/10 rounded-xl text-blue-400">
-                  <Calculator className="h-8 w-8" />
+            <div className="p-4 sm:p-5 bg-slate-900 text-white rounded-2xl shadow-xl flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 md:gap-6">
+              {/* Sección izquierda: Icono y desglose */}
+              <div className="flex items-center gap-3.5">
+                <div className="p-2.5 bg-white/10 rounded-xl text-blue-400 shrink-0">
+                  <Calculator className="h-7 w-7" />
                 </div>
                 <div>
-                  <h4 className="text-lg font-bold tracking-tight">
+                  <h4 className="text-base font-bold tracking-tight leading-tight">
                     Resumen Total a Pagar
                   </h4>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     Matrícula (S/. {watchMontoMatricula.toFixed(2)}) + Módulo
                     (S/.{" "}
                     {watchPagarPrimerModulo
@@ -1459,24 +1485,45 @@ export const MatriculaForm = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-4 md:pt-0 border-slate-800">
-                <div className="text-right">
-                  <span className="text-xs uppercase tracking-wider text-slate-400 block font-medium">
+              {/* Sección derecha: Total y Botones de Acción */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-slate-800">
+                {/* Total a cobrar */}
+                <div className="text-left sm:text-right">
+                  <span className="text-[10px] uppercase tracking-wider text-slate-400 block font-medium leading-none mb-1">
                     Total a Cobrar Hoy
                   </span>
-                  <span className="text-3xl font-black text-emerald-400 tracking-tight">
+                  <span className="text-2xl sm:text-3xl font-black text-emerald-400 tracking-tight leading-none">
                     S/. {totalGeneralCobrado.toFixed(2)}
                   </span>
                 </div>
 
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold px-6 py-6 rounded-xl shadow-lg shadow-blue-600/30 transition-all flex items-center gap-2"
-                >
-                  <Save className="h-5 w-5" />
-                  {isSubmitting ? "Guardando..." : "Guardar Matrícula"}
-                </Button>
+                {/* Botones perfectamente alineados verticalmente */}
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 sm:flex-none px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? (
+                      <Spinner className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Save className="h-4 w-4" />
+                    )}
+                    <span>
+                      {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
+                    </span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    disabled={isSubmitting}
+                    onClick={resetForm}
+                    className="flex-1 sm:flex-none px-4 h-10 bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-medium rounded-xl transition-colors shadow-sm focus:ring-2 focus:ring-slate-200"
+                  >
+                    <XCircle className="h-4 w-4 mr-1.5 text-slate-500" />
+                    Cancelar
+                  </Button>
+                </div>
               </div>
             </div>
           </form>

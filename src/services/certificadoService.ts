@@ -1,14 +1,14 @@
-import { Pago } from "../interfaces/IPago"
+import { Certificado } from "../interfaces/ICertificado"
 import {
     getAll,
     getAllPaginate,
     getById,
-    getConstanciaPago,
-    create,
-    update
-} from "../repositories/pagoRepository"
+    createModular,
+    previewCertificado,
+    generateCertificado
+} from "../repositories/certificadoRepository"
 
-export const getPagos = async () => {
+export const getCertificados = async () => {
     const response = await getAll()
 
     return {
@@ -16,7 +16,7 @@ export const getPagos = async () => {
     }
 }
 
-export const getPagosPaginate = async (
+export const getCertificadosPaginate = async (
     page: number,
     limit: number,
     filters: {}
@@ -43,7 +43,7 @@ export const getPagosPaginate = async (
     }
 }
 
-export const getPagoById = async (id: number) => {
+export const getCertificadosById = async (id: number) => {
     const response = await getById(id)
 
     return {
@@ -51,34 +51,24 @@ export const getPagoById = async (id: number) => {
     }
 }
 
-export const getConstanciaPagoByParams = async (
-    id_pago: number
-) => {
-    const queryParams = new URLSearchParams({
-        id_pago: id_pago.toString()
-    }).toString()
-
-    const response = await getConstanciaPago(queryParams)
+export const createCertificadoModular = async (payload: Certificado) => {
+    const response = await createModular(payload)
 
     return {
         ...response
     }
 }
 
-
-export const createPago = async (payload: Pago) => {
-    console.log('---- response pagoService ----')
-
-    const response = await create(payload)
-    console.log({ response })
+export const viewCertificado = async (id: number) => {
+    const response = await previewCertificado(id)
 
     return {
         ...response
     }
 }
 
-export const updatePago = async (id: number, payload: Pago) => {
-    const response = await update(id, payload)
+export const downloadCertificado = async (id: number) => {
+    const response = await generateCertificado(id)
 
     return {
         ...response

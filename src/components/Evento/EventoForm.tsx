@@ -604,6 +604,7 @@ export const EventoForm = () => {
                               }
                                 transition-all duration-300
                             `}
+                            autoComplete="off"
                             // disabled={!camposHabilitadosPersona}
                           />
                         </FormControl>
@@ -641,6 +642,7 @@ export const EventoForm = () => {
                               }
                                 transition-all duration-300
                             `}
+                            autoComplete="off"
                             // disabled={!camposHabilitadosPersona}
                           />
                         </FormControl>

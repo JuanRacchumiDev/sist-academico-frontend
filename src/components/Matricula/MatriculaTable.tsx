@@ -154,6 +154,9 @@ export const MatriculaTable = () => {
           <Table className="w-full text-left border-collapse">
             <TableHeader>
               <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
+                <TableHead className="w-[6%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  ID
+                </TableHead>
                 <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Alumno
                 </TableHead>
@@ -177,14 +180,14 @@ export const MatriculaTable = () => {
 
             <TableBody>
               {isLoading ? (
-                <TableSpinner colSpan={6} />
+                <TableSpinner colSpan={7} />
               ) : matriculas.length > 0 ? (
                 matriculas.map((matricula) => (
                   <MatriculaRow key={matricula.id} matricula={matricula} />
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
                       <span className="text-xs font-medium text-slate-600">
                         No se encontraron registros

@@ -11,19 +11,12 @@ export const PagoFormPage = () => {
   const { showToast } = useToast();
 
   const [matricula, setMatricula] = useState<Matricula | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const isFirstLoad = useRef<boolean>(true);
 
   useEffect(() => {
     const fetchMatriculaData = async () => {
       if (!id) return;
 
       try {
-        if (isFirstLoad.current) {
-          setLoading(true);
-        }
-
         const response = await getMatriculaById(+id);
         console.log({ response });
 
@@ -46,25 +39,11 @@ export const PagoFormPage = () => {
           "Error de conexión al obtener datos del estudiante.",
         );
         navigate("/matriculas");
-      } finally {
-        setLoading(false);
-        isFirstLoad.current = false;
       }
     };
 
     fetchMatriculaData();
   }, [id, navigate, showToast]);
-
-  // if (loading && isFirstLoad.current) {
-  //   return (
-  //     <div className="flex flex-col justify-center items-center h-64 space-y-3">
-  //       <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
-  //       <span className="text-sm font-medium text-slate-600">
-  //         Buscando datos de matrícula...
-  //       </span>
-  //     </div>
-  //   );
-  // }
 
   if (!matricula) return null;
 

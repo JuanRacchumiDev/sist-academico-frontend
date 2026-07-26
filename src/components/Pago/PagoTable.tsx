@@ -132,6 +132,12 @@ export const PagoTable = () => {
           <Table className="w-full text-left border-collapse">
             <TableHeader>
               <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
+                <TableHead className="w-[6%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  ID MAT.
+                </TableHead>
+                <TableHead className="w-[10%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  FECHA MAT.
+                </TableHead>
                 <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Alumno
                 </TableHead>
@@ -141,8 +147,8 @@ export const PagoTable = () => {
                 <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Forma Pago
                 </TableHead>
-                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
-                  Fecha
+                <TableHead className="w-[10%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Fecha Pago
                 </TableHead>
                 <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
                   Estado
@@ -155,12 +161,12 @@ export const PagoTable = () => {
 
             <TableBody>
               {isLoading ? (
-                <TableSpinner colSpan={6} />
+                <TableSpinner colSpan={8} />
               ) : pagos.length > 0 ? (
                 pagos.map((pago) => <PagoRow key={pago.id} pago={pago} />)
               ) : (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
                       <span className="text-xs font-medium text-slate-600">
                         No se encontraron registros

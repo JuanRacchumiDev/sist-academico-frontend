@@ -60,6 +60,7 @@ export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
               placeholder="Fecha de Inicio"
               value={filters.fechaInicio}
               onChange={handleInputChange}
+              autoComplete="off"
               className="bg-white border-slate-200 focus:ring-blue-500 w-full"
             />
           </div>
@@ -76,6 +77,7 @@ export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
               placeholder="Fecha Final"
               value={filters.fechaFinal}
               onChange={handleInputChange}
+              autoComplete="off"
               className="bg-white border-slate-200 focus:ring-blue-500 w-full"
             />
           </div>
@@ -93,6 +95,7 @@ export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
               placeholder="Nombre del alumno..."
               value={filters.nombreCompleto}
               onChange={handleInputChange}
+              autoComplete="off"
               className="pl-9 bg-white border-slate-200 focus:ring-blue-500 w-full"
             />
           </div>
