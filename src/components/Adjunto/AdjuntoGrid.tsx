@@ -20,35 +20,7 @@ import {
   FileUp,
   Image,
   FileCode,
-  MoreVertical,
-  Download,
-  Eye,
-  Trash2,
-  Edit,
-  Plus,
 } from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
-import { getProgramas } from "@/services/programaService";
-
-const loadProgramas = async () => {
-  // Definiendo programas
-  let listProgramas: Programa[] = [];
-
-  const responseProgramas = await getProgramas();
-
-  const { result: resultProgramas, data: dataProgramas } = responseProgramas;
-
-  if (resultProgramas && dataProgramas) {
-    listProgramas = dataProgramas as Programa[];
-  }
-
-  return listProgramas;
-};
 
 export const AdjuntoGrid = () => {
   const navigate = useNavigate();
@@ -57,7 +29,6 @@ export const AdjuntoGrid = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(8);
-  const [programas, setProgramas] = useState<Programa[]>([]);
 
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
@@ -69,18 +40,11 @@ export const AdjuntoGrid = () => {
   });
 
   const [searchFilters, setSearchFilters] = useState<AdjuntoFiltersData>({
-    idPrograma: "",
+    idTipoPrograma: "",
     fechaInicio: "",
     fechaFinal: "",
+    search: "",
   });
-
-  useEffect(() => {
-    const loadCatalogos = async () => {
-      const dataProgramas = await loadProgramas();
-      setProgramas(dataProgramas);
-    };
-    loadCatalogos();
-  }, []);
 
   const handleShowDetail = (id: number) => {
     navigate(`/adjunto/editar/${id}`);
@@ -97,7 +61,8 @@ export const AdjuntoGrid = () => {
       setIsLoading(true);
 
       const filters = {
-        id_programa: filtersData.idPrograma,
+        id_tipoprograma: filtersData.idTipoPrograma,
+        search: filtersData.search,
         fecha_inicio: filtersData.fechaInicio,
         fecha_final: filtersData.fechaFinal,
       };
@@ -242,7 +207,7 @@ export const AdjuntoGrid = () => {
     // Reducción del espacio vertical (space-y-6 a space-y-3) para alinearse con PersonaTable
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
-        <AdjuntoFilters onSearch={handleSearchSubmit} programas={programas} />
+        <AdjuntoFilters onSearch={handleSearchSubmit} />
 
         {/* Contenedor de contenido principal con borde superior sutil idéntico al de la tabla */}
         <div className="pt-3 border-t border-slate-100">

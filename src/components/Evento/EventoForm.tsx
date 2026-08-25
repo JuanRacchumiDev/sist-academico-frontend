@@ -34,7 +34,7 @@ import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Evento, EventoResponse } from "@/interfaces/IEvento";
 import { ArrowLeft } from "lucide-react";
-import { getDetalleFiltered } from "../../services/detalleParametroService";
+import { getDetalles } from "../../services/detalleParametroService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
@@ -296,24 +296,27 @@ export const EventoForm = () => {
 
         let listCategoriaEventos: DetalleParametro[] = [];
 
-        const filtersTipoEventos: DetalleParametroFilters = {
-          parametro_clase: ParametroClase.TIPO_EVENTO,
-          en_persona: true,
-          en_empresa: false,
-          estado: true,
-        };
+        // const filtersTipoEventos: DetalleParametroFilters = {
+        //   parametro_clase: ParametroClase.TIPO_PROGRAMA,
+        //   en_persona: true,
+        //   en_empresa: false,
+        //   estado: true,
+        // };
 
-        const filtersCategoriaEventos: DetalleParametroFilters = {
-          parametro_clase: ParametroClase.CATEGORIA_EVENTO,
-          en_persona: true,
-          en_empresa: false,
-          estado: true,
-        };
+        // const filtersCategoriaEventos: DetalleParametroFilters = {
+        //   parametro_clase: ParametroClase.CATEGORIA_PROGRAMA,
+        //   en_persona: true,
+        //   en_empresa: false,
+        //   estado: true,
+        // };
+
+        const queryParamsTipoEvento = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=true&en_empresa=false&estado=true`;
+        const queryParamsCategoriaEvento = `parametro_clase=${ParametroClase.CATEGORIA_PROGRAMA}&en_persona=true&en_empresa=false&estado=true`;
 
         const [responseTipoEventos, responseCategoriaEventos] =
           await Promise.all([
-            getDetalleFiltered(filtersTipoEventos),
-            getDetalleFiltered(filtersCategoriaEventos),
+            getDetalles(queryParamsTipoEvento),
+            getDetalles(queryParamsCategoriaEvento),
           ]);
 
         console.log({ responseTipoEventos });

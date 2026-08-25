@@ -1,6 +1,7 @@
 import { Programa, ProgramaResponse } from "@/interfaces/IPrograma";
 import apiClient from "./apiClient";
 import { AxiosRequestConfig } from "axios";
+import { downloadFile } from "../utils/fileUtils";
 
 export const getAll = async (): Promise<ProgramaResponse> => {
     try {
@@ -86,7 +87,7 @@ export const getById = async (id: number): Promise<ProgramaResponse> => {
     }
 }
 
-export const downloadPlan = async (id: number): Promise<void> => {
+export const downloadPlan = async (id: number, filename: string): Promise<void> => {
     try {
         const urlApi = `/programas/${id}/descargar-plan`
 
@@ -97,28 +98,34 @@ export const downloadPlan = async (id: number): Promise<void> => {
             }
         )
 
-        // Crear un objeto a partir del blob
-        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const { data } = response
 
-        // Crear un enlace temporal para iniciar la descarga
-        const link = document.createElement("a")
-        link.href = url
+        const setBlob = new Blob([data])
 
-        const contentDisposition = response.headers['content-disposition'];
-        let fileName = `plan_programa_${id}.pdf`
+        downloadFile(setBlob, filename);
 
-        if (contentDisposition) {
-            const matches = /filename="?(.+)"?/.exec(contentDisposition)
-            if (matches && matches[1]) {
-                fileName = matches[1]
-            }
-        }
+        // // Crear un objeto a partir del blob
+        // const url = window.URL.createObjectURL(new Blob([response.data]));
 
-        link.setAttribute('download', fileName)
-        document.body.appendChild(link)
-        link.click()
-        link.remove()
-        window.URL.revokeObjectURL(url)
+        // // Crear un enlace temporal para iniciar la descarga
+        // const link = document.createElement("a")
+        // link.href = url
+
+        // const contentDisposition = response.headers['content-disposition'];
+        // // let filename = `plan_programa_${id}.pdf`
+
+        // if (contentDisposition) {
+        //     const matches = /filename="?(.+)"?/.exec(contentDisposition)
+        //     if (matches && matches[1]) {
+        //         filename = matches[1]
+        //     }
+        // }
+
+        // link.setAttribute('download', filename)
+        // document.body.appendChild(link)
+        // link.click()
+        // link.remove()
+        // window.URL.revokeObjectURL(url)
     } catch (error) {
         console.error("Error al descargar el plan:", error);
         // Podrías usar showToast aquí para notificar al usuario

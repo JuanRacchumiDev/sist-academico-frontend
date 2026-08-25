@@ -1,21 +1,21 @@
+import { Filter, RotateCcw, Search } from "lucide-react";
 import React, { useState } from "react";
-import { Search, RotateCcw, Filter } from "lucide-react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
-interface PersonaFilterProps {
-  onSearch: (filters: PersonaFiltersData) => void;
+export interface DPFilterProps {
+  onSearch: (filters: DPFiltersData) => void;
 }
 
-export interface PersonaFiltersData {
+export interface DPFiltersData {
   search: string;
-  documento: string;
 }
 
-export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
-  const [filters, setFilters] = useState<PersonaFiltersData>({
+export const DetalleParametroFilters: React.FC<DPFilterProps> = ({
+  onSearch,
+}) => {
+  const [filters, setFilters] = useState<DPFiltersData>({
     search: "",
-    documento: "",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +29,7 @@ export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
   };
 
   const handleReset = () => {
-    const resetValues = { search: "", documento: "" };
+    const resetValues = { search: "" };
     setFilters(resetValues);
     onSearch(resetValues);
   };
@@ -54,20 +54,6 @@ export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
             className="pl-9 bg-white border-slate-200 focus:ring-blue-500"
           />
         </div>
-      </div>
-
-      <div className="w-full md:w-48 space-y-1.5">
-        <label className="text-[10px] font-bold uppercase text-slate-500 ml-1 tracking-wider">
-          Nro. Documento
-        </label>
-        <Input
-          name="documento"
-          placeholder="DNI"
-          autoComplete="off"
-          value={filters.documento}
-          onChange={handleInputChange}
-          className="bg-white border-slate-200 focus:ring-blue-500"
-        />
       </div>
 
       <div className="flex gap-2">

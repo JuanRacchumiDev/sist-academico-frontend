@@ -21,7 +21,7 @@ import { Input } from "../../ui/input";
 import { Spinner } from "../../Common/Spinner";
 import {
   createDetalle,
-  getDetalleById,
+  getDetalleByParams,
   updateDetalle,
 } from "../../../services/detalleParametroService";
 import {
@@ -32,6 +32,7 @@ import { useToast } from "../../../context/ToastContext";
 import { RequiredLabel } from "../../../components/Common/RequiredLabel";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { ParametroClase } from "../../../params/parametroClase";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -123,7 +124,9 @@ export const SedeForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const responseSede = await getDetalleById("sede", +id);
+          const queryParams = `parametro_clase=${ParametroClase.SEDE}&codigo=${id}`;
+
+          const responseSede = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseSede;
 

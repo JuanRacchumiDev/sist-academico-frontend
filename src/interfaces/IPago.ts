@@ -7,9 +7,9 @@ export interface Pago {
     id?: number
     id_matricula?: number
     id_modulo?: number
-    id_estadopago?: number
-    id_formapago?: number
-    id_institucion?: number
+    codigo_estadopago?: number
+    codigo_formapago?: number
+    id_sucursal?: number
     concepto?: string
     numero_modulo?: number
     numero_operacion?: string
@@ -36,7 +36,7 @@ export interface ModuloPendiente {
 
 export interface ModuloPagado {
     id: number;
-    id_formapago: number;
+    codigo_formapago: number;
     numero_modulo: number;
     concepto: string;
     numero_operacion: string;

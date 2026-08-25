@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-import { CertificadoGrid } from "./CertificadoGrid";
 import { Plus, FolderOpen, ArrowLeft } from "lucide-react";
 import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "../ui/card";
+import { CertificadoTable } from "../Certificado/CertificadoTable";
 
 export const CertificadoList = () => {
   const newRoute = `/certificado/nuevo`;
@@ -39,22 +40,24 @@ export const CertificadoList = () => {
             Panel Principal
           </Link>
 
-          {/* <Link
+          <Link
             to={newRoute}
             className={cn(
-              buttonVariants({ size: "sm" }),
-              "bg-indigo-600 hover:bg-indigo-700 text-white shadow-2xs gap-1.5 px-3 h-8 text-xs font-medium transition-colors",
+              buttonVariants({ size: "sm" }), // Tamaño ajustado a 'sm' para entorno compacto
+              "bg-indigo-600 hover:bg-indigo-700 text-white shadow-xs gap-1.5 px-3 h-8 text-xs font-medium transition-colors",
             )}
           >
             <Plus className="w-4 h-4" /> Nuevo certificado
-          </Link> */}
+          </Link>
         </div>
       </div>
 
       {/* Grid de Contenido */}
-      <div className="border border-slate-200 shadow-2xs rounded-lg overflow-hidden bg-white">
-        <CertificadoGrid />
-      </div>
+      <Card className="border border-slate-200 shadow-2xs rounded-lg overflow-hidden bg-white">
+        <CardContent className="p-0">
+          <CertificadoTable />
+        </CardContent>
+      </Card>
     </div>
   );
 };

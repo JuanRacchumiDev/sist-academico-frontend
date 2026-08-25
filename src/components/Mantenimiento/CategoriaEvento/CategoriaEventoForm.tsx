@@ -21,7 +21,7 @@ import { Input } from "../../ui/input";
 import { Spinner } from "../../Common/Spinner";
 import {
   createDetalle,
-  getDetalleById,
+  getDetalleByParams,
   updateDetalle,
 } from "../../../services/detalleParametroService";
 import {
@@ -32,6 +32,7 @@ import { useToast } from "../../../context/ToastContext";
 import { RequiredLabel } from "../../../components/Common/RequiredLabel";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { ParametroClase } from "../../../params/parametroClase";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -108,10 +109,9 @@ export const CategoriaEventoForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const responseCategoriaEvento = await getDetalleById(
-            "categoria-evento",
-            +id
-          );
+          const queryParams = `parametro_clase=${ParametroClase.CATEGORIA_PROGRAMA}&codigo=${id}`;
+
+          const responseCategoriaEvento = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseCategoriaEvento;
 
@@ -131,7 +131,7 @@ export const CategoriaEventoForm = () => {
         console.error("Error al obtener datos", error);
         showToast(
           "error",
-          "Error al cargar los categoría de eventos del formulario."
+          "Error al cargar los categoría de eventos del formulario.",
         );
       }
     };

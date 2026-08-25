@@ -2,21 +2,38 @@ import { DetalleParametro, DetalleParametroFilters } from '@/interfaces/IDetalle
 import {
     getAll,
     getAllFiltered,
-    getById,
+    getAllByClase,
+    getByParams,
     create,
     update,
     updateEstado
 } from '../repositories/detalleParametroRepository'
 
-export const getDetalle = async (
+export const getDetalles = async (queryParams: string) => {
+    console.log('queryParams getDetalles', queryParams)
+
+    const response = await getAll(queryParams)
+
+    return {
+        ...response
+    }
+}
+
+export const getDetallesByClase = async (clase: string) => {
+    const response = await getAllByClase(clase)
+
+    return {
+        ...response
+    }
+}
+
+export const getDetallesFiltered = async (
     page?: number,
     limit?: number,
-    clase?: string,
     filters?: {}
 ) => {
     console.log({ page })
     console.log({ limit })
-    console.log({ clase })
     console.log({ filters })
 
     // Construir la cadena de query parameters
@@ -30,7 +47,7 @@ export const getDetalle = async (
 
     console.log({ queryParams })
 
-    const response = await getAll(clase, queryParams)
+    const response = await getAllFiltered(queryParams)
 
     console.log({ response })
 
@@ -39,18 +56,8 @@ export const getDetalle = async (
     }
 }
 
-export const getDetalleFiltered = async (filters: DetalleParametroFilters) => {
-    console.log('filters getDetalleFiltered', filters)
-
-    const response = await getAllFiltered(filters)
-
-    return {
-        ...response
-    }
-}
-
-export const getDetalleById = async (clase: string, id: number) => {
-    const response = await getById(clase, id)
+export const getDetalleByParams = async (queryParams: string) => {
+    const response = await getByParams(queryParams)
 
     return {
         ...response

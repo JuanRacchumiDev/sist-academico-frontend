@@ -39,35 +39,12 @@ export const getAllPaginate = async (nombreGrupo: string, queryParams: string): 
 
         const { data: { data, result, message, pagination } } = response
 
-        // const { data: dataPersonas } = response
-
-        // console.log({ dataPersonas })
-
-        // const { result, data, message } = dataPersonas
-
-        // const listaItems = data.data
-
-        // const paginationInfo = {
-        //     currentPage: data.current_page,
-        //     limit: data.per_page,
-        //     totalPages: data.last_page,
-        //     totalItems: data.total,
-        //     nextPage: data.next_page_url,
-        //     previousPage: data.prev_page_url
-        // };
-
         return {
             result,
             data,
             message,
             pagination: pagination
         }
-
-        // return {
-        //     result,
-        //     data,
-        //     message
-        // }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)

@@ -18,6 +18,9 @@ export interface Adjunto {
     es_descargable?: boolean
     es_visible?: boolean
     estado?: boolean
+    fecha_crea?: string
+    fecha_actualiza?: string
+    fecha_elimina?: string
 
     programa?: Programa
     modulo?: Modulo

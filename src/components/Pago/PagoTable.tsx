@@ -20,6 +20,7 @@ import {
 import { PagoRow } from "./PagoRow";
 import { TableSpinner } from "../../components/Common/TableSpinner";
 import { Pago, PaginationType } from "@/interfaces/IPago";
+import { PagoFilters, PagoFiltersData } from "./PagoFilters";
 
 export const PagoTable = () => {
   const [pagos, setPagos] = useState<Pago[]>([]);
@@ -36,6 +37,12 @@ export const PagoTable = () => {
     previousPage: null,
   });
 
+  const [searchFilters, setSearchFilters] = useState<PagoFiltersData>({
+    search: "",
+    fechaInicio: "",
+    fechaFinal: "",
+  });
+
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= paginationInfo.totalPages) {
       setCurrentPage(page);
@@ -43,10 +50,14 @@ export const PagoTable = () => {
   };
 
   const fetchData = useCallback(
-    async (pageToFetch: number) => {
+    async (pageToFetch: number, filtersData: PagoFiltersData) => {
       setIsLoading(true);
 
-      const filters = {};
+      const filters = {
+        search: filtersData.search,
+        fechaInicio: filtersData.fechaInicio,
+        fechaFinal: filtersData.fechaFinal,
+      };
 
       try {
         const response = await getPagosPaginate(currentPage, limit, filters);
@@ -79,8 +90,13 @@ export const PagoTable = () => {
   );
 
   useEffect(() => {
-    fetchData(currentPage);
-  }, [currentPage, fetchData]);
+    fetchData(currentPage, searchFilters);
+  }, [currentPage, searchFilters, fetchData]);
+
+  const handleSearchSubmit = (newFilters: PagoFiltersData) => {
+    setSearchFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   const renderPaginationItems = (): JSX.Element[] => {
     const items: JSX.Element[] = [];
@@ -128,6 +144,8 @@ export const PagoTable = () => {
   return (
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
+        <PagoFilters onSearch={handleSearchSubmit}></PagoFilters>
+
         <div className="overflow-x-auto border-t border-slate-100">
           <Table className="w-full text-left border-collapse">
             <TableHeader>

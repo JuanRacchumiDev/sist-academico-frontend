@@ -22,7 +22,10 @@ export interface Certificado {
     user_crea?: string
     user_actualiza?: string
     user_elimina?: string
-    estado?: boolean,
+    estado?: boolean
+    fecha_crea?: string
+    fecha_actualiza?: string
+    fecha_elimina?: string
 
     persona?: Persona
     tipoCertificado?: DetalleParametro

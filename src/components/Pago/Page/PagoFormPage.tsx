@@ -51,7 +51,7 @@ export const PagoFormPage = () => {
     <div className="container mx-auto py-8 px-4">
       <PagoForm
         matriculaSeleccionada={matricula}
-        idInstitucion={matricula.id_institucion ?? 0}
+        idSucursal={matricula.id_sucursal ?? 0}
         onCancel={() => navigate("/matricula")}
       />
     </div>

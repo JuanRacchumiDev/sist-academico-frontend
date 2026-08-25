@@ -21,7 +21,7 @@ import { UsuarioRow } from "./UsuarioRow";
 import { TableSpinner } from "../../components/Common/TableSpinner";
 import { Usuario, PaginationType } from "@/interfaces/IUsuario";
 import { UsuarioFilters, UsuarioFiltersData } from "./UsuarioFilters";
-import { getDetalleFiltered } from "../../services/detalleParametroService";
+import { getDetalles } from "../../services/detalleParametroService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
@@ -32,14 +32,16 @@ const loadPerfiles = async () => {
   // Definiendo perfiles
   let listPerfiles: DetalleParametro[] = [];
 
-  const filterPerfiles: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.PERFIL,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  // const filterPerfiles: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.PERFIL,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
 
-  const responsePerfiles = await getDetalleFiltered(filterPerfiles);
+  const queryParams = `parametro_clase=${ParametroClase.PERFIL}&en_persona=false&en_empresa=false&estado=true`;
+
+  const responsePerfiles = await getDetalles(queryParams);
 
   const { result: resultPerfiles, data: dataPerfiles } = responsePerfiles;
 

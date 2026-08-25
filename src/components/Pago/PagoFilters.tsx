@@ -3,21 +3,19 @@ import React, { useState } from "react";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
-export interface MatriculaFiltersData {
-  nombreCompleto: string;
+export interface PagoFiltersData {
+  search: string;
   fechaInicio: string;
   fechaFinal: string;
 }
 
-interface MatriculaFilterProps {
-  onSearch: (filters: MatriculaFiltersData) => void;
+interface PagoFilterProps {
+  onSearch: (filters: PagoFiltersData) => void;
 }
 
-export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
-  onSearch,
-}) => {
-  const [filters, setFilters] = useState<MatriculaFiltersData>({
-    nombreCompleto: "",
+export const PagoFilters: React.FC<PagoFilterProps> = ({ onSearch }) => {
+  const [filters, setFilters] = useState<PagoFiltersData>({
+    search: "",
     fechaInicio: "",
     fechaFinal: "",
   });
@@ -34,7 +32,7 @@ export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
 
   const handleReset = () => {
     const resetValues = {
-      nombreCompleto: "",
+      search: "",
       fechaInicio: "",
       fechaFinal: "",
     };
@@ -56,9 +54,9 @@ export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               type="text"
-              name="nombreCompleto"
+              name="search"
               placeholder="Nombre del alumno..."
-              value={filters.nombreCompleto}
+              value={filters.search}
               onChange={handleInputChange}
               autoComplete="off"
               className="pl-9 bg-white border-slate-200 focus:ring-blue-500 w-full"

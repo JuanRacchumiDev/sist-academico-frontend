@@ -21,7 +21,7 @@ import { Input } from "../../ui/input";
 import { Spinner } from "../../Common/Spinner";
 import {
   createDetalle,
-  getDetalleById,
+  getDetalleByParams,
   updateDetalle,
 } from "../../../services/detalleParametroService";
 import {
@@ -32,6 +32,7 @@ import { useToast } from "../../../context/ToastContext";
 import { RequiredLabel } from "../../../components/Common/RequiredLabel";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { ParametroClase } from "../../../params/parametroClase";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -108,10 +109,9 @@ export const TipoCertificadoForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const responseTipoCertificado = await getDetalleById(
-            "tipo-certificado",
-            +id
-          );
+          const queryParams = `parametro_clase=${ParametroClase.TIPO_CERTIFICADO}&codigo=${id}`;
+
+          const responseTipoCertificado = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseTipoCertificado;
 
@@ -131,7 +131,7 @@ export const TipoCertificadoForm = () => {
         console.error("Error al obtener datos", error);
         showToast(
           "error",
-          "Error al cargar los tipos de certificados del formulario."
+          "Error al cargar los tipos de certificados del formulario.",
         );
       }
     };

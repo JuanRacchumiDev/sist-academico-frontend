@@ -4,6 +4,7 @@ import {
     getAll,
     getAllPaginate,
     getById,
+    download,
     create,
     update
 } from "../repositories/adjuntoRepository"
@@ -49,6 +50,10 @@ export const getAdjuntoById = async (id: number) => {
     return {
         ...response
     }
+}
+
+export const downloadAdjunto = async (id: number, filename: string): Promise<void> => {
+    return download(id, filename)
 }
 
 export const createAdjunto = async (

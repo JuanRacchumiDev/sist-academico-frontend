@@ -60,7 +60,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ collapsed }) => {
         <div
           className={`flex items-center ${collapsed ? "justify-center" : "space-x-3"}`}
         >
-          <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 to-indigo-800 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
+          <div className="w-10 h-10 bg-linear-to-br from-indigo-600 to-indigo-800 rounded-xl flex items-center justify-center shadow-md shadow-indigo-500/20 shrink-0">
             <Zap className="w-5 h-5 text-white" />
           </div>
 

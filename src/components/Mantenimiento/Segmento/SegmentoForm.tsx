@@ -21,7 +21,7 @@ import { Input } from "../../ui/input";
 import { Spinner } from "../../Common/Spinner";
 import {
   createDetalle,
-  getDetalleById,
+  getDetalleByParams,
   updateDetalle,
 } from "../../../services/detalleParametroService";
 import {
@@ -32,6 +32,7 @@ import { useToast } from "../../../context/ToastContext";
 import { RequiredLabel } from "../../../components/Common/RequiredLabel";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { ParametroClase } from "../../../params/parametroClase";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -82,6 +83,7 @@ export const SegmentoForm = () => {
 
       const payloadData: DetalleParametro = {
         nombre: values.nombre,
+        estado: true,
       };
 
       if (values.descripcion && values.descripcion.length > 0) {
@@ -126,7 +128,9 @@ export const SegmentoForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const responseSegmento = await getDetalleById("segmento", +id);
+          const queryParams = `parametro_clase=${ParametroClase.SEGMENTO}&codigo=${id}`;
+
+          const responseSegmento = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseSegmento;
 

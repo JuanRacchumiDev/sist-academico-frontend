@@ -3,6 +3,7 @@ import { AdjuntoGrid } from "./AdjuntoGrid";
 import { Plus, FolderOpen, ArrowLeft } from "lucide-react";
 import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
+import { Card, CardContent } from "../ui/card";
 
 export const AdjuntoList = () => {
   const newRoute = `/adjunto/nuevo`;
@@ -19,7 +20,7 @@ export const AdjuntoList = () => {
             </span>
           </div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">
-            Repositorio de <span className="text-indigo-600">Adjuntos</span>
+            Repositorio de <span className="text-indigo-600">adjuntos</span>
           </h1>
           <p className="text-xs text-slate-500">
             Administra, visualiza y descarga la documentación cargada en los
@@ -53,9 +54,11 @@ export const AdjuntoList = () => {
       </div>
 
       {/* Renderizado directo del mosaico (Removido el Card global rígido para dejar que las tarjetas resalten) */}
-      <div className="border-slate-200 shadow-sm rounded-lg overflow-hidden bg-white">
-        <AdjuntoGrid />
-      </div>
+      <Card className="border-slate-200 shadow-sm rounded-lg overflow-hidden bg-white">
+        <CardContent className="p-0">
+          <AdjuntoGrid />
+        </CardContent>
+      </Card>
     </div>
   );
 };

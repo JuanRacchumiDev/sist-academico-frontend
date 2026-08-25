@@ -4,6 +4,7 @@ export const downloadFile = (blob: Blob, filename: string) => {
     // Crea un enlace temporal
     const a = document.createElement('a');
     a.href = url;
+    a.setAttribute('download', filename)
     // Configura el nombre del archivo
     a.download = filename;
     document.body.appendChild(a);
@@ -11,5 +12,6 @@ export const downloadFile = (blob: Blob, filename: string) => {
     a.click();
     // Limpia
     document.body.removeChild(a);
+    a.remove();
     window.URL.revokeObjectURL(url);
 }

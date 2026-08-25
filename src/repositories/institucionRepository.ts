@@ -1,16 +1,24 @@
 import { Institucion, InstitucionResponse } from "../interfaces/IInstitucion"
 import apiClient from "./apiClient"
 
-export const getAll = async (): Promise<InstitucionResponse> => {
+export const getAll = async (queryParams: string): Promise<InstitucionResponse> => {
     try {
-        const response = await apiClient.get('/instituciones')
+        const urlApi = `/instituciones?${queryParams}`
 
-        const { data: { result, data, message } } = response
+        console.log({ urlApi })
+
+        const response = await apiClient.get(urlApi)
+
+        console.log('response getAll institucionRepository', response)
+
+        const { data: { result, data, message, error, status } } = response
 
         return {
             result,
             data,
-            message
+            message,
+            error,
+            status
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

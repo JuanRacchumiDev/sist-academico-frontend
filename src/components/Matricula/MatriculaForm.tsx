@@ -52,28 +52,27 @@ import {
   VALOR_MATRICULA,
   VALOR_MODULO,
   TIMEZONE_AMERICA_LIMA,
-} from "@/params/constants";
-import { getPersonas } from "@/services/personaService";
-import { Persona } from "@/interfaces/IPersona";
-import { getInstituciones } from "@/services/institucionService";
-import { Institucion } from "@/interfaces/IInstitucion";
-import { ParametroClase } from "@/params/parametroClase";
+} from "../../params/constants";
+import { getPersonas } from "../../services/personaService";
+import { Persona } from "../../interfaces/IPersona";
+import { getInstituciones } from "../../services/institucionService";
+import { Institucion } from "../../interfaces/IInstitucion";
 import {
-  getDetalle,
-  getDetalleById,
-  getDetalleFiltered,
-} from "@/services/detalleParametroService";
-import { getProgramas } from "@/services/programaService";
-import { Programa } from "@/interfaces/IPrograma";
+  getDetalleByParams,
+  getDetalles,
+} from "../../services/detalleParametroService";
+import { getProgramas } from "../../services/programaService";
+import { Programa } from "../../interfaces/IPrograma";
 import {
   createMatricula,
   getMatriculaById,
   updateMatricula,
-} from "@/services/matriculaService";
-import { Matricula, MatriculaResponse } from "@/interfaces/IMatricula";
+} from "../../services/matriculaService";
+import { Matricula, MatriculaResponse } from "../../interfaces/IMatricula";
 import SearchableCombobox from "../Common/SearchableCombobox";
-import { DetalleMatricula } from "@/interfaces/IDetalleMatricula";
-import { Pago } from "@/interfaces/IPago";
+import { DetalleMatricula } from "../../interfaces/IDetalleMatricula";
+import { Pago } from "../../interfaces/IPago";
+import { ParametroClase } from "../../params/parametroClase";
 
 // --- ESQUEMA DE VALIDACIÓN ZOD ---
 const ProgramaMatriculaSchema = z.object({
@@ -104,7 +103,7 @@ export const formSchema = z
     montoMatricula: z
       .number({ message: "Debe ser un número válido" })
       .min(0, "El monto no puede ser negativo"),
-    idFormaPagoMatricula: z
+    codigoFormaPagoMatricula: z
       .string({ message: "Seleccione una forma de pago" })
       .min(1, "Seleccione una forma de pago"),
     numeroOperacionMatricula: z.string().catch(""),
@@ -123,7 +122,7 @@ export const formSchema = z
 
     // Pago del Módulo
     montoModulo: z.number().catch(0),
-    idFormaPagoModulo: z.string().catch(""),
+    codigoFormaPagoModulo: z.string().catch(""),
     numeroOperacionModulo: z.string().catch(""),
     montoEfectivoModulo: z.number().catch(0),
     montoOperacionModulo: z.number().catch(0),
@@ -136,7 +135,7 @@ export const formSchema = z
     // ----------------------------------------------------
     // 1. VALIDACIONES CONDICIONALES PARA MATRÍCULA
     // ----------------------------------------------------
-    const formaPagoMat = (data.idFormaPagoMatricula || "").toUpperCase();
+    const formaPagoMat = (data.codigoFormaPagoMatricula || "").toUpperCase();
 
     if (formaPagoMat.includes("EFECTIVO")) {
       if (data.montoEfectivoMatricula <= 0) {
@@ -203,15 +202,15 @@ export const formSchema = z
     // 2. VALIDACIONES PARA PAGO DE MÓDULO (SI SWITCH ACTIVADO Y N° MÓDULOS > 0)
     // ----------------------------------------------------
     if (data.pagarPrimerModulo && data.numeroModulos > 0) {
-      if (!data.idFormaPagoModulo) {
+      if (!data.codigoFormaPagoModulo) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Seleccione la forma de pago del módulo",
-          path: ["idFormaPagoModulo"],
+          path: ["codigoFormaPagoModulo"],
         });
       }
 
-      const formaPagoMod = (data.idFormaPagoModulo || "").toUpperCase();
+      const formaPagoMod = (data.codigoFormaPagoModulo || "").toUpperCase();
 
       if (formaPagoMod.includes("EFECTIVO")) {
         if (data.montoEfectivoModulo <= 0) {
@@ -283,7 +282,9 @@ const loadAlumnos = async () => {
 const loadInstituciones = async () => {
   let instituciones: Institucion[] = [];
 
-  const response = await getInstituciones();
+  const queryParams = `is_cliente=false`;
+
+  const response = await getInstituciones(queryParams);
 
   const { result, data } = response;
 
@@ -297,14 +298,16 @@ const loadInstituciones = async () => {
 const loadTipoProgramas = async () => {
   let tipoProgramas: DetalleParametro[] = [];
 
-  const filters: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.TIPO_PROGRAMA,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  // const filters: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.TIPO_PROGRAMA,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
 
-  const response = await getDetalleFiltered(filters);
+  const queryParams = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=false&en_empresa=false&estado=true`;
+
+  const response = await getDetalles(queryParams);
 
   const { result, data } = response;
 
@@ -318,14 +321,16 @@ const loadTipoProgramas = async () => {
 const loadFormasPago = async () => {
   let formasPago: DetalleParametro[] = [];
 
-  const filters: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.FORMA_PAGO,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  // const filters: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.FORMA_PAGO,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
 
-  const response = await getDetalleFiltered(filters);
+  const queryParams = `parametro_clase=${ParametroClase.FORMA_PAGO}&en_persona=false&en_empresa=false&estado=true`;
+
+  const response = await getDetalles(queryParams);
 
   const { result, data } = response;
 
@@ -355,7 +360,9 @@ const formaPago = async (id: number) => {
 
   const clase: string = "forma-pago";
 
-  const response = await getDetalleById(clase, id);
+  const queryParams = `parametro_clase=${ParametroClase.FORMA_PAGO}&codigo=${id}`;
+
+  const response = await getDetalleByParams(queryParams);
 
   const { result, data } = response;
 
@@ -378,7 +385,7 @@ const defaultValues = {
   fechaMatricula: today,
 
   montoMatricula: 0,
-  idFormaPagoMatricula: "",
+  codigoFormaPagoMatricula: "",
   numeroOperacionMatricula: "",
   montoEfectivoMatricula: 0,
   montoOperacionMatricula: 0,
@@ -388,7 +395,7 @@ const defaultValues = {
   pagarPrimerModulo: false,
 
   montoModulo: 0,
-  idFormaPagoModulo: "",
+  codigoFormaPagoModulo: "",
   numeroOperacionModulo: "",
   montoEfectivoModulo: 0,
   montoOperacionModulo: 0,
@@ -477,7 +484,7 @@ export const MatriculaForm = () => {
 
             const {
               id_persona,
-              id_institucion,
+              id_sucursal,
               fecha_matricula,
               detalles,
               numero_modulos,
@@ -513,28 +520,32 @@ export const MatriculaForm = () => {
               cantidad_efectivo: cantidadEfectivoMat,
               cantidad_operacion: cantidadOperacionMat,
               numero_operacion: numeroOperacionMat,
-              id_formapago: idFormaPagoMat,
+              codigo_formapago: codigoFormaPagoMat,
             } = pagoMatricula;
 
             // Obteniendo el id de forma de pago de matrícula
-            const idFormaPagoMatricula: string =
-              idFormaPagoMat !== undefined ? idFormaPagoMat.toString() : "";
+            const codigoFormaPagoMatricula: string =
+              codigoFormaPagoMat !== undefined
+                ? codigoFormaPagoMat.toString()
+                : "";
 
-            const detalleFormaPagoMatricula: DetalleParametro =
-              await formaPago(+idFormaPagoMatricula);
+            const detalleFormaPagoMatricula: DetalleParametro = await formaPago(
+              +codigoFormaPagoMatricula,
+            );
 
             console.log({ detalleFormaPagoMatricula });
 
             // Obteniendo forma de pago de módulo
-            const idFormaPagoModulo: string = validarPrimerPagoModulo
-              ? pago_modulos[0].id_formapago.toString()
+            const codigoFormaPagoModulo: string = validarPrimerPagoModulo
+              ? pago_modulos[0].codigo_formapago.toString()
               : "";
 
             let nombreFormaPagoModulo: string = "";
 
-            if (idFormaPagoModulo !== "") {
-              const detalleFormaPagoModulo: DetalleParametro =
-                await formaPago(+idFormaPagoModulo);
+            if (codigoFormaPagoModulo !== "") {
+              const detalleFormaPagoModulo: DetalleParametro = await formaPago(
+                +codigoFormaPagoModulo,
+              );
 
               nombreFormaPagoModulo = detalleFormaPagoModulo.nombre;
             }
@@ -567,14 +578,14 @@ export const MatriculaForm = () => {
             // Seteando valores al formulario
             form.reset({
               idPersona: id_persona.toString() ?? "",
-              idInstitucion: id_institucion.toString() ?? "",
+              idInstitucion: id_sucursal.toString() ?? "",
               fechaMatricula: fecha_matricula
                 ? parseISO(fecha_matricula)
                 : null,
 
               montoMatricula: Number(montoMatricula) || 0,
 
-              idFormaPagoMatricula: detalleFormaPagoMatricula.nombre || "",
+              codigoFormaPagoMatricula: detalleFormaPagoMatricula.nombre || "",
               montoEfectivoMatricula: cantidadEfectivoMat ?? 0,
               montoOperacionMatricula: cantidadOperacionMat ?? 0,
               numeroOperacionMatricula: numeroOperacionMat ?? "",
@@ -583,7 +594,7 @@ export const MatriculaForm = () => {
               montoPorModulo: montoPorModulo,
               montoModulo: montoPorModulo,
 
-              idFormaPagoModulo: nombreFormaPagoModulo,
+              codigoFormaPagoModulo: nombreFormaPagoModulo,
               pagarPrimerModulo: definirPrimerPago,
               montoEfectivoModulo: cantidadEfectivoModulo ?? 0,
               montoOperacionModulo: cantidadOperacionModulo ?? 0,
@@ -591,7 +602,7 @@ export const MatriculaForm = () => {
 
               programas: detalles
                 ? detalles.map((p: DetalleMatricula) => ({
-                    idTipoPrograma: +p.programa.id_tipoprograma,
+                    idTipoPrograma: +p.programa.codigo_tipoprograma,
                     idPrograma: p.programa.id.toString(),
                   }))
                 : [{ idTipoPrograma: 0, idPrograma: "" }],
@@ -610,8 +621,10 @@ export const MatriculaForm = () => {
   }, [id, isEditMode, form]);
 
   // Watchers para de las formas de pago
-  const watchPagoMatricula = form.watch("idFormaPagoMatricula").toUpperCase();
-  const watchPagoModulo = form.watch("idFormaPagoModulo").toUpperCase();
+  const watchPagoMatricula = form
+    .watch("codigoFormaPagoMatricula")
+    .toUpperCase();
+  const watchPagoModulo = form.watch("codigoFormaPagoModulo").toUpperCase();
 
   // Watchers de cantidades
   const watchNumeroModulos = form.watch("numeroModulos") || 0;
@@ -631,7 +644,7 @@ export const MatriculaForm = () => {
   // Si se deshabilita el switch o la cantidad de módulos es 0, resetear los pagos del módulo
   useEffect(() => {
     if (!watchPagarPrimerModulo || watchNumeroModulos === 0) {
-      form.setValue("idFormaPagoModulo", "");
+      form.setValue("codigoFormaPagoModulo", "");
       form.setValue("montoModulo", 0);
       form.setValue("montoEfectivoModulo", 0);
       form.setValue("montoOperacionModulo", 0);
@@ -681,7 +694,8 @@ export const MatriculaForm = () => {
     if (!selectedTipoId) return [];
     return programas.filter(
       (p) =>
-        p.id_tipoprograma !== null && +p.id_tipoprograma! === selectedTipoId,
+        p.codigo_tipoprograma !== null &&
+        +p.codigo_tipoprograma! === selectedTipoId,
     );
   };
 
@@ -692,8 +706,8 @@ export const MatriculaForm = () => {
 
       const {
         fechaMatricula,
-        idFormaPagoMatricula,
-        idFormaPagoModulo,
+        codigoFormaPagoMatricula,
+        codigoFormaPagoModulo,
         idInstitucion,
         idPersona,
         montoEfectivoMatricula,
@@ -730,11 +744,12 @@ export const MatriculaForm = () => {
       }
 
       const targetFormaPagoMat = formasPago.find(
-        (f) => f.nombre.toUpperCase() === idFormaPagoMatricula.toUpperCase(),
+        (f) =>
+          f.nombre.toUpperCase() === codigoFormaPagoMatricula.toUpperCase(),
       );
 
       const targetFormaPagoMod = formasPago.find(
-        (f) => f.nombre.toUpperCase() === idFormaPagoModulo.toUpperCase(),
+        (f) => f.nombre.toUpperCase() === codigoFormaPagoModulo.toUpperCase(),
       );
 
       const fechaMatriculaStr = fechaMatricula
@@ -743,14 +758,14 @@ export const MatriculaForm = () => {
 
       let payload: Matricula = {
         id_persona: +idPersona,
-        id_institucion: +idInstitucion,
+        id_sucursal: +idInstitucion,
         fecha_matricula: fechaMatriculaStr,
-        id_estadomatricula: 37, // Estado matrícula ACTIVA por defecto
+        codigo_estadomatricula: 39, // Estado matrícula ACTIVA por defecto
         programas: programaIds,
 
         // Asignación estructurada Matrícula
         monto_matricula: montoMatricula,
-        id_formapago_matricula: targetFormaPagoMat
+        codigo_formapago_matricula: targetFormaPagoMat
           ? targetFormaPagoMat.codigo
           : 0,
         numero_operacion_matricula: numeroOperacionMatricula || undefined,
@@ -767,7 +782,7 @@ export const MatriculaForm = () => {
 
       if (pagarPrimerModulo) {
         ((payload.pagarPrimerModulo = pagarPrimerModulo),
-          ((payload.id_formapago_modulo = targetFormaPagoMod
+          ((payload.codigo_formapago_modulo = targetFormaPagoMod
             ? targetFormaPagoMod.codigo
             : 0),
           (payload.numero_operacion_modulo =
@@ -1208,7 +1223,7 @@ export const MatriculaForm = () => {
 
                   <FormField
                     control={form.control}
-                    name="idFormaPagoMatricula"
+                    name="codigoFormaPagoMatricula"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col w-full">
                         <RequiredLabel>Forma de Pago Matrícula</RequiredLabel>
@@ -1334,7 +1349,7 @@ export const MatriculaForm = () => {
 
                     <FormField
                       control={form.control}
-                      name="idFormaPagoModulo"
+                      name="codigoFormaPagoModulo"
                       render={({ field }) => (
                         <FormItem>
                           <RequiredLabel>Forma de Pago Módulo</RequiredLabel>

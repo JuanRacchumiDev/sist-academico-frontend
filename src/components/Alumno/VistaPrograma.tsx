@@ -2,11 +2,12 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Laptop, MapPin } from "lucide-react";
 // Importamos el tipo correcto para eliminar el error de TypeScript
-import { MatriculaDetalle } from "@/interfaces/IMatricula";
+import { Matricula } from "@/interfaces/IMatricula";
+import { DetalleMatricula } from "@/interfaces/IDetalleMatricula";
 
 interface DetalleMatriculaProps {
   // Usamos el tipo global o extendemos el tuyo asegurando compatibilidad
-  detalle: MatriculaDetalle & {
+  detalle: DetalleMatricula & {
     id: number;
     valor_matricula?: string;
     valor_modulo?: string;

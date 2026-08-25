@@ -122,7 +122,7 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
         </TableCell>
 
         <TableCell
-          className="py-2 px-3 text-xs text-slate-900 whitespace-normal break-words min-w-[200px]"
+          className="py-2 px-3 text-xs text-slate-900 whitespace-normal wrap-break-word min-w-[200px]"
           title={programa.titulo}
         >
           {programa.titulo ?? "--"}

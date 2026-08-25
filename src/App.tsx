@@ -25,6 +25,7 @@ import { UsuarioFormPage } from "./components/Usuario/Page/UsuarioFormPage";
 import { DashboardAlumno } from "./components/Alumno/DashboardAlumno";
 import { MisMatriculasListPage } from "./components/Alumno/Page/MisMatriculasListPage";
 import { CertificadoListPage } from "./components/Certificado/Page/CertificadoListPage";
+import { CertificadoFormPage } from "./components/Certificado/Page/CertificadoFormPage";
 
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
@@ -56,8 +57,8 @@ function App() {
         {!isLoginPage && isLoggedIn && (
           <Sidebar
             collapsed={sideBarCollapsed}
-            onToggle={() => setSideBarCollapsed(!sideBarCollapsed)}
-            currentPage={location.pathname}
+            // onToggle={() => setSideBarCollapsed(!sideBarCollapsed)}
+            // currentPage={location.pathname}
           />
         )}
 
@@ -173,6 +174,14 @@ function App() {
                     <Route
                       path="/certificado"
                       element={<CertificadoListPage />}
+                    />
+                    <Route
+                      path="/certificado/nuevo"
+                      element={<CertificadoFormPage />}
+                    />
+                    <Route
+                      path="/certificado/editar/:id"
+                      element={<CertificadoFormPage />}
                     />
 
                     <Route

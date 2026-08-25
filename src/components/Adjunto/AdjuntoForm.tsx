@@ -38,6 +38,7 @@ import {
   FileCheck,
   FileText,
   ExternalLink,
+  Download,
 } from "lucide-react";
 
 import { getProgramas } from "../../services/programaService";
@@ -45,12 +46,15 @@ import { getModulosByPrograma } from "../../services/moduloService";
 import {
   createAdjunto,
   getAdjuntoById,
+  downloadAdjunto,
   updateAdjunto,
 } from "../../services/adjuntoService";
 import { Programa } from "@/interfaces/IPrograma";
 import { Modulo } from "@/interfaces/IModulo";
 import { Adjunto } from "@/interfaces/IAdjunto";
 import SearchableCombobox from "../../components/Common/SearchableCombobox";
+import { formatInTimeZone } from "date-fns-tz";
+import { TIMEZONE_AMERICA_LIMA } from "@/params/constants";
 
 const MAX_FILE_SIZE = 5242880; // 5MB
 
@@ -77,6 +81,7 @@ export const AdjuntoForm = () => {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const [programas, setProgramas] = useState<Programa[]>([]);
   const [modulos, setModulos] = useState<Modulo[]>([]);
@@ -102,6 +107,35 @@ export const AdjuntoForm = () => {
 
   const handleGoBack = () => {
     navigate(`/adjunto/`);
+  };
+
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+
+    if (!id) return;
+
+    try {
+      setIsDownloading(true);
+      const response = await getAdjuntoById(+id);
+      const { result, data, message } = response;
+      if (result && data) {
+        const adjunto = data as Adjunto;
+        const { filename } = adjunto;
+        await downloadAdjunto(+id, filename);
+        showToast("success", message || "Descarga iniciada correctamente");
+      } else {
+        showToast(
+          "error",
+          message || "Error al procesar la descarga del archivo",
+        );
+      }
+    } catch (error) {
+      console.error("Error al descargar el archivo", error);
+      showToast("error", "No se pudo descargar el archivo actual.");
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -226,12 +260,23 @@ export const AdjuntoForm = () => {
   };
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const fechaActual = formatInTimeZone(
+      new Date(),
+      TIMEZONE_AMERICA_LIMA,
+      "yyyy-MM-dd",
+    );
+
     try {
       const formData = new FormData();
       const { idPrograma, idModulo, nombre, adjunto_file } = values;
 
-      if (isEditMode) {
+      if (isEditMode && id) {
+        console.log("actualizar adjunto");
+        formData.append("fecha_actualiza", fechaActual);
         formData.append("_method", "PATCH");
+      } else {
+        console.log("crear adjunto");
+        formData.append("fecha_crea", fechaActual);
       }
 
       formData.append("titulo", nombre);
@@ -246,6 +291,8 @@ export const AdjuntoForm = () => {
       if (adjunto_file) {
         formData.append("file", adjunto_file);
       }
+
+      console.log({ formData });
 
       const config = { headers: { "Content-Type": "multipart/form-data" } };
 
@@ -345,7 +392,8 @@ export const AdjuntoForm = () => {
                           isInvalid={fieldState.invalid}
                           renderOption={(programa) => (
                             <span className="text-xs font-medium text-slate-800">
-                              {programa.titulo}
+                              {programa.titulo} |{" "}
+                              {programa.tipo_programa.nombre}
                             </span>
                           )}
                         />
@@ -499,16 +547,26 @@ export const AdjuntoForm = () => {
                                 <p className="text-xs font-medium text-slate-700 line-clamp-1 max-w-md px-4">
                                   {existingOriginalName || "Ver archivo actual"}
                                 </p>
-                                <a
-                                  href={`http://sistacademico-ipede/storage/${existingFilepath}`}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  onClick={(e) => e.stopPropagation()}
-                                  className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 hover:text-blue-800 underline font-medium"
+
+                                <Button
+                                  type="button"
+                                  variant="link"
+                                  disabled={isDownloading}
+                                  onClick={handleDownload}
+                                  className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 hover:text-blue-800 underline font-medium h-auto p-0 shadow-none"
                                 >
-                                  Visualizar archivo actual{" "}
-                                  <ExternalLink className="h-3 w-3" />
-                                </a>
+                                  {isDownloading ? (
+                                    <>
+                                      <Spinner className="h-3 w-3 animate-spin text-blue-600" />
+                                      Descargando...
+                                    </>
+                                  ) : (
+                                    <>
+                                      Descargar archivo actual{" "}
+                                      <Download className="h-3 w-3 ml-0.5" />
+                                    </>
+                                  )}
+                                </Button>
                               </div>
                               <p className="text-[11px] text-slate-400 mt-1 italic">
                                 Arrastre o haga click aquí si desea{" "}

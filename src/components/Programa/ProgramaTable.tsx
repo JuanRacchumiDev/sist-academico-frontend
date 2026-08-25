@@ -20,7 +20,7 @@ import {
 import { ProgramaRow } from "./ProgramaRow";
 import { TableSpinner } from "../../components/Common/TableSpinner";
 import { Programa, PaginationType } from "@/interfaces/IPrograma";
-import { getDetalleFiltered } from "../../services/detalleParametroService";
+import { getDetalles } from "../../services/detalleParametroService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
@@ -31,34 +31,47 @@ import { GraduationCap } from "lucide-react";
 
 const loadSegmentos = async () => {
   let listSegmentos: DetalleParametro[] = [];
-  const filterSegmentos: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.SEGMENTO,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
-  const responseSegmentos = await getDetalleFiltered(filterSegmentos);
+  // const filterSegmentos: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.SEGMENTO,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
+
+  const queryParams = `parametro_clase=${ParametroClase.SEGMENTO}&en_persona=false&en_empresa=false&estado=true`;
+
+  const responseSegmentos = await getDetalles(queryParams);
+
   const { result: resultSegmentos, data: dataSegmentos } = responseSegmentos;
+
   if (resultSegmentos && dataSegmentos) {
     listSegmentos = dataSegmentos as DetalleParametro[];
   }
+
   return listSegmentos;
 };
 
 const loadTipoProgramas = async () => {
   let listTipoProgramas: DetalleParametro[] = [];
-  const filterTipoProgramas: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.TIPO_PROGRAMA,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
-  const responseTipoProgramas = await getDetalleFiltered(filterTipoProgramas);
+
+  // const filterTipoProgramas: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.TIPO_PROGRAMA,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
+
+  const queryParams = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=false&en_empresa=false&estado=true`;
+
+  const responseTipoProgramas = await getDetalles(queryParams);
+
   const { result: resultTipoProgramas, data: dataTipoProgramas } =
     responseTipoProgramas;
+
   if (resultTipoProgramas && dataTipoProgramas) {
     listTipoProgramas = dataTipoProgramas as DetalleParametro[];
   }
+
   return listTipoProgramas;
 };
 
@@ -117,6 +130,7 @@ export const ProgramaTable = () => {
           limit,
           filters,
         );
+
         const { result, data, pagination: newPagination } = response;
 
         if (result && data) {

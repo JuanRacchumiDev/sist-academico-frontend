@@ -1,5 +1,5 @@
 import { JSX, useCallback, useEffect, useState } from "react";
-import { getDetalle } from "../../../services/detalleParametroService";
+import { getDetallesFiltered } from "../../../services/detalleParametroService";
 import {
   Pagination,
   PaginationContent,
@@ -64,12 +64,13 @@ export const UniversidadTable: React.FC = () => {
 
     const filters = {
       parametro_clase: ParametroClase.UNIVERSIDAD,
+      estado: true,
     };
 
     console.log({ filters });
 
     try {
-      const response = await getDetalle(currentPage, limit, "sede", filters);
+      const response = await getDetallesFiltered(currentPage, limit, filters);
 
       console.log("response universidades", response);
 

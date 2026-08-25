@@ -4,9 +4,9 @@ import { Adjunto } from "./IAdjunto"
 
 export interface Programa {
     id?: number
-    id_segmento?: string
-    id_tipoprograma?: string
-    id_categoriaprograma?: string
+    codigo_segmento?: string
+    codigo_tipoprograma?: string
+    codigo_categoriaprograma?: string
     codigo_old?: string
     sigla?: string
     titulo?: string

@@ -1,5 +1,5 @@
 import { JSX, useCallback, useEffect, useState } from "react";
-import { getDetalle } from "../../../services/detalleParametroService";
+import { getDetallesFiltered } from "../../../services/detalleParametroService";
 import {
   Pagination,
   PaginationContent,
@@ -23,91 +23,89 @@ import {
   DetalleParametro,
   PaginationType,
 } from "@/interfaces/IDetalleParametro";
+import {
+  DetalleParametroFilters,
+  DPFiltersData,
+} from "../../DetalleParametro/DetalleParametroFilters";
 import { ParametroClase } from "@/params/parametroClase";
 
-export const SegmentoTable: React.FC = () => {
+export const SegmentoTable = () => {
   const [segmentos, setSegmentos] = useState<DetalleParametro[]>([]);
-  const [pagination, setPagination] = useState<PaginationType>({
-    currentPage: 1,
-    limit: 10,
+  const [isLoading, setIsLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [limit] = useState(10);
+  const [paginationInfo, setPaginationInfo] = useState<
+    Omit<PaginationType, "currentPage" | "limit">
+  >({
     totalPages: 1,
     totalItems: 0,
     nextPage: null,
     previousPage: null,
   });
 
-  console.log({ pagination });
-
-  const [isLoading, setIsLoading] = useState(true);
+  const [searchFilters, setSearchFilters] = useState<DPFiltersData>({
+    search: "",
+  });
 
   const handlePageChange = (page: number) => {
-    console.log("---- page handlePageChange ----");
-    console.log({ page });
-
-    const validatePage = page > 0 && page <= pagination.totalPages;
-
-    console.log({ validatePage });
-
-    if (validatePage) {
-      setPagination((prev) => ({ ...prev, currentPage: page }));
+    if (page > 0 && page <= paginationInfo.totalPages) {
+      setCurrentPage(page);
     }
   };
 
-  const fetchData = useCallback(async () => {
-    setIsLoading(true);
+  const fetchData = useCallback(
+    async (pageToFetch: number, filtersData: DPFiltersData) => {
+      setIsLoading(true);
 
-    const { currentPage, limit } = pagination;
+      const filters = {
+        parametro_clase: ParametroClase.SEGMENTO,
+        search: filtersData.search,
+      };
 
-    console.log({ currentPage });
+      try {
+        const response = await getDetallesFiltered(currentPage, limit, filters);
 
-    console.log({ limit });
+        const { result, data, pagination: newPagination } = response;
 
-    const filters = {
-      parametro_clase: ParametroClase.SEGMENTO,
-    };
+        if (result && data) {
+          setSegmentos(data as DetalleParametro[]);
 
-    console.log({ filters });
+          if (newPagination) {
+            setPaginationInfo({
+              totalPages: newPagination.totalPages || 1,
+              totalItems: newPagination.totalItems || 0,
+              nextPage: newPagination.nextPage,
+              previousPage: newPagination.previousPage,
+            });
 
-    try {
-      const response = await getDetalle(currentPage, limit, "sede", filters);
-
-      console.log("response segmentos", response);
-
-      const { result, data, pagination: newPagination } = response;
-
-      if (result && data) {
-        const dataSegmentos = data as DetalleParametro[];
-        setSegmentos(dataSegmentos);
-
-        if (newPagination) {
-          setPagination(newPagination);
+            setTotalPages(newPagination.totalPages || 1);
+          }
+        } else {
+          setSegmentos([]);
         }
-      } else {
-        setSegmentos([]);
-        setPagination({
-          currentPage: 1,
-          limit: 10,
-          totalPages: 1,
-          totalItems: 0,
-          nextPage: null,
-          previousPage: null,
-        });
+      } catch (error) {
+        console.error("Error al obtener segmentos", error);
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error("Error al obtener segmentos", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [pagination.currentPage, pagination.limit]);
+    },
+    [limit],
+  );
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(currentPage, searchFilters);
+  }, [currentPage, searchFilters, fetchData]);
+
+  const handleSearchSubmit = (newFilters: DPFiltersData) => {
+    setSearchFilters(newFilters);
+    setCurrentPage(1);
+  };
 
   const renderPaginationItems = (): JSX.Element[] => {
     const items: JSX.Element[] = [];
-    const startPage = Math.max(1, pagination.currentPage - 2);
-    const endPage = Math.min(pagination.totalPages, pagination.currentPage + 2);
+    const startPage = Math.max(1, currentPage - 2);
+    const endPage = Math.min(paginationInfo.totalPages, currentPage + 2);
 
     if (startPage > 1) {
       items.push(
@@ -122,14 +120,14 @@ export const SegmentoTable: React.FC = () => {
         <PaginationItem key={i}>
           <PaginationLink
             onClick={() => handlePageChange(i)}
-            isActive={i === pagination.currentPage}
+            isActive={i === currentPage}
             className={`
-                ${
-                  i === pagination.currentPage
-                    ? "bg-blue-500 text-white"
-                    : "hover:bg-gray-200 transition-colors"
-                }
-              `}
+              ${
+                i === currentPage
+                  ? "bg-blue-500 text-white"
+                  : "hover:bg-gray-200 transition-colors"
+              }
+            `}
           >
             {i}
           </PaginationLink>
@@ -137,7 +135,7 @@ export const SegmentoTable: React.FC = () => {
       );
     }
 
-    if (endPage < pagination.totalPages) {
+    if (endPage < paginationInfo.totalPages) {
       items.push(
         <PaginationItem key="ellipsis-end">
           <PaginationEllipsis />
@@ -148,71 +146,88 @@ export const SegmentoTable: React.FC = () => {
   };
 
   return (
-    <div className="w-full space-y-4 pt-4">
-      <div className="flex justify-end items-center space-x-2 pb-4"></div>
-      <div className="rounded-md border border-gray-200 shadow-sm">
-        <Table>
-          <TableHeader>
-            <TableRow className="bg-gray-100">
-              <TableHead className="text-gray-600 font-medium">
-                Nombre
-              </TableHead>
-              <TableHead className="text-gray-600 font-medium">
-                Descripción
-              </TableHead>
-              <TableHead className="text-gray-600 font-medium">
-                Estado
-              </TableHead>
-              <TableHead className="text-gray-600 font-medium">
-                Opciones
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableSpinner colSpan={4} />
-            ) : segmentos.length > 0 ? (
-              segmentos.map((segmento) => (
-                <SegmentoRow
-                  key={segmento.codigo}
-                  segmento={segmento}
-                  //   onStatusChange={handleDocumentoStatusChange}
-                />
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={4}
-                  className="text-center text-gray-500 py-6"
-                >
-                  No se encontraron segmentos registrados
-                </TableCell>
+    <div className="w-full space-y-3">
+      <div className="bg-white overflow-hidden">
+        <DetalleParametroFilters
+          onSearch={handleSearchSubmit}
+        ></DetalleParametroFilters>
+
+        <div className="overflow-x-auto border-t border-slate-100">
+          <Table className="w-full text-left border-collapse">
+            <TableHeader>
+              <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Nombre
+                </TableHead>
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Descripción
+                </TableHead>
+                <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
+                  Estado
+                </TableHead>
+                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
+                  Acciones
+                </TableHead>
               </TableRow>
-            )}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody>
+              {isLoading ? (
+                <TableSpinner colSpan={4} />
+              ) : segmentos.length > 0 ? (
+                segmentos.map((segmento) => (
+                  <SegmentoRow key={segmento.codigo} segmento={segmento} />
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={4} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
+                      <span className="text-xs font-medium text-slate-600">
+                        No se encontraron registros
+                      </span>
+                      <p className="text-[11px]">
+                        Intenta ajustar los filtros de búsqueda
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
-      <div className="mt-4 flex justify-end">
-        <Pagination>
-          <PaginationContent>
+
+      <div className="flex items-center justify-between px-3 pb-3">
+        <div className="text-[11px] text-slate-500 font-medium">
+          Mostrando{" "}
+          <span className="text-slate-800 font-semibold">
+            {segmentos.length}
+          </span>{" "}
+          registros de este grupo
+        </div>
+
+        <Pagination className="justify-end w-auto m-0">
+          <PaginationContent className="gap-0.5">
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => handlePageChange(pagination.currentPage - 1)}
-                className="hover:bg-gray-200 transition-colors"
-              >
-                Anterior
-              </PaginationPrevious>
+                onClick={() => handlePageChange(currentPage - 1)}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === 1 ? "pointer-events-none opacity-30" : ""
+                }`}
+              />
             </PaginationItem>
 
             {renderPaginationItems()}
 
             <PaginationItem>
               <PaginationNext
-                onClick={() => handlePageChange(pagination.currentPage + 1)}
-                className="hover:bg-gray-200 transition-colors"
-              >
-                Siguiente
-              </PaginationNext>
+                onClick={() => handlePageChange(currentPage + 1)}
+                className={`h-7 px-2 text-xs rounded-md border border-slate-200 text-slate-600 cursor-pointer transition-colors hover:bg-slate-50 hover:text-slate-900 ${
+                  currentPage === paginationInfo.totalPages
+                    ? "pointer-events-none opacity-30"
+                    : ""
+                }`}
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

@@ -3,6 +3,7 @@ import {
     getAll,
     getAllPaginate,
     getById,
+    create,
     createModular,
     previewCertificado,
     generateCertificado
@@ -45,6 +46,14 @@ export const getCertificadosPaginate = async (
 
 export const getCertificadosById = async (id: number) => {
     const response = await getById(id)
+
+    return {
+        ...response
+    }
+}
+
+export const createCertificado = async (payload: Certificado) => {
+    const response = await create(payload)
 
     return {
         ...response

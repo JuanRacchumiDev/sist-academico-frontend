@@ -82,6 +82,31 @@ export const getById = async (id: number): Promise<CertificadoResponse> => {
     }
 }
 
+export const create = async (payload: Certificado): Promise<CertificadoResponse> => {
+    try {
+        console.log('certificadoRepository method: create')
+        console.log({ payload })
+
+        const response = await apiClient.post('/certificados', payload)
+
+        console.log('response create certificadoRepository')
+        console.log({ response })
+
+        const { data: { result, message, data } } = response
+
+        return {
+            result,
+            message,
+            data
+        }
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
 export const createModular = async (payload: Certificado): Promise<CertificadoResponse> => {
     try {
         console.log('certificadoRepository method: create payload')

@@ -21,7 +21,7 @@ import { Input } from "../../ui/input";
 import { Spinner } from "../../Common/Spinner";
 import {
   createDetalle,
-  getDetalleById,
+  getDetalleByParams,
   updateDetalle,
 } from "../../../services/detalleParametroService";
 import {
@@ -32,6 +32,7 @@ import { useToast } from "../../../context/ToastContext";
 import { RequiredLabel } from "../../../components/Common/RequiredLabel";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { ParametroClase } from "../../../params/parametroClase";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -132,7 +133,9 @@ export const BancoCuentaForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const responseBancoCuenta = await getDetalleById("banco-cuenta", +id);
+          const queryParams = `parametro_clase=${ParametroClase.BANCO_CUENTA}&codigo=${id}`
+          
+          const responseBancoCuenta = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseBancoCuenta;
 

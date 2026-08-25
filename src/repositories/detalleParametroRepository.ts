@@ -6,19 +6,41 @@ import {
 } from "@/interfaces/IDetalleParametro"
 import apiClient from "./apiClient"
 
-export const getAll = async (clase: string, queryParams: string): Promise<DetalleParametroPaginateResponse> => {
+export const getAll = async (queryParams: string): Promise<DetalleParametroResponse> => {
     try {
-        const urlApi = `/catalogos/${clase}?${queryParams}`
+        const urlApi = `/catalogos?${queryParams}`
+
+        const response = await apiClient.get(urlApi)
+
+        console.log('response getAll detalleParametroRepository', response)
+
+        const { data: { result, data, message, error, status } } = response
+
+        return {
+            result,
+            data,
+            message,
+            error,
+            status
+        }
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        console.log('errorMessage', errorMessage)
+        return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const getAllFiltered = async (queryParams: string): Promise<DetalleParametroPaginateResponse> => {
+    try {
+        const urlApi = `/catalogos/paginate?${queryParams}`
 
         console.log({ urlApi })
 
         const response = await apiClient.get(urlApi)
 
-        const { data: dataDetalle } = response
+        const { data: { result, data, message } } = response
 
-        const { result, data, message } = dataDetalle
-
-        const listaItems = data.data
+        // const listaItems = data.data
 
         const paginationInfo = {
             currentPage: data.current_page,
@@ -31,16 +53,10 @@ export const getAll = async (clase: string, queryParams: string): Promise<Detall
 
         return {
             result,
-            data: listaItems,
+            data: data.data,
             message,
             pagination: paginationInfo
         }
-
-        // return {
-        //     result,
-        //     data,
-        //     message
-        // }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
@@ -48,26 +64,22 @@ export const getAll = async (clase: string, queryParams: string): Promise<Detall
     }
 }
 
-export const getAllFiltered = async (filters: DetalleParametroFilters): Promise<DetalleParametroResponse> => {
+export const getAllByClase = async (clase: string): Promise<DetalleParametroResponse> => {
     try {
-        const urlApi = `/catalogos`
+        const urlApi = `/catalogos/clase/${clase}`
 
-        const response = await apiClient.get(urlApi, {
-            params: filters
-        })
+        const response = await apiClient.get(urlApi)
 
-        console.log('response getAllFiltered detalleParametroRepository', response)
+        console.log('response getAllByClase detalleParametroRepository', response)
 
-        const { data: dataDetalle } = response
-
-        const { result, data, message, error } = dataDetalle
+        const { data: { result, data, message, error, status } } = response
 
         return {
             result,
             data,
             message,
             error,
-            status: response.status
+            status
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
@@ -76,20 +88,22 @@ export const getAllFiltered = async (filters: DetalleParametroFilters): Promise<
     }
 }
 
-export const getById = async (clase: string, codigo: number): Promise<DetalleParametroResponse> => {
+export const getByParams = async (queryParams: string): Promise<DetalleParametroResponse> => {
     try {
-        const urlApi = `/catalogos/${clase}/${codigo}`
-
-        console.log({ urlApi })
+        const urlApi = `/catalogos/show?${queryParams}`
 
         const response = await apiClient.get(urlApi)
 
-        const { data: { result, message, data } } = response
+        console.log('response getDetalle detalleParametroRepository', response)
+
+        const { data: { result, data, message, error, status } } = response
 
         return {
             result,
+            data,
             message,
-            data
+            error,
+            status
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

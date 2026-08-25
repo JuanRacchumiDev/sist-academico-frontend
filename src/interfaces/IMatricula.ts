@@ -7,8 +7,8 @@ import { Pago } from "./IPago"
 export interface Matricula {
     id?: number
     id_persona?: number
-    id_estadomatricula?: number
-    id_institucion?: number
+    codigo_estadomatricula?: number
+    id_sucursal?: number
     fecha_matricula?: string
     fecha_retiro?: string
     fecha_reserva?: string
@@ -21,7 +21,7 @@ export interface Matricula {
 
     // Datos de matrícula
     monto_matricula?: number
-    id_formapago_matricula?: number
+    codigo_formapago_matricula?: number
     numero_operacion_matricula?: string
     monto_efectivo_matricula?: number
     monto_operacion_matricula?: number
@@ -30,7 +30,7 @@ export interface Matricula {
     // Datos de módulo
     numero_modulos?: number
     monto_modulo?: number
-    id_formapago_modulo?: number
+    codigo_formapago_modulo?: number
     numero_operacion_modulo?: string
     monto_efectivo_modulo?: number
     monto_operacion_modulo?: number

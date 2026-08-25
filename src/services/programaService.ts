@@ -53,7 +53,8 @@ export const getProgramaById = async (id: number) => {
 }
 
 export const downloadProgramaPlan = async (id: number): Promise<void> => {
-    return downloadPlan(id)
+    const filename: string = `plan_programa_${id}.pdf`
+    return downloadPlan(id, filename)
 }
 
 export const createPrograma = async (

@@ -75,7 +75,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
               )}
               disabled={disabled}
             >
-              <span className="block line-clamp-2 sm:line-clamp-1 pr-2 break-words">
+              <span className="block line-clamp-2 sm:line-clamp-1 pr-2 wrap-break-word">
                 {displayValue}
               </span>
               <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 self-center" />
@@ -84,7 +84,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
         </PopoverTrigger>
 
         <PopoverContent
-          className="w-[var(--radix-popover-trigger-width)] min-w-[320px] p-0 bg-white"
+          className="w-(--radix-popover-trigger-width) min-w-[320px] p-0 bg-white"
           align="start"
         >
           <Command className="w-full">
@@ -130,7 +130,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                               : "opacity-0",
                           )}
                         />
-                        <div className="flex flex-col w-full whitespace-normal break-words">
+                        <div className="flex flex-col w-full whitespace-normal wrap-break-word">
                           {renderOption ? (
                             renderOption(option)
                           ) : (

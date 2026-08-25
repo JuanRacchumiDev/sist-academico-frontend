@@ -39,28 +39,26 @@ import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Programa, ProgramaResponse } from "../../interfaces/IPrograma";
 import { ArrowLeft, Save, XCircle } from "lucide-react";
-import {
-  getDetalleFiltered,
-  getDetalleById,
-} from "../../services/detalleParametroService";
+import { getDetalles } from "../../services/detalleParametroService";
 import {
   DetalleParametro,
   DetalleParametroFilters,
 } from "../../interfaces/IDetalleParametro";
 import { ParametroClase } from "../../params/parametroClase";
+import {
+  MAX_FILE_SIZE,
+  TIPO_PROGRAMA_ESPECIALIZACION,
+  TIPO_PROGRAMA_CAPACITACION,
+} from "../../params/constants";
 import { parseDate } from "../../utils/dateUtils";
+import { Textarea } from "@/components/ui/textarea";
 
 const loadSegmentos = async () => {
   let listSegmentos: DetalleParametro[] = [];
 
-  const filters: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.SEGMENTO,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  const queryParams = `parametro_clase=${ParametroClase.SEGMENTO}&en_persona=false&en_empresa=false&estado=true`;
 
-  const response = await getDetalleFiltered(filters);
+  const response = await getDetalles(queryParams);
 
   const { result, data } = response;
 
@@ -74,14 +72,9 @@ const loadSegmentos = async () => {
 const loadTipoProgramas = async () => {
   let listTipoProgramas: DetalleParametro[] = [];
 
-  const filters: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.TIPO_PROGRAMA,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  const queryParams = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=false&en_empresa=false&estado=true`;
 
-  const response = await getDetalleFiltered(filters);
+  const response = await getDetalles(queryParams);
 
   const { result, data } = response;
 
@@ -92,18 +85,14 @@ const loadTipoProgramas = async () => {
   return listTipoProgramas;
 };
 
-const MAX_FILE_SIZE = 2097152;
-
-const TIPO_PROGRAMA_ESPECIALIZACION = "especializacion";
-
 const formSchema = z
   .object({
-    idSegmento: z
+    codigoSegmento: z
       .string({
         message: "El segmento es requerido",
       })
       .min(1, "El segmento es requerido"),
-    idTipoPrograma: z
+    codigoTipoPrograma: z
       .string({
         message: "El tipo de programa es requerido",
       })
@@ -138,11 +127,13 @@ const formSchema = z
         (file) => !file || file.type === "application/pdf",
         `El archivo debe ser un PDF`,
       ),
+    temario: z.string().optional(),
     modalidad: z
       .string({
         message: "La modalidad es requerida",
       })
       .min(1, "La modalidad es requerida"),
+    isCapacitacion: z.boolean().optional(),
   })
   .superRefine((data, ctx) => {
     if (data.fechaFinal <= data.fechaInicio) {
@@ -152,11 +143,20 @@ const formSchema = z
         path: ["fechaFinal"],
       });
     }
+
+    // Validación condicional del campo temario si el tipo de programa es capacitación
+    if (data.isCapacitacion && (!data.temario || data.temario.trim() === "")) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El temario detallado es obligatorio",
+        path: ["temario"],
+      });
+    }
   });
 
 const defaultValues = {
-  idSegmento: "",
-  idTipoPrograma: "",
+  codigoSegmento: "",
+  codigoTipoPrograma: "",
   titulo: "",
   fechaInicio: new Date(),
   fechaFinal: new Date(),
@@ -165,6 +165,8 @@ const defaultValues = {
   modulos: 0,
   modalidad: "VIRTUAL",
   plan_file: null,
+  temario: "",
+  isCapacitacion: false,
 };
 
 export const ProgramaForm = () => {
@@ -192,16 +194,19 @@ export const ProgramaForm = () => {
 
   const watchFechaInicio = form.watch("fechaInicio");
   const watchFechaFinal = form.watch("fechaFinal");
-  const watchIdTipoPrograma = form.watch("idTipoPrograma");
+  const watchcodigoTipoPrograma = form.watch("codigoTipoPrograma");
 
-  console.log({ watchIdTipoPrograma });
+  console.log({ watchcodigoTipoPrograma });
 
   const selectedTipo = tipoProgramas.find(
-    (item) => item.codigo?.toString() === watchIdTipoPrograma,
+    (item) => item.codigo?.toString() === watchcodigoTipoPrograma,
   );
 
   const isEspecializacion =
     selectedTipo?.nombre_url?.toLowerCase() === TIPO_PROGRAMA_ESPECIALIZACION;
+
+  const isCapacitacion =
+    selectedTipo?.nombre_url?.toLowerCase() === TIPO_PROGRAMA_CAPACITACION;
 
   useEffect(() => {
     if (!isEspecializacion) {
@@ -238,6 +243,10 @@ export const ProgramaForm = () => {
   }, [watchFechaFinal, watchFechaInicio, isEspecializacion, form]);
 
   useEffect(() => {
+    form.setValue("isCapacitacion", isCapacitacion);
+  }, [isCapacitacion, form]);
+
+  useEffect(() => {
     const fetchData = async () => {
       setIsLoadingData(true);
 
@@ -262,8 +271,9 @@ export const ProgramaForm = () => {
             console.log({ programa });
 
             form.reset({
-              idSegmento: programa.id_segmento?.toString() ?? "",
-              idTipoPrograma: programa.id_tipoprograma?.toString() ?? "",
+              codigoSegmento: programa.codigo_segmento?.toString() ?? "",
+              codigoTipoPrograma:
+                programa.codigo_tipoprograma?.toString() ?? "",
               titulo: programa.titulo ?? "",
               fechaInicio: parseDate(programa.fecha_inicio),
               fechaFinal: parseDate(programa.fecha_final),
@@ -271,6 +281,7 @@ export const ProgramaForm = () => {
               duracion: programa.duracion ?? "",
               modulos: programa.numero_modulos ?? 0,
               modalidad: programa.modalidad ?? "VIRTUAL",
+              temario: programa.temario ?? "",
             });
           }
         }
@@ -301,8 +312,8 @@ export const ProgramaForm = () => {
       console.log({ values });
 
       const {
-        idSegmento,
-        idTipoPrograma,
+        codigoSegmento,
+        codigoTipoPrograma,
         titulo,
         fechaInicio,
         fechaFinal,
@@ -310,6 +321,7 @@ export const ProgramaForm = () => {
         horasAcademicas,
         modulos,
         plan_file,
+        temario,
         modalidad,
       } = values;
 
@@ -323,8 +335,8 @@ export const ProgramaForm = () => {
         formData.append("_method", "PATCH");
       }
 
-      formData.append("id_segmento", idSegmento);
-      formData.append("id_tipoprograma", idTipoPrograma);
+      formData.append("codigo_segmento", codigoSegmento);
+      formData.append("codigo_tipoprograma", codigoTipoPrograma);
       formData.append("titulo", titulo);
       formData.append("fecha_inicio", fechaInicioStr);
       formData.append("fecha_final", fechaFinalStr);
@@ -334,6 +346,7 @@ export const ProgramaForm = () => {
       formData.append("is_vigente", "1");
       formData.append("estado", "1");
       formData.append("modalidad", modalidad || "");
+      formData.append("temario", temario?.trim() || "");
 
       // Agregar el archivo si existe
       if (plan_file) {
@@ -396,7 +409,7 @@ export const ProgramaForm = () => {
             <CardDescription className="text-slate-500 font-medium">
               {isEditMode
                 ? `Actualización de información de programa`
-                : `Complete la informaicón para registrar un programa`}
+                : `Complete la información para registrar un programa`}
             </CardDescription>
           </div>
           <Button
@@ -431,7 +444,7 @@ export const ProgramaForm = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
                 <FormField
                   control={form.control}
-                  name="idSegmento"
+                  name="codigoSegmento"
                   render={({ field, fieldState }) => (
                     <FormItem className="flex flex-col">
                       <RequiredLabel>Segmento</RequiredLabel>
@@ -464,7 +477,7 @@ export const ProgramaForm = () => {
 
                 <FormField
                   control={form.control}
-                  name="idTipoPrograma"
+                  name="codigoTipoPrograma"
                   render={({ field, fieldState }) => (
                     <FormItem className="flex flex-col">
                       <RequiredLabel>Tipo Programa</RequiredLabel>
@@ -660,6 +673,35 @@ export const ProgramaForm = () => {
                           </SelectItem>
                         </SelectContent>
                       </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="temario"
+                  render={({ field, fieldState }) => (
+                    <FormItem className="md:col-span-2">
+                      {isCapacitacion ? (
+                        <RequiredLabel>Temario del programa</RequiredLabel>
+                      ) : (
+                        <label className="text-sm font-medium text-slate-700">
+                          Temario del programa
+                        </label>
+                      )}
+                      <FormControl>
+                        <Textarea
+                          {...field}
+                          placeholder="Detalle los temas, unidades o contenido general del programa..."
+                          rows={4}
+                          className={`resize-y ${inputErrorClass(fieldState.invalid)}`}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        Describa el contenido temático del programa.{" "}
+                        {isCapacitacion && "(Obligatorio para Capacitación)"}
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}

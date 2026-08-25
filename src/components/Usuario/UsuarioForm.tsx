@@ -35,7 +35,7 @@ import { Persona } from "../../interfaces/IPersona";
 import { Usuario, UsuarioResponse } from "../../interfaces/IUsuario";
 import { DetalleParametroFilters } from "@/interfaces/IDetalleParametro";
 import { ParametroClase } from "@/params/parametroClase";
-import { getDetalleFiltered } from "@/services/detalleParametroService";
+import { getDetalles } from "@/services/detalleParametroService";
 import { getPersonas, getPersonaById } from "@/services/personaService";
 import { useNavigate, useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -49,19 +49,21 @@ import { generateUsername } from "@/utils/stringUtils";
 const loadPerfiles = async () => {
   let dataPerfiles: DetalleParametro[] = [];
 
-  const filters: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.PERFIL,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  // const filters: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.PERFIL,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
 
-  const response = await getDetalleFiltered(filters);
+  const queryParams = `parametro_clase=${ParametroClase.PERFIL}&en_persona=false&en_empresa=false&estado=true`;
+
+  const response = await getDetalles(queryParams);
+
   const { result, data } = response;
+
   if (result && data) {
     dataPerfiles = data as DetalleParametro[];
-  } else {
-    dataPerfiles = [];
   }
 
   return dataPerfiles;
@@ -168,6 +170,10 @@ export const UsuarioForm = () => {
 
     try {
       const persona = await getPersona(idPersona);
+
+      console.log("---- persona seleccionada ----");
+      console.log({ persona });
+
       const { nombres, apellido_paterno, apellido_materno, email } = persona;
 
       const usernameSugerido = generateUsername({
@@ -175,6 +181,8 @@ export const UsuarioForm = () => {
         apellidoPaterno: apellido_paterno,
         apellidoMaterno: apellido_materno,
       });
+
+      console.log({ usernameSugerido });
 
       form.setValue("name", usernameSugerido, { shouldValidate: true });
 
@@ -192,8 +200,6 @@ export const UsuarioForm = () => {
       );
     }
   };
-
-  const { isSubmitting } = form.formState;
 
   useEffect(() => {
     const fetchData = async () => {
@@ -213,6 +219,8 @@ export const UsuarioForm = () => {
 
     fetchData();
   }, [id, form]);
+
+  const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: TFormValues) => {
     try {

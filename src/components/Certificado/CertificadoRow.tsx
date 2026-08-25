@@ -1,5 +1,5 @@
-import { DetalleParametro } from "../../../interfaces/IDetalleParametro";
-import { TableCell, TableRow } from "../../ui/table";
+import { Certificado } from "../../interfaces/ICertificado";
+import { TableCell, TableRow } from "../ui/table";
 import {
   AlertTriangle,
   CircleCheck,
@@ -22,19 +22,22 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "../../ui/dropdown-menu";
+} from "../ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
-import { Button } from "../../ui/button";
-import { useToast } from "../../../context/ToastContext";
+import { Button } from "../ui/button";
+import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
+import { downloadFile } from "../../utils/fileUtils";
+import { formatDate } from "../../utils/dateUtils";
+import { padString } from "@/utils/stringUtils";
 
 interface Props {
-  tipoDocumento: DetalleParametro;
-  onStatusChange?: (tipoDocumentoId: number) => void;
+  certificado: Certificado;
+  onStatusChange?: (CertificadoId: number) => void;
 }
 
-export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
+export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -43,17 +46,17 @@ export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
 
   const navigate = useNavigate();
 
-  const nuevoEstado = !tipoDocumento.estado;
+  const nuevoEstado = !certificado.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
   const modalTitle = `${
     action.charAt(0).toUpperCase() + action.slice(1)
-  } Tipo Documento`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> el tipo de documento: <strong>${tipoDocumento.nombre}</strong>?`;
+  } Certificado`;
+  const modalMessage = `¿Deseas <strong>${action}</strong> el certificado: <strong>${certificado.persona.nombre_completo}</strong>?`;
 
-  console.log({ tipoDocumento });
+  console.log({ certificado });
 
   const handleShowDetail = () => {
-    navigate(`/mantenimiento/tipo-documento/editar/${tipoDocumento.codigo}`);
+    navigate(`/certificado/editar/${certificado.id}`);
   };
 
   // Abre el modal
@@ -83,28 +86,54 @@ export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
   };
 
   // Determinar texto y color de acción
-  const actionText = tipoDocumento.estado ? "Desactivar" : "Activar";
-  const ActionIcon = tipoDocumento.estado ? ToggleLeft : ToggleRight;
-  const actionColor = tipoDocumento.estado ? "text-red-600" : "text-green-600";
-  const hoverBgColor = tipoDocumento.estado
+  const actionText = certificado.estado ? "Desactivar" : "Activar";
+  const ActionIcon = certificado.estado ? ToggleLeft : ToggleRight;
+  const actionColor = certificado.estado ? "text-red-600" : "text-green-600";
+  const hoverBgColor = certificado.estado
     ? "hover:bg-red-100"
     : "hover:bg-green-100";
 
   return (
     <>
       <TableRow
-        key={tipoDocumento.codigo}
+        key={certificado.id}
         className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
         <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
-          {tipoDocumento.nombre}
+          #{padString(4, certificado.id, "left")}
         </TableCell>
+        {/* Fila del alumno */}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+          {certificado.persona?.nombre_completo ||
+            `${certificado.persona?.nombres ?? ""} ${certificado.persona?.apellido_paterno ?? ""}`}
+        </TableCell>
+
+        {/* Tipo Certificado */}
         <TableCell className="py-2 px-3 text-xs font-medium text-slate-700">
-          {tipoDocumento.descripcion}
+          {certificado.tipoCertificado?.nombre ?? "--"}
+        </TableCell>
+
+        {/* Programa */}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+          {certificado.programa?.titulo ?? "--"}
+        </TableCell>
+
+        {/* Módulo (Manejo Seguro de nulos) */}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+          {certificado.modulo?.titulo ? (
+            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-normal bg-slate-100 text-slate-600">
+              {certificado.modulo.titulo}
+            </span>
+          ) : (
+            <span className="text-slate-300 italic">N/A</span>
+          )}
+        </TableCell>
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+          --
         </TableCell>
         <TableCell className="py-2 px-3 text-center">
           <div className="flex items-center justify-center">
-            {tipoDocumento.estado ? (
+            {certificado.estado ? (
               <CircleCheck className="text-emerald-500 w-4 h-4 stroke-[2.5]" />
             ) : (
               <CircleX className="text-rose-500 w-4 h-4 stroke-[2.5]" />
@@ -140,6 +169,15 @@ export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
                 <Edit className="h-3.5 w-3.5 text-slate-400" />
                 <span>Ver/Editar detalle</span>
               </DropdownMenuItem>
+              <DropdownMenuSeparator className="bg-slate-100" />
+
+              <DropdownMenuItem
+                onClick={handleOpenStatusModal}
+                className={`cursor-pointer rounded-sm py-1 px-2 flex items-center gap-2 font-medium ${actionColor} ${hoverBgColor}`}
+              >
+                <ActionIcon className="h-3.5 w-3.5" />
+                <span>{actionText} Matrícula</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>
@@ -155,7 +193,7 @@ export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
         isProcessing={isProcessing}
         icon={
           <AlertTriangle
-            className={tipoDocumento.estado ? "text-red-500" : "text-green-500"}
+            className={certificado.estado ? "text-red-500" : "text-green-500"}
           />
         }
       />

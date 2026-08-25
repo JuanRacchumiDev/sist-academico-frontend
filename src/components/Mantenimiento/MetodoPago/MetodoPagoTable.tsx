@@ -1,5 +1,5 @@
 import { JSX, useCallback, useEffect, useState } from "react";
-import { getDetalle } from "../../../services/detalleParametroService";
+import { getDetallesFiltered } from "../../../services/detalleParametroService";
 import {
   Pagination,
   PaginationContent,
@@ -61,18 +61,14 @@ export const MetodoPagoTable: React.FC = () => {
     console.log({ limit });
 
     const filters = {
-      parametro_clase: ParametroClase.METODO_PAGO,
+      parametro_clase: ParametroClase.FORMA_PAGO,
+      estado: true,
     };
 
     console.log({ filters });
 
     try {
-      const response = await getDetalle(
-        currentPage,
-        limit,
-        "metodo-pago",
-        filters,
-      );
+      const response = await getDetallesFiltered(currentPage, limit, filters);
 
       console.log("response metodoPagos", response);
 

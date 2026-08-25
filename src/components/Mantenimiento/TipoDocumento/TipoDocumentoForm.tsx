@@ -21,7 +21,7 @@ import { Input } from "../../ui/input";
 import { Spinner } from "../../Common/Spinner";
 import {
   createDetalle,
-  getDetalleById,
+  getDetalleByParams,
   updateDetalle,
 } from "../../../services/detalleParametroService";
 import {
@@ -32,6 +32,7 @@ import { useToast } from "../../../context/ToastContext";
 import { RequiredLabel } from "../../../components/Common/RequiredLabel";
 import { useEffect } from "react";
 import { ArrowLeft } from "lucide-react";
+import { ParametroClase } from "../../../params/parametroClase";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -82,6 +83,7 @@ export const TipoDocumentoForm = () => {
 
       const payloadData: DetalleParametro = {
         ...values,
+        estado: true,
       };
 
       if (isEditMode && id) {
@@ -132,10 +134,9 @@ export const TipoDocumentoForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const responseTipoDocumento = await getDetalleById(
-            "tipo-documento",
-            +id
-          );
+          const queryParams = `parametro_clase=${ParametroClase.TIPO_DOCUMENTO}&codigo=${id}`;
+
+          const responseTipoDocumento = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseTipoDocumento;
 
@@ -156,7 +157,7 @@ export const TipoDocumentoForm = () => {
         console.error("Error al obtener datos", error);
         showToast(
           "error",
-          "Error al cargar los tipos de documentos del formulario."
+          "Error al cargar los tipos de documentos del formulario.",
         );
       }
     };

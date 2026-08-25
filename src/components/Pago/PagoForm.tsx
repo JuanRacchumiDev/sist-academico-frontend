@@ -36,7 +36,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { getDetalleFiltered } from "../../services/detalleParametroService";
+import { getDetalles } from "../../services/detalleParametroService";
 import {
   getModulosPendientes,
   getModulosCancelados,
@@ -67,14 +67,16 @@ import { VALOR_MODULO } from "@/params/constants";
 const loadFormasPago = async () => {
   let formasPago: DetalleParametro[] = [];
 
-  const filters: DetalleParametroFilters = {
-    parametro_clase: ParametroClase.FORMA_PAGO,
-    en_persona: false,
-    en_empresa: false,
-    estado: true,
-  };
+  // const filters: DetalleParametroFilters = {
+  //   parametro_clase: ParametroClase.FORMA_PAGO,
+  //   en_persona: false,
+  //   en_empresa: false,
+  //   estado: true,
+  // };
 
-  const response = await getDetalleFiltered(filters);
+  const queryParams = `parametro_clase=${ParametroClase.FORMA_PAGO}&en_persona=false&en_empresa=false&estado=true`;
+
+  const response = await getDetalles(queryParams);
 
   const { result, data } = response;
 
@@ -121,7 +123,7 @@ const loadModulosPagados = async (matriculaId: number) => {
 
 interface FormularioPagoProps {
   matriculaSeleccionada: Matricula;
-  idInstitucion: number;
+  idSucursal: number;
   onCancel: () => void;
 }
 
@@ -205,7 +207,7 @@ const today = new Date();
 
 export const PagoForm: React.FC<FormularioPagoProps> = ({
   matriculaSeleccionada,
-  idInstitucion,
+  idSucursal,
   onCancel,
 }) => {
   const navigate = useNavigate();
@@ -324,8 +326,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
       const payload: Pago = {
         id_matricula: idMatricula,
-        id_institucion: idInstitucion,
-        id_formapago: +values.idFormaPago,
+        id_sucursal: idSucursal,
+        codigo_formapago: +values.idFormaPago,
         concepto: values.concepto,
         numero_modulo: values.numeroModulo,
         numero_operacion: values.numeroOperacion,
@@ -703,7 +705,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                 No se registran transacciones previas aprobadas.
               </div>
             ) : (
-              <div className="max-h-[26rem] space-y-3 overflow-y-auto pr-1">
+              <div className="max-h-104 space-y-3 overflow-y-auto pr-1">
                 {modulosPagados.map((modPagado, index) => {
                   const totalFila =
                     (Number(modPagado.cantidad_efectivo) || 0) +

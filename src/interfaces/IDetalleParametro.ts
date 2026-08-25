@@ -1,3 +1,5 @@
+import { Programa } from "./IPrograma"
+
 export interface DetalleParametro {
     codigo?: number
     nombre?: string
@@ -13,6 +15,7 @@ export interface DetalleParametro {
     visible?: boolean
     sistema?: boolean
     estado?: boolean
+    programas_por_tipo?: Programa[]
 }
 
 export interface PaginationType {

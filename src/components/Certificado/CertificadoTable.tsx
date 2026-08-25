@@ -1,5 +1,5 @@
 import { JSX, useCallback, useEffect, useState } from "react";
-import { getDetallesFiltered } from "../../../services/detalleParametroService";
+import { getCertificadosPaginate } from "../../services/certificadoService";
 import {
   Pagination,
   PaginationContent,
@@ -8,7 +8,7 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../../ui/pagination";
+} from "../ui/pagination";
 import {
   Table,
   TableBody,
@@ -16,21 +16,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "../../ui/table";
-import { TipoDocumentoRow } from "./TipoDocumentoRow";
-import { TableSpinner } from "../../../components/Common/TableSpinner";
+} from "../ui/table";
+import { CertificadoRow } from "./CertificadoRow";
+import { TableSpinner } from "../../components/Common/TableSpinner";
+import { Certificado, PaginationType } from "@/interfaces/ICertificado";
 import {
-  DetalleParametro,
-  PaginationType,
-} from "@/interfaces/IDetalleParametro";
-import {
-  DetalleParametroFilters,
-  DPFiltersData,
-} from "../../DetalleParametro/DetalleParametroFilters";
-import { ParametroClase } from "@/params/parametroClase";
+  CertificadoFilters,
+  CertificadoFiltersData,
+} from "./CertificadoFilters";
 
-export const TipoDocumentoTable = () => {
-  const [tipos, setTipos] = useState<DetalleParametro[]>([]);
+export const CertificadoTable = () => {
+  const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -44,7 +40,13 @@ export const TipoDocumentoTable = () => {
     previousPage: null,
   });
 
-  const [searchFilters, setSearchFilters] = useState<DPFiltersData>({
+  const [searchFilters, setSearchFilters] = useState<CertificadoFiltersData>({
+    id_tipocertificado: "",
+    id_institucion: "",
+    id_programa: "",
+    id_modulo: "",
+    fechaInicio: "",
+    fechaFinal: "",
     search: "",
   });
 
@@ -55,21 +57,30 @@ export const TipoDocumentoTable = () => {
   };
 
   const fetchData = useCallback(
-    async (pageToFetch: number, filtersData: DPFiltersData) => {
+    async (pageToFetch: number, filtersData: CertificadoFiltersData) => {
       setIsLoading(true);
 
       const filters = {
-        parametro_clase: ParametroClase.TIPO_DOCUMENTO,
+        id_tipocertificado: filtersData.id_tipocertificado,
+        id_institucion: filtersData.id_institucion,
+        id_programa: filtersData.id_programa,
+        id_modulo: filtersData.id_modulo,
+        fechaInicio: filtersData.fechaInicio,
+        fechaFinal: filtersData.fechaFinal,
         search: filtersData.search,
       };
 
       try {
-        const response = await getDetallesFiltered(currentPage, limit, filters);
+        const response = await getCertificadosPaginate(
+          currentPage,
+          limit,
+          filters,
+        );
 
         const { result, data, pagination: newPagination } = response;
 
         if (result && data) {
-          setTipos(data as DetalleParametro[]);
+          setCertificados(data as Certificado[]);
 
           if (newPagination) {
             setPaginationInfo({
@@ -82,10 +93,10 @@ export const TipoDocumentoTable = () => {
             setTotalPages(newPagination.totalPages || 1);
           }
         } else {
-          setTipos([]);
+          setCertificados([]);
         }
       } catch (error) {
-        console.error("Error al obtener tipos", error);
+        console.error("Error al obtener certificados", error);
       } finally {
         setIsLoading(false);
       }
@@ -97,7 +108,7 @@ export const TipoDocumentoTable = () => {
     fetchData(currentPage, searchFilters);
   }, [currentPage, searchFilters, fetchData]);
 
-  const handleSearchSubmit = (newFilters: DPFiltersData) => {
+  const handleSearchSubmit = (newFilters: CertificadoFiltersData) => {
     setSearchFilters(newFilters);
     setCurrentPage(1);
   };
@@ -148,19 +159,29 @@ export const TipoDocumentoTable = () => {
   return (
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
-        <DetalleParametroFilters
-          onSearch={handleSearchSubmit}
-        ></DetalleParametroFilters>
+        <CertificadoFilters onSearch={handleSearchSubmit}></CertificadoFilters>
 
         <div className="overflow-x-auto border-t border-slate-100">
           <Table className="w-full text-left border-collapse">
             <TableHeader>
               <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
-                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
-                  Nombre
+                <TableHead className="w-[6%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  ID
                 </TableHead>
-                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
-                  Descripción
+                <TableHead className="w-[30%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Alumno
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Tipo Certificado
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Programa
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Módulo
+                </TableHead>
+                <TableHead className="w-[12%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Fecha
                 </TableHead>
                 <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
                   Estado
@@ -173,14 +194,17 @@ export const TipoDocumentoTable = () => {
 
             <TableBody>
               {isLoading ? (
-                <TableSpinner colSpan={4} />
-              ) : tipos.length > 0 ? (
-                tipos.map((tipo) => (
-                  <TipoDocumentoRow key={tipo.codigo} tipoDocumento={tipo} />
+                <TableSpinner colSpan={8} />
+              ) : certificados.length > 0 ? (
+                certificados.map((certificado) => (
+                  <CertificadoRow
+                    key={certificado.id}
+                    certificado={certificado}
+                  />
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
                       <span className="text-xs font-medium text-slate-600">
                         No se encontraron registros
@@ -200,7 +224,9 @@ export const TipoDocumentoTable = () => {
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="text-[11px] text-slate-500 font-medium">
           Mostrando{" "}
-          <span className="text-slate-800 font-semibold">{tipos.length}</span>{" "}
+          <span className="text-slate-800 font-semibold">
+            {certificados.length}
+          </span>{" "}
           registros de este grupo
         </div>
 

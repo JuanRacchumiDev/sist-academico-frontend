@@ -1,6 +1,7 @@
 import apiClient from "./apiClient";
 import { Adjunto, AdjuntoResponse } from "../interfaces/IAdjunto"
 import { AxiosRequestConfig } from "axios";
+import { downloadFile } from "../utils/fileUtils";
 
 export const getAll = async (): Promise<AdjuntoResponse> => {
     try {
@@ -81,6 +82,29 @@ export const getById = async (id: number): Promise<AdjuntoResponse> => {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const download = async (id: number, filename: string): Promise<void> => {
+    try {
+        const urlApi = `/adjuntos/${id}/download`
+
+        const response = await apiClient.get(
+            urlApi,
+            {
+                responseType: 'blob'
+            }
+        )
+
+        const { data } = response
+
+        const setBlob = new Blob([data])
+
+        downloadFile(setBlob, filename);
+    } catch (error) {
+        console.error("Error al descargar el archivo adjunto:", error);
+        // Podrías usar showToast aquí para notificar al usuario
+        throw new Error("No se pudo descargar el archivo adjunto.");
     }
 }
 

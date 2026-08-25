@@ -6,7 +6,7 @@ import { buttonVariants } from "../ui/button";
 import { cn } from "@/lib/utils";
 
 export const PagoList = () => {
-  const newRoute = `/pago/nuevo`;
+  // const newRoute = `/pago/nuevo`;
 
   return (
     <div className="animate-in fade-in duration-200">
@@ -39,7 +39,7 @@ export const PagoList = () => {
             Panel Principal
           </Link>
 
-          <Link
+          {/* <Link
             to={newRoute}
             className={cn(
               buttonVariants({ size: "sm" }), // Tamaño ajustado a 'sm' para entorno compacto
@@ -47,7 +47,7 @@ export const PagoList = () => {
             )}
           >
             <Plus className="w-4 h-4" /> Nuevo pago
-          </Link>
+          </Link> */}
         </div>
       </div>
 
