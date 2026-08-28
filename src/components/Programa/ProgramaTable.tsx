@@ -95,8 +95,8 @@ export const ProgramaTable = () => {
 
   const [searchFilters, setSearchFilters] = useState<ProgramaFiltersData>({
     titulo: "",
-    id_segmento: "",
-    id_tipoprograma: "",
+    codigo_segmento: "",
+    codigo_tipoprograma: "",
   });
 
   useEffect(() => {
@@ -120,8 +120,8 @@ export const ProgramaTable = () => {
       setIsLoading(true);
       const filters = {
         titulo: filtersData.titulo,
-        id_segmento: filtersData.id_segmento,
-        id_tipoprograma: filtersData.id_tipoprograma,
+        codigo_segmento: filtersData.codigo_segmento,
+        codigo_tipoprograma: filtersData.codigo_tipoprograma,
       };
 
       try {

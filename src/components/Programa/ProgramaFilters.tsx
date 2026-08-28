@@ -19,8 +19,8 @@ interface ProgramaFilterProps {
 
 export interface ProgramaFiltersData {
   titulo: string;
-  id_segmento: string;
-  id_tipoprograma: string;
+  codigo_segmento: string;
+  codigo_tipoprograma: string;
 }
 
 export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
@@ -30,8 +30,8 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
 }) => {
   const [filters, setFilters] = useState({
     titulo: "",
-    id_segmento: "all",
-    id_tipoprograma: "all",
+    codigo_segmento: "all",
+    codigo_tipoprograma: "all",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -48,9 +48,12 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
     // Limpiamos los valores "all" antes de enviar al servicio
     const cleanFilters = {
       ...filters,
-      id_segmento: filters.id_segmento === "all" ? "" : filters.id_segmento,
-      id_tipoprograma:
-        filters.id_tipoprograma === "all" ? "" : filters.id_tipoprograma,
+      codigo_segmento:
+        filters.codigo_segmento === "all" ? "" : filters.codigo_segmento,
+      codigo_tipoprograma:
+        filters.codigo_tipoprograma === "all"
+          ? ""
+          : filters.codigo_tipoprograma,
     };
     onSearch(cleanFilters);
   };
@@ -58,15 +61,15 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
   const handleReset = () => {
     const resetValues = {
       titulo: "",
-      id_segmento: "all",
-      id_tipoprograma: "all",
+      codigo_segmento: "all",
+      codigo_tipoprograma: "all",
     };
     setFilters(resetValues);
 
     const cleanResetValues = {
       titulo: "",
-      id_segmento: "",
-      id_tipoprograma: "",
+      codigo_segmento: "",
+      codigo_tipoprograma: "",
     };
     onSearch(cleanResetValues);
   };
@@ -101,8 +104,10 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
             Segmento
           </label>
           <Select
-            value={filters.id_segmento}
-            onValueChange={(value) => handleSelectChange("id_segmento", value)}
+            value={filters.codigo_segmento}
+            onValueChange={(value) =>
+              handleSelectChange("codigo_segmento", value)
+            }
           >
             <SelectTrigger className="bg-white border-slate-200 w-full">
               <SelectValue placeholder="Todos" />
@@ -127,9 +132,9 @@ export const ProgramaFilters: React.FC<ProgramaFilterProps> = ({
             Tipo de Programa
           </label>
           <Select
-            value={filters.id_tipoprograma}
+            value={filters.codigo_tipoprograma}
             onValueChange={(value) =>
-              handleSelectChange("id_tipoprograma", value)
+              handleSelectChange("codigo_tipoprograma", value)
             }
           >
             <SelectTrigger className="bg-white border-slate-200 w-full">

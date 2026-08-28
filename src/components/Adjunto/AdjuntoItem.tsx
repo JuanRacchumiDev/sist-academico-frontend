@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Adjunto } from "@/interfaces/IAdjunto";
 import {
   FileText,
@@ -12,6 +12,8 @@ import {
   Edit,
   GraduationCap,
   Bookmark,
+  Loader2,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -20,16 +22,91 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
+import { downloadAdjunto, deleteAdjunto } from "../../services/adjuntoService";
+import { useToast } from "@/context/ToastContext";
+import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 
 interface AdjuntoItemProps {
   adjunto: Adjunto;
+  onDeleteSuccess?: () => void;
 }
 
-export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({ adjunto }) => {
+export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
+  adjunto,
+  onDeleteSuccess,
+}) => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleShowDetail = () => {
+    setIsDropdownOpen(false);
     navigate(`/adjunto/editar/${adjunto.id}`);
+  };
+
+  const handleDownload = async () => {
+    if (!adjunto.id) return;
+    setIsDropdownOpen(false);
+
+    try {
+      setIsDownloading(true);
+      const filename = adjunto.originalname || `adjunto_${adjunto.id}`;
+      await downloadAdjunto(adjunto.id, filename);
+      showToast("success", "Archivo descargado correctamente");
+    } catch (error) {
+      console.error(error);
+      showToast("error", "Error al intentar descargar el archivo");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
+  const handleOpenDeleteModal = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setIsDropdownOpen(false);
+    setIsConfirmOpen(true);
+  };
+
+  const handleCloseDeleteModal = () => {
+    setIsConfirmOpen(false);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!adjunto.id) return;
+
+    try {
+      setIsDeleting(true);
+      const response = await deleteAdjunto(adjunto.id);
+
+      console.log("response delete adjunto");
+
+      console.log({ response });
+
+      if (response.result) {
+        showToast(
+          "success",
+          response.message || "Adjunto eliminado correctamente",
+        );
+        if (onDeleteSuccess) {
+          onDeleteSuccess();
+        }
+      } else {
+        showToast(
+          "error",
+          response.message || "No se pudo eliminar el adjunto",
+        );
+      }
+    } catch (error) {
+      console.error("Error al eliminar el adjunto:", error);
+      showToast("error", "Ocurrió un error inesperado al eliminar el adjunto");
+    } finally {
+      setIsDeleting(false);
+      handleCloseDeleteModal();
+    }
   };
 
   const getFileConfig = (mimetype: string, originalname: string) => {
@@ -92,82 +169,130 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({ adjunto }) => {
 
   const nombrePrograma = adjunto.programa?.titulo || "Sin programa asignado";
   const tipoPrograma = adjunto.programa?.tipo_programa?.nombre || "General";
+  const nombreArchivo =
+    adjunto.titulo || adjunto.originalname || "este archivo";
 
   return (
-    <div className="group relative bg-white border border-slate-200/90 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between h-full">
-      <div>
-        {/* Cabecera: Icono de Archivo, Badge Tipo Programa y Menú */}
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2 min-w-0">
-            <div
-              className={`p-2 rounded-lg border ${fileConfig.bg} transition-transform group-hover:scale-105 shrink-0`}
-            >
-              {fileConfig.icon}
+    <>
+      <div
+        className={`group relative bg-white border border-slate-200/90 rounded-xl p-4 shadow-sm hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between h-full ${
+          isDeleting ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
+        <div>
+          {/* Cabecera: Icono de Archivo, Badge Tipo Programa y Menú */}
+          <div className="flex items-start justify-between gap-2 mb-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <div
+                className={`p-2 rounded-lg border ${fileConfig.bg} transition-transform group-hover:scale-105 shrink-0`}
+              >
+                {fileConfig.icon}
+              </div>
+
+              {/* Badge para Tipo de Programa */}
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 truncate max-w-[130px]">
+                <Bookmark className="w-2.5 h-2.5 text-slate-400 shrink-0" />
+                <span className="truncate">{tipoPrograma}</span>
+              </span>
             </div>
 
-            {/* Badge para Tipo de Programa */}
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 truncate max-w-[130px]">
-              <Bookmark className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-              <span className="truncate">{tipoPrograma}</span>
-            </span>
-          </div>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0">
-              <MoreVertical className="w-4 h-4" />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40 bg-white">
-              <DropdownMenuItem
-                onClick={handleShowDetail}
-                className="gap-2 text-slate-600 cursor-pointer"
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                disabled={isDownloading || isDeleting}
+                className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0 disabled:opacity-50"
               >
-                <Edit className="w-4 h-4" /> Editar
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 text-slate-600 cursor-pointer">
-                <Download className="w-4 h-4" /> Descargar
-              </DropdownMenuItem>
-              <DropdownMenuItem className="gap-2 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer">
-                <Trash2 className="w-4 h-4" /> Eliminar
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
+                {isDownloading || isDeleting ? (
+                  <Loader2 className="w-4 h-4 animate-spin text-blue-600" />
+                ) : (
+                  <MoreVertical className="w-4 h-4" />
+                )}
+              </DropdownMenuTrigger>
 
-        {/* Contenido Principal */}
-        <div className="space-y-2 mb-4">
-          {/* Título del Adjunto */}
-          <h3 className="font-bold text-slate-800 text-sm leading-snug break-words group-hover:text-blue-600 transition-colors">
-            {adjunto.titulo || "Sin título"}
-          </h3>
+              <DropdownMenuContent align="end" className="w-40 bg-white">
+                <DropdownMenuItem
+                  onClick={handleShowDetail}
+                  className="gap-2 text-slate-600 cursor-pointer"
+                >
+                  <Edit className="w-4 h-4" /> Editar
+                </DropdownMenuItem>
 
-          {/* Nombre del Programa con Icono */}
-          <div className="flex items-start gap-1.5 text-xs text-slate-600 font-medium">
-            <GraduationCap className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
-            <span className="line-clamp-2 leading-tight" title={nombrePrograma}>
-              {nombrePrograma}
-            </span>
+                <DropdownMenuItem
+                  onClick={handleDownload}
+                  disabled={isDownloading}
+                  className="gap-2 text-slate-600 cursor-pointer"
+                >
+                  <Download className="w-4 h-4" /> Descargar
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  onClick={handleOpenDeleteModal}
+                  disabled={isDeleting}
+                  className="gap-2 text-red-600 focus:text-red-700 focus:bg-red-50 cursor-pointer"
+                >
+                  <Trash2 className="w-4 h-4" /> Eliminar
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Nombre Original del Archivo */}
-          <p className="text-[11px] text-slate-400 font-normal break-all truncate">
-            {adjunto.originalname}
-          </p>
+          {/* Contenido Principal */}
+          <div className="space-y-2 mb-4">
+            {/* Título del Adjunto */}
+            <h3 className="font-bold text-slate-800 text-sm leading-snug wrap-break-word group-hover:text-blue-600 transition-colors">
+              {adjunto.titulo || "Sin título"}
+            </h3>
+
+            {/* Nombre del Programa con Icono */}
+            <div className="flex items-start gap-1.5 text-xs text-slate-600 font-medium">
+              <GraduationCap className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
+              <span
+                className="line-clamp-2 leading-tight"
+                title={nombrePrograma}
+              >
+                {nombrePrograma}
+              </span>
+            </div>
+
+            {/* Nombre Original del Archivo */}
+            <p className="text-[11px] text-slate-400 font-normal break-all truncate">
+              {adjunto.originalname}
+            </p>
+          </div>
+        </div>
+
+        {/* Footer de la tarjeta */}
+        <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium mt-auto">
+          <span>{formatBytes(adjunto.size || 0)}</span>
+          <span
+            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide ${
+              adjunto.estado
+                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                : "bg-rose-50 text-rose-700 border border-rose-200"
+            }`}
+          >
+            {adjunto.estado ? "Activo" : "Inactivo"}
+          </span>
         </div>
       </div>
 
-      {/* Footer de la tarjeta */}
-      <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium mt-auto">
-        <span>{formatBytes(adjunto.size || 0)}</span>
-        <span
-          className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide ${
-            adjunto.estado
-              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-              : "bg-rose-50 text-rose-700 border border-rose-200"
-          }`}
-        >
-          {adjunto.estado ? "Activo" : "Inactivo"}
-        </span>
-      </div>
-    </div>
+      {/* Diálogo de Confirmación para Eliminar */}
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        onClose={handleCloseDeleteModal}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Adjunto"
+        message={
+          <span
+            dangerouslySetInnerHTML={{
+              __html: `¿Está seguro de eliminar el archivo <strong>${nombreArchivo}</strong>? Esta acción no se puede deshacer.`,
+            }}
+          />
+        }
+        confirmText="Eliminar"
+        cancelText="Cancelar"
+        isProcessing={isDeleting}
+        icon={<AlertTriangle className="text-rose-500 w-6 h-6" />}
+      />
+    </>
   );
 };

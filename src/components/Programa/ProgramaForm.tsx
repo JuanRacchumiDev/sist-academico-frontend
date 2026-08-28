@@ -108,9 +108,10 @@ const formSchema = z
     }),
     duracion: z.string().optional().nullable(),
     horasAcademicas: z
-      .number({
-        message: "Las horas académicas son requeridas",
-      })
+      .number({ message: "Debe ser un número entero" })
+      .int("Las horas académicas deben ser un número entero")
+      .min(0, "El valor mínimo es 0")
+      .optional()
       .nullable(),
     modulos: z
       .number({ message: "Debe ser un número" })
@@ -154,14 +155,16 @@ const formSchema = z
     }
   });
 
-const defaultValues = {
+type FormValues = z.infer<typeof formSchema>;
+
+const defaultValues: FormValues = {
   codigoSegmento: "",
   codigoTipoPrograma: "",
   titulo: "",
   fechaInicio: new Date(),
   fechaFinal: new Date(),
   duracion: "",
-  horasAcademicas: 0,
+  horasAcademicas: null,
   modulos: 0,
   modalidad: "VIRTUAL",
   plan_file: null,
@@ -187,7 +190,7 @@ export const ProgramaForm = () => {
     navigate(urlBack);
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
@@ -277,7 +280,7 @@ export const ProgramaForm = () => {
               titulo: programa.titulo ?? "",
               fechaInicio: parseDate(programa.fecha_inicio),
               fechaFinal: parseDate(programa.fecha_final),
-              horasAcademicas: programa.horas_academicas ?? 0,
+              horasAcademicas: programa.horas_academicas ?? null,
               duracion: programa.duracion ?? "",
               modulos: programa.numero_modulos ?? 0,
               modalidad: programa.modalidad ?? "VIRTUAL",
@@ -341,7 +344,13 @@ export const ProgramaForm = () => {
       formData.append("fecha_inicio", fechaInicioStr);
       formData.append("fecha_final", fechaFinalStr);
       formData.append("duracion", duracion || "");
-      formData.append("horas_academicas", (horasAcademicas ?? 0).toString());
+
+      if (horasAcademicas !== null && horasAcademicas !== undefined) {
+        formData.append("horas_academicas", horasAcademicas.toString());
+      } else {
+        formData.append("horas_academicas", "");
+      }
+
       formData.append("numero_modulos", modulos.toString());
       formData.append("is_vigente", "1");
       formData.append("estado", "1");
@@ -643,6 +652,36 @@ export const ProgramaForm = () => {
                     />
                   </>
                 )}
+
+                <FormField
+                  control={form.control}
+                  name="horasAcademicas"
+                  render={({ field, fieldState }) => (
+                    <FormItem>
+                      <label className="text-sm font-medium text-slate-700">
+                        Horas académicas
+                      </label>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          placeholder="120"
+                          step={1}
+                          min={0}
+                          autoComplete="off"
+                          value={field.value ?? ""}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            field.onChange(
+                              val === "" ? null : parseInt(val, 10),
+                            );
+                          }}
+                          className={inputErrorClass(fieldState.invalid)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <FormField
                   control={form.control}

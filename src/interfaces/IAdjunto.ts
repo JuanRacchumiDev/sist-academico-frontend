@@ -6,7 +6,7 @@ export interface Adjunto {
     id?: number
     id_programa?: number
     id_modulo?: number
-    id_institucion?: number
+    id_sucursal?: number
     titulo?: string
     titulo_url?: string
     descripcion?: string
@@ -15,8 +15,8 @@ export interface Adjunto {
     filepath?: string
     mimetype?: string
     size?: number
-    es_descargable?: boolean
-    es_visible?: boolean
+    is_descargable?: boolean
+    is_visible?: boolean
     estado?: boolean
     fecha_crea?: string
     fecha_actualiza?: string

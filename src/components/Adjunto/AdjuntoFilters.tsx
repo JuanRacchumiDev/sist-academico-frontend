@@ -15,7 +15,7 @@ import { ParametroClase } from "../../params/parametroClase";
 import { useToast } from "../../context/ToastContext";
 
 export interface AdjuntoFiltersData {
-  idTipoPrograma: string;
+  codigoTipoPrograma: string;
   fechaInicio: string;
   fechaFinal: string;
   search: string;
@@ -53,7 +53,7 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({ onSearch }) => {
   const { showToast } = useToast();
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
   const [filters, setFilters] = useState<AdjuntoFiltersData>({
-    idTipoPrograma: "all",
+    codigoTipoPrograma: "all",
     fechaInicio: "",
     fechaFinal: "",
     search: "",
@@ -73,15 +73,15 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({ onSearch }) => {
     // Limpiamos los valores "all" antes de enviar al servicio
     const cleanFilters = {
       ...filters,
-      idTipoPrograma:
-        filters.idTipoPrograma === "all" ? "" : filters.idTipoPrograma,
+      codigoTipoPrograma:
+        filters.codigoTipoPrograma === "all" ? "" : filters.codigoTipoPrograma,
     };
     onSearch(cleanFilters);
   };
 
   const handleReset = () => {
     const resetValues = {
-      idTipoPrograma: "all",
+      codigoTipoPrograma: "all",
       fechaInicio: "",
       fechaFinal: "",
       search: "",
@@ -90,7 +90,7 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({ onSearch }) => {
     setFilters(resetValues);
 
     onSearch({
-      idTipoPrograma: "",
+      codigoTipoPrograma: "",
       fechaInicio: "",
       fechaFinal: "",
       search: "",
@@ -122,9 +122,9 @@ export const AdjuntoFilters: React.FC<AdjuntoFiltersProps> = ({ onSearch }) => {
             Tipo Programa
           </label>
           <Select
-            value={filters.idTipoPrograma}
+            value={filters.codigoTipoPrograma}
             onValueChange={(value) =>
-              handleSelectChange("idTipoPrograma", value)
+              handleSelectChange("codigoTipoPrograma", value)
             }
           >
             <SelectTrigger className="bg-white border-slate-200 w-full">

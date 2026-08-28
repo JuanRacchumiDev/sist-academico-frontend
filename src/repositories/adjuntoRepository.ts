@@ -160,3 +160,23 @@ export const update = async (
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
+
+export const destroy = async (id: number): Promise<AdjuntoResponse> => {
+    try {
+        const urlApi = `/adjuntos/${id}`;
+        const response = await apiClient.delete(urlApi);
+
+        const { data: { result, message, data } } = response;
+
+        return {
+            result,
+            message,
+            data,
+        };
+    } catch (error) {
+        const errorMessage =
+            error instanceof Error ? error.message : "Error desconocido al eliminar";
+        console.error("errorMessage", errorMessage);
+        return { result: false, data: [], error: errorMessage, status: 500 };
+    }
+};

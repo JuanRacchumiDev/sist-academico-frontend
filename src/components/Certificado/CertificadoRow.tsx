@@ -8,19 +8,13 @@ import {
   MoreHorizontal,
   ToggleLeft,
   ToggleRight,
-  FileDown,
-  FileBadge,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
@@ -28,9 +22,8 @@ import { Button } from "../ui/button";
 import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
-import { downloadFile } from "../../utils/fileUtils";
-import { formatDate } from "../../utils/dateUtils";
 import { padString } from "@/utils/stringUtils";
+import { formatDate } from "@/utils/dateUtils";
 
 interface Props {
   certificado: Certificado;
@@ -41,8 +34,8 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false); // ⬅️ Estado para el modal
-  const [isProcessing, setIsProcessing] = useState(false); // ⬅️ Estado para el loading
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const navigate = useNavigate();
 
@@ -51,22 +44,18 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
   const modalTitle = `${
     action.charAt(0).toUpperCase() + action.slice(1)
   } Certificado`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> el certificado: <strong>${certificado.persona.nombre_completo}</strong>?`;
-
-  console.log({ certificado });
+  const modalMessage = `¿Deseas <strong>${action}</strong> el certificado: <strong>${certificado.persona?.nombre_completo || ""}</strong>?`;
 
   const handleShowDetail = () => {
     navigate(`/certificado/editar/${certificado.id}`);
   };
 
-  // Abre el modal
   const handleOpenStatusModal = (event: React.MouseEvent) => {
     event.preventDefault();
     setIsDropdownOpen(false);
     setIsModalOpen(true);
   };
 
-  // Cierra el modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
   };
@@ -80,12 +69,11 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
       console.error("Error en la actualización de estado:", error);
       showToast("error", "Error de conexión al intentar actualizar.");
     } finally {
-      setIsProcessing(false); // Desactiva el loading
-      handleCloseModal(); // Cierra el modal
+      setIsProcessing(false);
+      handleCloseModal();
     }
   };
 
-  // Determinar texto y color de acción
   const actionText = certificado.estado ? "Desactivar" : "Activar";
   const ActionIcon = certificado.estado ? ToggleLeft : ToggleRight;
   const actionColor = certificado.estado ? "text-red-600" : "text-green-600";
@@ -99,39 +87,34 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
         key={certificado.id}
         className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+        {/* ID */}
+        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-500 whitespace-normal wrap-break-word">
           #{padString(4, certificado.id, "left")}
         </TableCell>
-        {/* Fila del alumno */}
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+
+        {/* Fila del alumno: se le aplican varias líneas en texto largo */}
+        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-700 whitespace-normal wrap-break-word leading-tight">
           {certificado.persona?.nombre_completo ||
             `${certificado.persona?.nombres ?? ""} ${certificado.persona?.apellido_paterno ?? ""}`}
         </TableCell>
 
         {/* Tipo Certificado */}
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700">
-          {certificado.tipoCertificado?.nombre ?? "--"}
+        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-700 whitespace-normal wrap-break-word">
+          {certificado.tipo_certificado?.nombre ?? "--"}
         </TableCell>
 
-        {/* Programa */}
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+        {/* Programa: también se le aplican varias líneas en texto largo */}
+        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-500 whitespace-normal wrap-break-word leading-tight">
           {certificado.programa?.titulo ?? "--"}
         </TableCell>
 
-        {/* Módulo (Manejo Seguro de nulos) */}
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
-          {certificado.modulo?.titulo ? (
-            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-normal bg-slate-100 text-slate-600">
-              {certificado.modulo.titulo}
-            </span>
-          ) : (
-            <span className="text-slate-300 italic">N/A</span>
-          )}
+        {/* Fecha */}
+        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-500 whitespace-nowrap">
+          {formatDate(certificado.fecha_crea)}
         </TableCell>
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
-          --
-        </TableCell>
-        <TableCell className="py-2 px-3 text-center">
+
+        {/* Estado */}
+        <TableCell className="py-2.5 px-3 text-center">
           <div className="flex items-center justify-center">
             {certificado.estado ? (
               <CircleCheck className="text-emerald-500 w-4 h-4 stroke-[2.5]" />
@@ -141,7 +124,8 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
           </div>
         </TableCell>
 
-        <TableCell className="py-2 px-3 text-right">
+        {/* Acciones */}
+        <TableCell className="py-2.5 px-3 text-right">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button

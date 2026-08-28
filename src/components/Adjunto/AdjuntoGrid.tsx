@@ -13,7 +13,6 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 import { Adjunto, PaginationType } from "@/interfaces/IAdjunto";
-import { Programa } from "@/interfaces/IPrograma";
 import {
   FileText,
   FileSpreadsheet,
@@ -40,7 +39,7 @@ export const AdjuntoGrid = () => {
   });
 
   const [searchFilters, setSearchFilters] = useState<AdjuntoFiltersData>({
-    idTipoPrograma: "",
+    codigoTipoPrograma: "",
     fechaInicio: "",
     fechaFinal: "",
     search: "",
@@ -61,7 +60,7 @@ export const AdjuntoGrid = () => {
       setIsLoading(true);
 
       const filters = {
-        id_tipoprograma: filtersData.idTipoPrograma,
+        codigo_tipoprograma: filtersData.codigoTipoPrograma,
         search: filtersData.search,
         fecha_inicio: filtersData.fechaInicio,
         fecha_final: filtersData.fechaFinal,

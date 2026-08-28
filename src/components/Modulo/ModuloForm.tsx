@@ -226,8 +226,8 @@ export const ModuloForm = () => {
                           valueKey="id"
                           searchKeys={[
                             "titulo",
-                            "id_segmento",
-                            "id_tipoprograma",
+                            "codigo_segmento",
+                            "codigo_tipoprograma",
                           ]}
                           isInvalid={fieldState.invalid}
                           renderOption={(programa) => (

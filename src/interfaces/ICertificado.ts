@@ -8,8 +8,8 @@ import { Programa } from "./IPrograma"
 export interface Certificado {
     id?: number
     id_persona?: number
-    id_tipocertificado?: number
-    id_institucion?: number
+    codigo_tipocertificado?: number
+    is_sucursal?: number
     id_plantilla?: number
     id_programa?: number
     id_modulo?: number
@@ -28,7 +28,7 @@ export interface Certificado {
     fecha_elimina?: string
 
     persona?: Persona
-    tipoCertificado?: DetalleParametro
+    tipo_certificado?: DetalleParametro
     institucion?: Institucion
     plantilla?: Plantilla
     programa?: Programa

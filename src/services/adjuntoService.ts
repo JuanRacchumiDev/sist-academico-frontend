@@ -6,7 +6,8 @@ import {
     getById,
     download,
     create,
-    update
+    update,
+    destroy
 } from "../repositories/adjuntoRepository"
 
 export const getAdjuntos = async () => {
@@ -84,3 +85,13 @@ export const updateAdjunto = async (
         ...response
     }
 }
+
+export const deleteAdjunto = async (id: number) => {
+    const response = await destroy(id);
+
+    console.log("---- response deleteAdjunto service ----", { response });
+
+    return {
+        ...response,
+    };
+};
