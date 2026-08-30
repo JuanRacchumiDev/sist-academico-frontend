@@ -1,3 +1,5 @@
+import { BASE_STORAGE_URL } from "../params/constants"
+
 /**
  * Rellena un cadena con un caracted específico (por defecto '0')
  * hasta alcanzar una longitud dada, por la izquierda o por la derecha
@@ -24,6 +26,20 @@ export const padString = (
         return strValue
     }
 }
+
+/**
+ * Retorna la URL completa para acceder al recurso público en Laravel Storage.
+ */
+export const getStorageUrl = (path: string | null | undefined): string => {
+    if (!path) return "";
+    // Si la ruta ya empieza con http o https, la retorna directamente
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+        return path;
+    }
+    // Limpia plecas iniciales duplicadas si las hubiera
+    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+    return `${BASE_STORAGE_URL}/${cleanPath}`;
+};
 
 const cleanText = (text: string): string => {
     return text

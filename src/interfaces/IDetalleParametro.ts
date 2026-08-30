@@ -1,4 +1,5 @@
 import { Programa } from "./IPrograma"
+import { Plantilla } from "./IPlantilla"
 
 export interface DetalleParametro {
     codigo?: number
@@ -16,6 +17,7 @@ export interface DetalleParametro {
     sistema?: boolean
     estado?: boolean
     programas_por_tipo?: Programa[]
+    plantillas?: Plantilla[]
 }
 
 export interface PaginationType {

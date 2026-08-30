@@ -4,10 +4,13 @@ import {
   AlertTriangle,
   CircleCheck,
   CircleX,
+  Download,
   Edit,
+  Loader2,
   MoreHorizontal,
   ToggleLeft,
   ToggleRight,
+  Trash2,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,54 +27,129 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 import { padString } from "@/utils/stringUtils";
 import { formatDate } from "@/utils/dateUtils";
+import {
+  downloadCertificado,
+  deleteCertificado,
+} from "@/services/certificadoService";
 
 interface Props {
   certificado: Certificado;
   onStatusChange?: (CertificadoId: number) => void;
+  onDelete?: (CertificadoGrid: number) => void;
 }
 
-export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
+export const CertificadoRow: React.FC<Props> = ({
+  certificado,
+  onStatusChange,
+  onDelete,
+}) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
+
+  // Estado para modal de estado (Activar/Desactivar)
+  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
+  const [isProcessingStatus, setIsProcessingStatus] = useState(false);
+
+  // Estado para modal de eliminación
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isProcessingDelete, setIsProcessingDelete] = useState(false);
+
+  const [isDownloading, setIsDownloading] = useState(false);
 
   const navigate = useNavigate();
 
   const nuevoEstado = !certificado.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
-  const modalTitle = `${
+  const modalStatusTitle = `${
     action.charAt(0).toUpperCase() + action.slice(1)
   } Certificado`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> el certificado: <strong>${certificado.persona?.nombre_completo || ""}</strong>?`;
+  const modalStatusMessage = `¿Deseas <strong>${action}</strong> el certificado: <strong>${certificado.persona?.nombre_completo || ""}</strong>?`;
 
   const handleShowDetail = () => {
     navigate(`/certificado/editar/${certificado.id}`);
   };
 
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDownloading(true);
+    setIsDropdownOpen(false);
+
+    try {
+      await downloadCertificado(certificado.id);
+      showToast("success", "Certificado descargado con éxito.");
+    } catch (error) {
+      console.error("Error al descargar el certificado:", error);
+      showToast("error", "No se pudo descargar el archivo del certificado.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   const handleOpenStatusModal = (event: React.MouseEvent) => {
     event.preventDefault();
     setIsDropdownOpen(false);
-    setIsModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+    setIsStatusModalOpen(true);
   };
 
   const handleConfirmStatus = async () => {
-    setIsProcessing(true);
-
+    setIsProcessingStatus(true);
     try {
-      showToast("error", "Error de conexión al intentar actualizar.");
+      if (onStatusChange) {
+        await onStatusChange(certificado.id);
+      }
+      showToast("success", "Estado del certificado actualizado.");
     } catch (error) {
       console.error("Error en la actualización de estado:", error);
       showToast("error", "Error de conexión al intentar actualizar.");
     } finally {
-      setIsProcessing(false);
-      handleCloseModal();
+      setIsProcessingStatus(false);
+      setIsStatusModalOpen(false);
     }
+  };
+
+  // Manejadores para Eliminar
+  const handleOpenDeleteModal = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setIsDropdownOpen(false);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    setIsProcessingDelete(true);
+    try {
+      const response = await deleteCertificado(certificado.id);
+
+      if (response.result) {
+        showToast(
+          "success",
+          response.message || "Certificado eliminado correctamente.",
+        );
+        if (onDelete) {
+          onDelete(certificado.id);
+        }
+      } else {
+        showToast(
+          "error",
+          response.error ||
+            response.message ||
+            "No se pudo eliminar el certificado.",
+        );
+      }
+    } catch (error) {
+      console.error("Error al eliminar certificado:", error);
+      showToast(
+        "error",
+        "Error de conexión al intentar eliminar el certificado.",
+      );
+    } finally {
+      setIsProcessingDelete(false);
+      setIsDeleteModalOpen(false);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setIsStatusModalOpen(false);
   };
 
   const actionText = certificado.estado ? "Desactivar" : "Activar";
@@ -95,7 +173,9 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
         {/* Fila del alumno: se le aplican varias líneas en texto largo */}
         <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-700 whitespace-normal wrap-break-word leading-tight">
           {certificado.persona?.nombre_completo ||
-            `${certificado.persona?.nombres ?? ""} ${certificado.persona?.apellido_paterno ?? ""}`}
+            `${certificado.persona?.nombres ?? ""} ${
+              certificado.persona?.apellido_paterno ?? ""
+            }`}
         </TableCell>
 
         {/* Tipo Certificado */}
@@ -130,10 +210,15 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
+                disabled={isDownloading}
                 className="h-7 w-7 p-0 focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:ring-offset-0"
               >
                 <span className="sr-only">Abrir menú de acciones</span>
-                <MoreHorizontal className="h-3.5 w-3.5 text-slate-400" />
+                {isDownloading ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-600" />
+                ) : (
+                  <MoreHorizontal className="h-3.5 w-3.5 text-slate-400" />
+                )}
               </Button>
             </DropdownMenuTrigger>
 
@@ -147,12 +232,21 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
               <DropdownMenuSeparator className="bg-slate-100" />
 
               <DropdownMenuItem
+                onClick={handleDownload}
+                className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700 hover:text-blue-600"
+              >
+                <Download className="h-3.5 w-3.5 text-slate-400 group-hover:text-blue-600" />
+                <span>Descargar PDF</span>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
                 onClick={handleShowDetail}
                 className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
               >
                 <Edit className="h-3.5 w-3.5 text-slate-400" />
                 <span>Ver/Editar detalle</span>
               </DropdownMenuItem>
+
               <DropdownMenuSeparator className="bg-slate-100" />
 
               <DropdownMenuItem
@@ -160,7 +254,16 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
                 className={`cursor-pointer rounded-sm py-1 px-2 flex items-center gap-2 font-medium ${actionColor} ${hoverBgColor}`}
               >
                 <ActionIcon className="h-3.5 w-3.5" />
-                <span>{actionText} Matrícula</span>
+                <span>{actionText} Certificado</span>
+              </DropdownMenuItem>
+
+              {/* OPCIÓN DE ELIMINAR */}
+              <DropdownMenuItem
+                onClick={handleOpenDeleteModal}
+                className="cursor-pointer rounded-sm py-1 px-2 flex items-center gap-2 font-medium text-red-600 hover:bg-red-100"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                <span>Eliminar</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -168,18 +271,39 @@ export const CertificadoRow: React.FC<Props> = ({ certificado }) => {
       </TableRow>
 
       <ConfirmDialog
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
+        isOpen={isStatusModalOpen}
+        onClose={() => setIsStatusModalOpen(false)}
         onConfirm={handleConfirmStatus}
-        title={modalTitle}
-        message={<span dangerouslySetInnerHTML={{ __html: modalMessage }} />}
+        title={modalStatusTitle}
+        message={
+          <span dangerouslySetInnerHTML={{ __html: modalStatusMessage }} />
+        }
         confirmText={actionText}
-        isProcessing={isProcessing}
+        isProcessing={isProcessingStatus}
         icon={
           <AlertTriangle
             className={certificado.estado ? "text-red-500" : "text-green-500"}
           />
         }
+      />
+
+      {/* MODAL ELIMINAR */}
+      <ConfirmDialog
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Certificado"
+        message={
+          <span>
+            ¿Estás seguro de que deseas eliminar permanentemente el certificado{" "}
+            <strong>#{padString(4, certificado.id, "left")}</strong>? Esta
+            acción eliminará el registro y los archivos asociados en el
+            servidor.
+          </span>
+        }
+        confirmText="Eliminar"
+        isProcessing={isProcessingDelete}
+        icon={<AlertTriangle className="text-red-600" />}
       />
     </>
   );

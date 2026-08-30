@@ -9,7 +9,7 @@ export interface Certificado {
     id?: number
     id_persona?: number
     codigo_tipocertificado?: number
-    is_sucursal?: number
+    id_sucursal?: number
     id_plantilla?: number
     id_programa?: number
     id_modulo?: number

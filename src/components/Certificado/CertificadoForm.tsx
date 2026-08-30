@@ -31,6 +31,9 @@ import {
   Save,
   Loader2,
   RotateCcw,
+  ImageIcon,
+  FileSpreadsheet,
+  Eye,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
@@ -66,6 +69,7 @@ import { getInstituciones } from "../../services/institucionService";
 import { getPersonas } from "../../services/personaService";
 import { getProgramas } from "../../services/programaService";
 import { getModulosByPrograma } from "../../services/moduloService";
+import { getPlantillas } from "../../services/plantillaService";
 import { ParametroClase } from "../../params/parametroClase";
 import z from "zod";
 import {
@@ -76,6 +80,14 @@ import {
   CardTitle,
 } from "../ui/card";
 import { Spinner } from "../Common/Spinner";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "../ui/dialog";
+import { getStorageUrl } from "@/utils/stringUtils";
 
 const loadGrupoPersonas = async (): Promise<DetalleParametro[]> => {
   let grupos: DetalleParametro[] = [];
@@ -187,7 +199,7 @@ const formSchema = z.object({
       message: "El grupo es requerido",
     })
     .min(1, "El grupo es requerido"),
-  idTipoCertificado: z
+  codigoTipoCertificado: z
     .string({
       message: "El tipo de certificado es requerido",
     })
@@ -199,19 +211,18 @@ const formSchema = z.object({
     .min(1, "La persona es requerida"),
   idInstitucion: z
     .string({
-      message: "La persona es requerida",
+      message: "La institución es requerida",
     })
-    .min(1, "La persona es requerida"),
-  idTipoPrograma: z
+    .min(1, "La institución es requerida"),
+  codigoTipoPrograma: z
     .string({
       message: "El tpo de programa es requerido",
     })
     .min(1, "El tipo de programa es requerido"),
   idPrograma: z
     .string({
-      message: "La persona es requerida",
+      message: "El programa es requerido",
     })
-    .min(1, "La persona es requerida")
     .optional(),
   idModulo: z
     .string({
@@ -231,12 +242,12 @@ const formSchema = z.object({
 
 type TFormValues = z.infer<typeof formSchema>;
 
-const defaultValues = {
+const defaultValues: TFormValues = {
   idGrupoPersona: "",
-  idTipoCertificado: "",
+  codigoTipoCertificado: "",
   idPersona: "",
   idInstitucion: "",
-  idTipoPrograma: "",
+  codigoTipoPrograma: "",
   idPrograma: "",
   idModulo: "",
   idPlantilla: "",
@@ -257,9 +268,20 @@ export const CertificadoForm = () => {
   const [tipoCertificados, setTipoCertificados] = useState<DetalleParametro[]>(
     [],
   );
+  const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
+
+  // Estados de carga
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [isLoadingPersonas, setIsLoadingPersonas] = useState(false);
   const [isLoadingProgramas, setIsLoadingProgramas] = useState(false);
+  const [isLoadingPlantillas, setIsLoadingPlantillas] = useState(false);
+
+  // Modales y vistas previas
+  const [previewPlantilla, setPreviewPlantilla] = useState<Plantilla | null>(
+    null,
+  );
+
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const isEditMode = !!id;
 
@@ -267,11 +289,11 @@ export const CertificadoForm = () => {
     invalid ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500";
 
   const handleGoBack = () => {
-    const urlBack = `/programa-academico/`;
+    const urlBack = `/certificado/`;
     navigate(urlBack);
   };
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<TFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues,
   });
@@ -283,9 +305,24 @@ export const CertificadoForm = () => {
   });
 
   // Suscripción a cambios del tipo de programas
-  const selectedTipoProgramaId = useWatch({
+  const selectedTipoProgramaCodigo = useWatch({
     control: form.control,
-    name: "idTipoPrograma",
+    name: "codigoTipoPrograma",
+  });
+
+  const selectedPersonaId = useWatch({
+    control: form.control,
+    name: "idPersona",
+  });
+
+  const selectedInstitucionId = useWatch({
+    control: form.control,
+    name: "idInstitucion",
+  });
+
+  const selectedPlantillaId = useWatch({
+    control: form.control,
+    name: "idPlantilla",
   });
 
   useEffect(() => {
@@ -307,7 +344,10 @@ export const CertificadoForm = () => {
 
         setGrupoPersonas(listGrupoPersonas);
         setTipoProgramas(listTipoProgramas);
-        setInstituciones(listInstituciones);
+        setInstituciones([
+          { id: "none" as any, nombre: "Ninguno" },
+          ...listInstituciones,
+        ]);
         setTipoCertificados(listTipoCertificados);
       } catch (error) {
         console.error("Error al obtener datos", error);
@@ -320,21 +360,92 @@ export const CertificadoForm = () => {
     fetchData();
   }, [id]);
 
+  // Cargar plantillas desde el endpoint
+  useEffect(() => {
+    const fetchPlantillas = async () => {
+      // Si no hay un tipo de programa seleccionado, limpiamos la lista
+      if (!selectedTipoProgramaCodigo) {
+        setPlantillas([]);
+        form.setValue("idPlantilla", "");
+        return;
+      }
+
+      setIsLoadingPlantillas(true);
+
+      try {
+        // Construimos el objeto de filtros
+        const filters: Record<string, any> = {
+          codigo_tipoprograma: selectedTipoProgramaCodigo,
+        };
+
+        // Si se seleccionó una institución (y no es la opción nula "none")
+        if (selectedInstitucionId && selectedInstitucionId !== "none") {
+          filters.id_institucion = selectedInstitucionId;
+        }
+
+        const response = await getPlantillas(filters);
+
+        const { result, data } = response;
+
+        if (result && data) {
+          setPlantillas(data as Plantilla[]);
+        } else {
+          setPlantillas([]);
+        }
+      } catch (error) {
+        console.error("Error cargando plantillas:", error);
+        showToast("error", "Ocurrió un error al obtener las plantillas.");
+        setPlantillas([]);
+      } finally {
+        setIsLoadingPlantillas(false);
+        form.setValue("idPlantilla", "");
+      }
+    };
+
+    fetchPlantillas();
+  }, [selectedTipoProgramaCodigo, selectedInstitucionId, form]);
+
+  // Visualizador modal de plantilla
+  const handleOpenPreview = () => {
+    const selectPlantilla = plantillas.find(
+      (p) => p.id?.toString() === selectedPlantillaId?.toString(),
+    );
+
+    if (selectPlantilla) {
+      setPreviewPlantilla(selectPlantilla);
+      setIsPreviewOpen(true);
+    }
+  };
+
+  // Actualizar automáticamente el nombre de impresión al seleccionar persona
+  useEffect(() => {
+    if (selectedPersonaId) {
+      const personaSeleccionada = personas.find(
+        (p) => p.id?.toString() === selectedPersonaId.toString(),
+      );
+      if (personaSeleccionada?.nombre_completo) {
+        form.setValue("nombreImpresion", personaSeleccionada.nombre_completo, {
+          shouldValidate: true,
+        });
+      }
+    }
+  }, [selectedPersonaId, personas, form]);
+
   // Efecto reactivo: Carga programas según el tipo de programa
   useEffect(() => {
     const fetchProgramasByTipo = async () => {
-      if (!selectedTipoProgramaId) {
+      if (!selectedTipoProgramaCodigo) {
         setProgramas([]);
         return;
       }
 
-      console.log({ selectedTipoProgramaId });
+      console.log({ selectedTipoProgramaCodigo });
 
-      setIsLoadingPersonas(true);
+      setIsLoadingProgramas(true);
 
       // Buscar el objeto del tipo de programa
       const selectTipoPrograma = tipoProgramas.find(
-        (tipo) => tipo.codigo.toString() === selectedTipoProgramaId,
+        (tipo) => tipo.codigo.toString() === selectedTipoProgramaCodigo,
       );
 
       console.log({ selectTipoPrograma });
@@ -347,11 +458,11 @@ export const CertificadoForm = () => {
         setProgramas([]);
       }
 
-      setIsLoadingPersonas(false);
+      setIsLoadingProgramas(false);
     };
 
     fetchProgramasByTipo();
-  }, [selectedTipoProgramaId, tipoProgramas]);
+  }, [selectedTipoProgramaCodigo, tipoProgramas]);
 
   // Efecto reactivo: Carga personas dinámicamente según el grupo seleccionado
   useEffect(() => {
@@ -388,15 +499,38 @@ export const CertificadoForm = () => {
   const resetForm = () => {
     form.reset(defaultValues);
     setPersonas([]);
+    setProgramas([]);
+    setPlantillas([]);
   };
 
   const { isSubmitting } = form.formState;
 
   const onSubmit = async (values: TFormValues) => {
-    const payload: Certificado = {};
+    const {
+      idGrupoPersona,
+      codigoTipoCertificado,
+      idPersona,
+      idInstitucion,
+      codigoTipoPrograma,
+      idPrograma,
+      idModulo,
+      idPlantilla,
+      nombreImpresion,
+    } = values;
+
+    let payload: Certificado = {
+      id_persona: +idPersona,
+      codigo_tipocertificado: +codigoTipoCertificado,
+      id_sucursal: 1,
+      id_plantilla: +idPlantilla,
+      id_programa: +idPrograma,
+      nombre_impresion: nombreImpresion,
+      estado: true,
+    };
+
+    console.log({ payload });
 
     try {
-      // Llamada al servicio de backend
       const response = await createCertificado(payload);
 
       const { result, message } = response;
@@ -418,259 +552,418 @@ export const CertificadoForm = () => {
 
   return (
     <>
-      <Card className="shadow-xl border-none bg-white">
-        <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
+      <Card className="shadow-lg border border-slate-200 bg-white rounded-xl">
+        <CardHeader className="border-b border-slate-100 p-6 flex flex-row items-center justify-between bg-slate-50/50 rounded-t-xl">
           <div className="space-y-1">
-            <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
+            <CardTitle className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+              <Award className="h-5 w-5 text-blue-600" />
               {isEditMode
-                ? `Editar certificado`
-                : `Nuevo Registro de certificado`}
+                ? `Editar Certificado`
+                : `Nuevo Registro de Certificado`}
             </CardTitle>
-            <CardDescription className="text-slate-500 font-medium">
+            <CardDescription className="text-slate-500 text-xs font-medium">
               {isEditMode
-                ? `Actualización de información de certificado`
-                : `Complete la información para registrar un certificado`}
+                ? `Actualización de información del certificado`
+                : `Complete los campos necesarios para emitir un certificado`}
             </CardDescription>
           </div>
           <Button
             variant="ghost"
             onClick={handleGoBack}
-            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs"
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4 mr-1.5" />
             Volver
           </Button>
         </CardHeader>
-        <CardContent className="px-6 sm:px-8 relative">
+
+        <CardContent className="p-6 sm:p-8 relative">
           {isLoadingData && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10 rounded-b-xl">
               <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
             </div>
           )}
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 w-full">
-                <FormField
-                  control={form.control}
-                  name="idGrupoPersona"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col w-full">
-                      <RequiredLabel>Grupo Persona</RequiredLabel>
-                      <Select
-                        onValueChange={(val) => {
-                          field.onChange(val);
-                          // Limpiar el idPersona si cambia el grupo
-                          form.setValue("idPersona", "");
-                        }}
-                        value={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`w-full ${inputErrorClass(fieldState.invalid)}`}
-                          >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="w-full">
-                          {grupoPersonas.map((grupo) => (
-                            <SelectItem
-                              value={grupo.codigo!.toString()}
-                              key={grupo.codigo}
-                            >
-                              {grupo.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <form
+              onSubmit={form.handleSubmit(onSubmit, (errors) => {
+                console.log(
+                  "Errores de validación que impiden enviar el formulario:",
+                  errors,
+                );
+              })}
+              className="space-y-6"
+            >
+              {/* Sección 1: Información del Destinatario e Institución */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-1">
+                  Información del Destinatario y Tipo
+                </h3>
 
-                <FormField
-                  control={form.control}
-                  name="idPersona"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="w-full">
-                      <RequiredLabel>Alumno</RequiredLabel>
-                      <SearchableCombobox<Persona>
-                        placeholder={
-                          !selectedGrupoId
-                            ? "Primero seleccione un grupo"
-                            : isLoadingPersonas
-                              ? "Cargando personas..."
-                              : "Buscar persona..."
-                        }
-                        options={personas}
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        displayKey="nombre_completo"
-                        valueKey="id"
-                        searchKeys={["nombre_completo"]}
-                        isInvalid={fieldState.invalid}
-                        disabled={!selectedGrupoId || isLoadingPersonas}
-                        renderOption={(persona) => (
-                          <div className="flex flex-col">
-                            <span className="font-medium">
-                              {persona.nombres} {persona.apellido_paterno}{" "}
-                              {persona.apellido_materno}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Grupo Persona */}
+                  <FormField
+                    control={form.control}
+                    name="idGrupoPersona"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col w-full min-w-0">
+                        <RequiredLabel>Grupo Persona</RequiredLabel>
+                        <Select
+                          onValueChange={(val) => {
+                            field.onChange(val);
+                            form.setValue("idPersona", "");
+                            form.setValue("nombreImpresion", "");
+                          }}
+                          value={field.value || ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`w-full ${inputErrorClass(fieldState.invalid)}`}
+                            >
+                              <SelectValue placeholder="Seleccionar grupo..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="w-full">
+                            {grupoPersonas.map((grupo) => (
+                              <SelectItem
+                                value={grupo.codigo!.toString()}
+                                key={grupo.codigo}
+                              >
+                                {grupo.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="idPersona"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="w-full">
+                        <RequiredLabel>Alumno</RequiredLabel>
+                        <SearchableCombobox<Persona>
+                          placeholder="Buscar un alumno"
+                          options={personas}
+                          value={field.value}
+                          onChange={field.onChange}
+                          displayKey="nombre_completo"
+                          valueKey="id"
+                          searchKeys={["nombre_completo"]}
+                          isInvalid={fieldState.invalid}
+                          renderOption={(alumno) => (
+                            <span className="font-semibold text-gray-900">
+                              {alumno.nombre_completo}
                             </span>
-                            {persona.numero_documento && (
-                              <span className="text-xs text-gray-500">
-                                Doc: {persona.numero_documento}
-                              </span>
-                            )}
+                          )}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Nombre de Impresión */}
+                  <FormField
+                    control={form.control}
+                    name="nombreImpresion"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col w-full min-w-0">
+                        <RequiredLabel>Nombre de Impresión</RequiredLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Type className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                            <Input
+                              {...field}
+                              placeholder="Nombre para el certificado"
+                              className={`pl-9 w-full ${inputErrorClass(fieldState.invalid)}`}
+                            />
                           </div>
-                        )}
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="idInstitucion"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col w-full">
-                      <RequiredLabel>Institución</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`w-full ${inputErrorClass(fieldState.invalid)}`}
-                          >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="w-full">
-                          {instituciones.map((inst) => (
-                            <SelectItem
-                              value={inst.id!.toString()}
-                              key={inst.id}
-                            >
-                              {inst.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="idTipoCertificado"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col w-full">
-                      <RequiredLabel>Tipo Certificado</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`w-full ${inputErrorClass(fieldState.invalid)}`}
-                          >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="w-full">
-                          {tipoCertificados.map((tipo) => (
-                            <SelectItem
-                              value={tipo.codigo!.toString()}
-                              key={tipo.codigo}
+                  <FormField
+                    control={form.control}
+                    name="codigoTipoCertificado"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col w-full min-w-0">
+                        <RequiredLabel>Tipo Certificado</RequiredLabel>
+                        <Select
+                          onValueChange={(val) => {
+                            field.onChange(val);
+                            form.setValue("idPrograma", "");
+                            form.setValue("idModulo", "");
+                          }}
+                          value={field.value || ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`w-full ${inputErrorClass(
+                                fieldState.invalid,
+                              )}`}
                             >
-                              {tipo.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                              <SelectValue placeholder="Seleccionar tipo certificado..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="w-full">
+                            {tipoCertificados.map((tipo) => (
+                              <SelectItem
+                                value={tipo.codigo!.toString()}
+                                key={tipo.codigo}
+                              >
+                                {tipo.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
 
-                <FormField
-                  control={form.control}
-                  name="idTipoPrograma"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col w-full">
-                      <RequiredLabel>Tipo Programa</RequiredLabel>
-                      <Select
-                        onValueChange={(val) => {
-                          field.onChange(val);
-                          // Limpiar el idPersona si cambia el grupo
-                          form.setValue("idPrograma", "");
-                        }}
-                        value={field.value || ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`w-full ${inputErrorClass(fieldState.invalid)}`}
-                          >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent className="w-full">
-                          {tipoProgramas.map((tipo) => (
-                            <SelectItem
-                              value={tipo.codigo!.toString()}
-                              key={tipo.codigo}
+              {/* Sección 2: Información Académica y Plantilla */}
+              <div className="space-y-4 pt-2">
+                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-1">
+                  Contexto Académico y Diseño
+                </h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Institución */}
+                  <FormField
+                    control={form.control}
+                    name="idInstitucion"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="w-full min-w-0">
+                        <RequiredLabel>Institución</RequiredLabel>
+                        <SearchableCombobox<Institucion>
+                          placeholder="Buscar o seleccionar institución..."
+                          options={instituciones}
+                          value={field.value || ""}
+                          onChange={field.onChange}
+                          displayKey="nombre"
+                          valueKey="id"
+                          searchKeys={["nombre"]}
+                          isInvalid={fieldState.invalid}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Tipo Programa */}
+                  <FormField
+                    control={form.control}
+                    name="codigoTipoPrograma"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col w-full min-w-0">
+                        <RequiredLabel>Tipo Programa</RequiredLabel>
+                        <Select
+                          onValueChange={(val) => {
+                            field.onChange(val);
+                            form.setValue("idPrograma", "");
+                            form.setValue("idModulo", "");
+                          }}
+                          value={field.value || ""}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`w-full ${inputErrorClass(
+                                fieldState.invalid,
+                              )}`}
                             >
-                              {tipo.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                              <SelectValue placeholder="Seleccionar tipo programa..." />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="w-full">
+                            {tipoProgramas.map((tipo) => (
+                              <SelectItem
+                                value={tipo.codigo!.toString()}
+                                key={tipo.codigo}
+                              >
+                                {tipo.nombre}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="idPrograma"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="w-full">
-                      <RequiredLabel>Programa</RequiredLabel>
-                      <SearchableCombobox<Programa>
-                        placeholder={
-                          !selectedGrupoId
-                            ? "Primero seleccione un tipo de programa"
-                            : isLoadingPersonas
-                              ? "Cargando programas..."
-                              : "Buscar programa..."
-                        }
-                        options={programas}
-                        value={field.value || ""}
-                        onChange={field.onChange}
-                        displayKey="titulo"
-                        valueKey="id"
-                        searchKeys={["titulo"]}
-                        isInvalid={fieldState.invalid}
-                        disabled={!selectedTipoProgramaId || isLoadingProgramas}
-                        renderOption={(programa) => (
-                          <div className="flex flex-col">
-                            <span className="font-medium">
+                  <FormField
+                    control={form.control}
+                    name="idPrograma"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="w-full">
+                        <RequiredLabel>Programa</RequiredLabel>
+                        <SearchableCombobox<Programa>
+                          placeholder="Buscar un programa"
+                          options={programas}
+                          value={field.value}
+                          onChange={field.onChange}
+                          displayKey="titulo"
+                          valueKey="id"
+                          searchKeys={["titulo"]}
+                          isInvalid={fieldState.invalid}
+                          renderOption={(programa) => (
+                            <span className="font-semibold text-gray-900">
                               {programa.titulo}
                             </span>
+                          )}
+                        />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Campo Plantilla con desplegable dinámico y Botón de Previsualización */}
+                  <FormField
+                    control={form.control}
+                    name="idPlantilla"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col w-full min-w-0">
+                        <RequiredLabel>Plantilla de Diseño</RequiredLabel>
+                        <div className="flex items-center gap-2">
+                          <div className="flex-1 min-w-0">
+                            <Select
+                              onValueChange={field.onChange}
+                              value={field.value || ""}
+                              disabled={
+                                !selectedTipoProgramaCodigo ||
+                                isLoadingPlantillas
+                              }
+                            >
+                              <FormControl>
+                                <SelectTrigger
+                                  className={`w-full ${inputErrorClass(
+                                    fieldState.invalid,
+                                  )}`}
+                                >
+                                  <SelectValue
+                                    placeholder={
+                                      isLoadingPlantillas
+                                        ? "Cargando plantillas..."
+                                        : !selectedTipoProgramaCodigo
+                                          ? "Seleccione Tipo Programa"
+                                          : plantillas.length === 0
+                                            ? "No hay plantillas disponibles"
+                                            : "Seleccionar plantilla..."
+                                    }
+                                  />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="w-full">
+                                {plantillas.map((plantilla) => (
+                                  <SelectItem
+                                    value={plantilla.id!.toString()}
+                                    key={plantilla.id}
+                                  >
+                                    {plantilla.nombre}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
-                        )}
-                      />
-                      <FormMessage />
-                    </FormItem>
+
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            disabled={!selectedPlantillaId}
+                            onClick={handleOpenPreview}
+                            title="Ver vista previa de la plantilla"
+                            className="h-9 w-9 border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 shrink-0"
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              {/* Botones de Acción */}
+              <div className="flex justify-end pt-4 border-t">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={resetForm}
+                  disabled={isSubmitting}
+                  className="text-xs font-medium border-slate-200 text-slate-600 hover:bg-slate-50"
+                >
+                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                  Limpiar
+                </Button>
+
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-5"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Spinner className="h-3.5 w-3.5 mr-2 animate-spin" />
+                      Guardando...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="h-3.5 w-3.5 mr-1.5" />
+                      {isEditMode
+                        ? "Actualizar Certificado"
+                        : "Emitir Certificado"}
+                    </>
                   )}
-                />
+                </Button>
               </div>
             </form>
           </Form>
         </CardContent>
       </Card>
+
+      {/* Modal de Vista Previa */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-3xl bg-white p-6 rounded-xl">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold text-slate-800 flex items-center gap-2">
+              <ImageIcon className="h-5 w-5 text-blue-600" />
+              Vista Previa de Plantilla
+            </DialogTitle>
+            <DialogDescription className="text-xs text-slate-500">
+              Diseño final estimado con el cual se emitirá el documento.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="border border-slate-200 rounded-lg overflow-hidden bg-slate-100 flex items-center justify-center p-4 min-h-[300px]">
+            {previewPlantilla?.path_imagen_publica ? (
+              <img
+                src={getStorageUrl(previewPlantilla.path_imagen_publica)}
+                alt={`Vista previa - ${previewPlantilla.nombre}`}
+                className="max-h-[450px] w-auto object-contain rounded shadow-sm"
+                onError={(e) => {
+                  // Manejo por si la imagen falla al cargar o no existe en el storage
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <div className="flex flex-col items-center justify-center text-slate-400 space-y-2 py-12">
+                <FileSpreadsheet className="h-12 w-12 stroke-[1.5]" />
+                <span className="text-xs font-medium">
+                  Vista previa no disponible para esta plantilla
+                </span>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

@@ -103,29 +103,6 @@ export const downloadPlan = async (id: number, filename: string): Promise<void> 
         const setBlob = new Blob([data])
 
         downloadFile(setBlob, filename);
-
-        // // Crear un objeto a partir del blob
-        // const url = window.URL.createObjectURL(new Blob([response.data]));
-
-        // // Crear un enlace temporal para iniciar la descarga
-        // const link = document.createElement("a")
-        // link.href = url
-
-        // const contentDisposition = response.headers['content-disposition'];
-        // // let filename = `plan_programa_${id}.pdf`
-
-        // if (contentDisposition) {
-        //     const matches = /filename="?(.+)"?/.exec(contentDisposition)
-        //     if (matches && matches[1]) {
-        //         filename = matches[1]
-        //     }
-        // }
-
-        // link.setAttribute('download', filename)
-        // document.body.appendChild(link)
-        // link.click()
-        // link.remove()
-        // window.URL.revokeObjectURL(url)
     } catch (error) {
         console.error("Error al descargar el plan:", error);
         // Podrías usar showToast aquí para notificar al usuario

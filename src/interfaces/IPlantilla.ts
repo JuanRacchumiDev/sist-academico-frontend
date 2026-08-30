@@ -1,9 +1,20 @@
+import { Institucion } from "./IInstitucion"
+import { DetalleParametro } from "./IDetalleParametro"
+
 export interface Plantilla {
     id?: number
+    id_institucion?: number
+    codigo_tipoprograma?: number
     nombre?: string
     descripcion?: string
-    path?: string
+    path_imagen_fondo?: string
+    path_imagen_publica?: string
+    path_pdf_fondo?: string
+    tipo_disenio?: string
+    disenio_default?: string
     estado?: boolean
+    institucion?: Institucion
+    tipoPrograma?: DetalleParametro
 }
 
 export interface PlantillaResponse {
@@ -12,9 +23,11 @@ export interface PlantillaResponse {
     data?: Plantilla | Plantilla[]
     error?: string
     status?: number
+    pagination?: PaginationType
+    code?: string
 }
 
-export interface Pagination {
+export interface PaginationType {
     currentPage: number
     limit: number
     totalPages: number
@@ -25,8 +38,9 @@ export interface Pagination {
 
 export interface PlantillaPaginateResponse {
     result: boolean
+    message?: string
     data?: Plantilla[]
-    pagination?: Pagination
     errors?: string
     status?: number
+    pagination?: PaginationType
 }
