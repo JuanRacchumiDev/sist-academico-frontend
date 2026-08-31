@@ -19,11 +19,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false
+  },
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src")
+    }
   }
   // base: '/sistema-academico-front/',
-  // resolve: {
-  //   alias: {
-  //     "@": path.resolve(__dirname, "./src")
-  //   }
-  // }
 })
