@@ -52,7 +52,7 @@ export const CertificadoCard: React.FC<CertificadoCardProps> = ({
             <div className="min-w-0">
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">
                 <FileCheck className="w-3 h-3" />
-                {certificado.tipoCertificado?.nombre || "Certificado"}
+                {certificado.tipo_certificado?.nombre || "Certificado"}
               </span>
               <p className="text-[11px] font-mono text-slate-400 mt-0.5 truncate">
                 {certificado.codigo_verificacion || "S/N"}

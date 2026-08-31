@@ -64,8 +64,10 @@ const loadTipoCertificados = async (): Promise<DetalleParametro[]> => {
 const loadInstituciones = async (): Promise<Institucion[]> => {
   let instituciones: Institucion[] = [];
 
+  const queryParams = `is_cliente=true`;
+
   try {
-    const response = await getInstituciones();
+    const response = await getInstituciones(queryParams);
     const { result, data } = response;
 
     if (result && data) {

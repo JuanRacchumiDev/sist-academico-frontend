@@ -5,8 +5,8 @@ export interface DetalleMatricula {
     id?: number
     id_matricula?: number
     id_programa?: number
-    valor_matricula: number;
-    valor_modulo: number;
+    valor_matricula?: number;
+    valor_modulo?: number;
     user_crea?: string
     user_actualiza?: string
     user_elimina?: string

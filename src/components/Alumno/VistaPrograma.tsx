@@ -1,18 +1,10 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Laptop, MapPin } from "lucide-react";
-// Importamos el tipo correcto para eliminar el error de TypeScript
-import { Matricula } from "@/interfaces/IMatricula";
 import { DetalleMatricula } from "@/interfaces/IDetalleMatricula";
 
 interface DetalleMatriculaProps {
-  // Usamos el tipo global o extendemos el tuyo asegurando compatibilidad
-  detalle: DetalleMatricula & {
-    id: number;
-    valor_matricula?: string;
-    valor_modulo?: string;
-    programa?: any;
-  };
+  detalle: DetalleMatricula;
 }
 
 export const VistaPrograma: React.FC<DetalleMatriculaProps> = ({ detalle }) => {
@@ -42,7 +34,6 @@ export const VistaPrograma: React.FC<DetalleMatriculaProps> = ({ detalle }) => {
   };
 
   return (
-    // Reducido de p-5 a py-3 px-4 y gap-4 a gap-2 para compactarlo
     <div className="py-3 px-4 rounded-xl border border-slate-200 bg-white shadow-sm flex flex-col justify-between gap-2 transition-all hover:shadow-md">
       <div className="space-y-1">
         <div className="flex items-center justify-between gap-2">
@@ -68,7 +59,6 @@ export const VistaPrograma: React.FC<DetalleMatriculaProps> = ({ detalle }) => {
         </h4>
       </div>
 
-      {/* Reducido pt-2 a pt-1.5 */}
       <div className="pt-1.5 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-medium">
         <div className="flex items-center gap-1">
           <Clock className="h-3.5 w-3.5 text-slate-400" />
@@ -77,7 +67,7 @@ export const VistaPrograma: React.FC<DetalleMatriculaProps> = ({ detalle }) => {
         <div className="text-right text-slate-400 text-[11px]">
           Mod:{" "}
           <span className="text-slate-600 font-semibold">
-            S/.{detalle.valor_modulo}
+            S/.{detalle.valor_modulo ?? 0}
           </span>
         </div>
       </div>

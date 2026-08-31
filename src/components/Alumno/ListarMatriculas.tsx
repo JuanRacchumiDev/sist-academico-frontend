@@ -70,8 +70,8 @@ export const ListarMatriculas: React.FC<ListarMatriculasProps> = ({
               Programas de Estudio Inscritos
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mat.detalles?.map((detalle) => (
-                <VistaPrograma key={detalle.id} detalle={detalle} />
+              {mat.detalles?.map((detalle, index) => (
+                <VistaPrograma key={detalle.id ?? index} detalle={detalle} />
               ))}
             </div>
           </CardContent>

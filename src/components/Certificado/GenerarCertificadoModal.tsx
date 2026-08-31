@@ -61,12 +61,7 @@ export const GenerarCertificadoModal: React.FC<
   if (!isOpen || !modulo) return null;
 
   const handleGenerar = async () => {
-    if (
-      !persona?.id ||
-      !modulo.id ||
-      !programa?.id ||
-      !matricula.id_institucion
-    ) {
+    if (!persona?.id || !modulo.id || !programa?.id || !matricula.id_sucursal) {
       setError(
         "Faltan datos requeridos para procesar la emisión del certificado.",
       );
@@ -80,8 +75,8 @@ export const GenerarCertificadoModal: React.FC<
       id_persona: persona.id,
       id_modulo: modulo.id,
       id_plantilla: idPlantilla,
-      id_institucion: matricula.id_institucion,
-      id_tipocertificado: idTipoCertificado,
+      id_sucursal: matricula.id_sucursal,
+      codigo_tipocertificado: idTipoCertificado,
       id_programa: programa.id,
       nombre_impresion: nombreImpresion,
     };

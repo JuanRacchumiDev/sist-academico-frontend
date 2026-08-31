@@ -36,7 +36,7 @@ export const ListarCertificados: React.FC<ListarCertificadosProps> = ({
                 </div>
                 <div className="space-y-1 min-w-0">
                   <span className="text-[10px] uppercase font-extrabold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    {cert.tipoCertificado?.nombre || "Certificación"}
+                    {cert.tipo_certificado?.nombre || "Certificación"}
                   </span>
                   <h4 className="text-sm font-bold text-slate-800 line-clamp-2 pt-1 leading-snug">
                     {cert.nombre_impresion || "Certificado Académico"}

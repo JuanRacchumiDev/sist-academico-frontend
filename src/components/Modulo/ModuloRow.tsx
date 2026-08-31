@@ -93,7 +93,7 @@ export const ModuloRow: React.FC<Props> = ({ modulo }) => {
         <TableCell className="py-3">#{modulo.orden}</TableCell>
         <TableCell className="py-3">{modulo.titulo}</TableCell>
         <TableCell className="py-3">
-          {modulo.programa?.nombre} (CANT. MODULOS:{" "}
+          {modulo.programa?.titulo} (CANT. MODULOS:{" "}
           {modulo.programa.numero_modulos})
         </TableCell>
         <TableCell className="py-3">

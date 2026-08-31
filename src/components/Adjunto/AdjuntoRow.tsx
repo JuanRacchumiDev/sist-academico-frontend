@@ -51,7 +51,7 @@ export const AdjuntoRow: React.FC<Props> = ({ adjunto }) => {
 
   const handleDownloadFile = () => {
     // Implementación simulada de descarga usando la ruta guardada en bd
-    if (adjunto.es_descargable) {
+    if (adjunto.is_descargable) {
       window.open(`/storage/${adjunto.filepath}`, "_blank");
     } else {
       showToast("error", "Este archivo tiene las descargas restringidas.");
@@ -115,7 +115,7 @@ export const AdjuntoRow: React.FC<Props> = ({ adjunto }) => {
         {/* Visibilidad y Propiedades */}
         <TableCell className="py-3 px-4 text-center">
           <div className="flex items-center justify-center gap-2">
-            {adjunto.es_visible ? (
+            {adjunto.is_visible ? (
               <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
                 <Eye className="w-3 h-3" /> Visible
               </span>
@@ -124,7 +124,7 @@ export const AdjuntoRow: React.FC<Props> = ({ adjunto }) => {
                 <EyeOff className="w-3 h-3" /> Oculto
               </span>
             )}
-            {adjunto.es_descargable && (
+            {adjunto.is_descargable && (
               <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-blue-50 text-blue-700 border border-blue-200">
                 DL
               </span>
@@ -172,7 +172,7 @@ export const AdjuntoRow: React.FC<Props> = ({ adjunto }) => {
                 <span>Ver/Editar Detalle</span>
               </DropdownMenuItem>
 
-              {adjunto.es_descargable && (
+              {adjunto.is_descargable && (
                 <DropdownMenuItem
                   onClick={handleDownloadFile}
                   className="cursor-pointer hover:bg-gray-100 flex items-center space-x-2 text-slate-700"
