@@ -8,13 +8,19 @@ import {
   MoreHorizontal,
   ToggleLeft,
   ToggleRight,
+  FileDown,
+  FileBadge,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../../ui/dropdown-menu";
 import { useNavigate } from "react-router-dom";
@@ -39,22 +45,13 @@ export const SedeRow: React.FC<Props> = ({ sede }) => {
 
   const nuevoEstado = !sede.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
-  const modalTitle = `${
-    action.charAt(0).toUpperCase() + action.slice(1)
-  } Empresa`;
+  const modalTitle = `${action.charAt(0).toUpperCase() + action.slice(1)} Sede`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la sede: <strong>${sede.nombre}</strong>?`;
 
   console.log({ sede });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/sede/editar/${sede.codigo}`);
-  };
-
-  // Abre el modal
-  const handleOpenStatusModal = (event: React.MouseEvent) => {
-    event.preventDefault();
-    setIsDropdownOpen(false);
-    setIsModalOpen(true);
   };
 
   // Cierra el modal
@@ -66,34 +63,6 @@ export const SedeRow: React.FC<Props> = ({ sede }) => {
     setIsProcessing(true);
 
     try {
-      //   const payload: Segmento = {
-      //     estado: nuevoEstado,
-      //   };
-
-      //   const response = await updateSegmentoByEstado(
-      //     sede.id,
-      //     payload
-      //   );
-
-      //   const response = null;
-
-      //   const { result, data, message, error } =
-      //     response as TipoDocumentoResponse;
-
-      //   if (result && data) {
-      //     showToast(
-      //       "success",
-      //       message || "Estado del documento actualizado con éxito."
-      //     );
-
-      //     // Si hay una función de callback, llamarla para actualizar la tabla padre
-      //     if (onStatusChange) {
-      //       onStatusChange(sede.id);
-      //     }
-      //   } else {
-      //     showToast("error", error || "Error al actualizar el sede.");
-      //   }
-
       showToast("error", "Error de conexión al intentar actualizar.");
     } catch (error) {
       console.error("Error en la actualización de estado:", error);
@@ -106,68 +75,57 @@ export const SedeRow: React.FC<Props> = ({ sede }) => {
 
   // Determinar texto y color de acción
   const actionText = sede.estado ? "Desactivar" : "Activar";
-  const ActionIcon = sede.estado ? ToggleLeft : ToggleRight;
-  const actionColor = sede.estado ? "text-red-600" : "text-green-600";
-  const hoverBgColor = sede.estado ? "hover:bg-red-100" : "hover:bg-green-100";
 
   return (
     <>
       <TableRow
         key={sede.codigo}
-        className="hover:bg-blue-100 hover:cursor-pointer transition-colors duration-200"
+        className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
-        <TableCell className="py-3">{sede.nombre}</TableCell>
-        <TableCell className="py-3">{sede.descripcion}</TableCell>
-        <TableCell className="py-3">
-          {sede.estado ? (
-            <CircleCheck className="text-green-500 w-5 h-5" />
-          ) : (
-            <CircleX className="text-red-500 w-5 h-5" />
-          )}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
+          {sede.nombre}
         </TableCell>
-        <TableCell className="py-3">
-          {/* w-72 border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-300 */}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700">
+          {sede.descripcion}
+        </TableCell>
+        <TableCell className="py-2 px-3 text-center">
+          <div className="flex items-center justify-center">
+            {sede.estado ? (
+              <CircleCheck className="text-emerald-500 w-4 h-4 stroke-[2.5]" />
+            ) : (
+              <CircleX className="text-rose-500 w-4 h-4 stroke-[2.5]" />
+            )}
+          </div>
+        </TableCell>
+
+        <TableCell className="py-2 px-3 text-right">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
-            <DropdownMenuTrigger
-              asChild
-              className="focus:outline-none focus:ring-2 z-40 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
-              // className="bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent transition duration-300 cursor-pointer"
-            >
-              <Button variant="ghost" className="h-8 w-8 p-0">
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-7 w-7 p-0 focus-visible:ring-1 focus-visible:ring-slate-400 focus-visible:ring-offset-0"
+              >
                 <span className="sr-only">Abrir menú de acciones</span>
-                <MoreHorizontal className="h-4 w-4 text-gray-500" />
+                <MoreHorizontal className="h-3.5 w-3.5 text-slate-400" />
               </Button>
             </DropdownMenuTrigger>
 
             <DropdownMenuContent
               align="end"
-              className="bg-white border shadow-lg"
+              className="bg-white border border-slate-200 shadow-md min-w-[140px] text-xs p-1 rounded-md"
             >
-              <DropdownMenuLabel className="font-semibold text-gray-700">
+              <DropdownMenuLabel className="font-medium text-slate-400 px-2 py-1 text-[10px] uppercase tracking-wider">
                 Acciones
               </DropdownMenuLabel>
-              <DropdownMenuSeparator />
+              <DropdownMenuSeparator className="bg-slate-100" />
 
               <DropdownMenuItem
                 onClick={handleShowDetail}
-                className="cursor-pointer hover:bg-gray-100 transition-colors flex items-center space-x-2 text-blue-600"
+                className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
               >
-                <Edit className="h-4 w-4" />
-                <span>Ver/Editar Detalle</span>
+                <Edit className="h-3.5 w-3.5 text-slate-400" />
+                <span>Ver/Editar detalle</span>
               </DropdownMenuItem>
-              <DropdownMenuSeparator />
-
-              <DropdownMenuItem
-                onClick={handleOpenStatusModal}
-                className={`cursor-pointer ${hoverBgColor} transition-colors flex items-center space-x-2 ${actionColor}`}
-              >
-                <ActionIcon className="h-4 w-4" />
-                <span>{actionText} Sede</span>
-              </DropdownMenuItem>
-
-              {/* <DropdownMenuItem className="cursor-pointer hover:bg-gray-100 transition-colors">
-              Eliminar
-            </DropdownMenuItem> */}
             </DropdownMenuContent>
           </DropdownMenu>
         </TableCell>

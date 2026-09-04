@@ -26,8 +26,8 @@ export const PagoTable = () => {
   const [pagos, setPagos] = useState<Pago[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
+
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
   >({
@@ -60,7 +60,7 @@ export const PagoTable = () => {
       };
 
       try {
-        const response = await getPagosPaginate(currentPage, limit, filters);
+        const response = await getPagosPaginate(pageToFetch, limit, filters);
 
         const { result, data, pagination: newPagination } = response;
 
@@ -74,8 +74,6 @@ export const PagoTable = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setPagos([]);
@@ -117,13 +115,11 @@ export const PagoTable = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`
-              ${
-                i === currentPage
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200 transition-colors"
-              }
-            `}
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
+              i === currentPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
+            }`}
           >
             {i}
           </PaginationLink>
@@ -205,7 +201,11 @@ export const PagoTable = () => {
         <div className="text-[11px] text-slate-500 font-medium">
           Mostrando{" "}
           <span className="text-slate-800 font-semibold">{pagos.length}</span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

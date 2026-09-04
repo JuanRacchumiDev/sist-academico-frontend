@@ -64,6 +64,7 @@ export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
           name="documento"
           placeholder="DNI"
           autoComplete="off"
+          maxLength={8}
           value={filters.documento}
           onChange={handleInputChange}
           className="bg-white border-slate-200 focus:ring-blue-500"

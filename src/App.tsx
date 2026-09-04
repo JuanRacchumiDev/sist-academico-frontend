@@ -51,7 +51,7 @@ function App() {
 
   return (
     <div
-      className={`min-h-screen ${isLoginPage ? "bg-slate-50 flex items-center justify-center p-4" : "bg-slate-100"}`}
+      className={`min-h-screen ${isLoginPage ? "bg-slate-50 flex items-center justify-center" : "bg-slate-100"}`}
     >
       <div className="flex h-screen overflow-hidden w-full max-w-full">
         {!isLoginPage && isLoggedIn && (

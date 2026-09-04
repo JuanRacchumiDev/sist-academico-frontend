@@ -78,6 +78,7 @@ export const SedeForm = () => {
 
       const payloadData: DetalleParametro = {
         nombre: values.nombre,
+        estado: true,
       };
 
       if (values.descripcion && values.descripcion.length > 0) {
@@ -92,15 +93,11 @@ export const SedeForm = () => {
         response = await createDetalle("sede", payloadData);
       }
 
-      console.log("response create sede", response);
+      console.log({ response });
 
       const { result, message, error, code } = response;
 
       const messageStr = message as string;
-
-      console.log({ messageStr });
-
-      console.log({ code });
 
       if (result) {
         if (code === "PREVIOUSLY_REGISTERED") {
@@ -110,6 +107,8 @@ export const SedeForm = () => {
           showToast("success", messageStr);
           navigate("/mantenimiento/sede");
         }
+        // showToast("success", messageStr);
+        // navigate("/mantenimiento/sede");
       } else {
         showToast("error", error || messageError);
         return;
@@ -138,13 +137,13 @@ export const SedeForm = () => {
               descripcion: sede.descripcion,
             });
           } else {
-            showToast("error", message || "sede no encontrada");
+            showToast("error", message || "sede no encontrado");
             navigate("/mantenimiento/sede/nuevo");
           }
         }
       } catch (error) {
         console.error("Error al obtener datos", error);
-        showToast("error", "Error al cargar los sedes del formulario.");
+        showToast("error", "Error al cargar las sedes del formulario.");
       }
     };
 
@@ -196,7 +195,6 @@ export const SedeForm = () => {
                         autoComplete="off"
                         maxLength={100}
                         {...field}
-                        value={field.value ?? ""}
                         className={`
                           ${
                             fieldState.invalid
@@ -220,7 +218,7 @@ export const SedeForm = () => {
                     <RequiredLabel>Descripción</RequiredLabel>
                     <FormControl>
                       <Input
-                        placeholder="Descripción de la sede"
+                        placeholder="Descripción dla sede"
                         autoComplete="off"
                         maxLength={120}
                         {...field}

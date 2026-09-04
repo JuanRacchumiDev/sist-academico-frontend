@@ -32,13 +32,6 @@ const loadPerfiles = async () => {
   // Definiendo perfiles
   let listPerfiles: DetalleParametro[] = [];
 
-  // const filterPerfiles: DetalleParametroFilters = {
-  //   parametro_clase: ParametroClase.PERFIL,
-  //   en_persona: false,
-  //   en_empresa: false,
-  //   estado: true,
-  // };
-
   const queryParams = `parametro_clase=${ParametroClase.PERFIL}&en_persona=false&en_empresa=false&estado=true`;
 
   const responsePerfiles = await getDetalles(queryParams);
@@ -56,7 +49,6 @@ export const UsuarioTable = () => {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
   const [perfiles, setPerfiles] = useState<DetalleParametro[]>([]);
 
@@ -71,7 +63,7 @@ export const UsuarioTable = () => {
 
   const [searchFilters, setSearchFilters] = useState<UsuarioFiltersData>({
     email: "",
-    id_perfil: "",
+    codigo_perfil: "",
   });
 
   useEffect(() => {
@@ -94,7 +86,7 @@ export const UsuarioTable = () => {
 
       const filters = {
         email: filtersData.email,
-        id_perfil: filtersData.id_perfil,
+        codigo_perfil: filtersData.codigo_perfil,
       };
 
       try {
@@ -112,8 +104,6 @@ export const UsuarioTable = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setUsuarios([]);
@@ -155,13 +145,11 @@ export const UsuarioTable = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`
-              ${
-                i === currentPage
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200 transition-colors"
-              }
-            `}
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
+              i === currentPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
+            }`}
           >
             {i}
           </PaginationLink>
@@ -241,7 +229,11 @@ export const UsuarioTable = () => {
           <span className="text-slate-800 font-semibold">
             {usuarios.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

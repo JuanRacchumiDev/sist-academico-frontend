@@ -34,24 +34,13 @@ export const getAllPaginate = async (queryParams: string): Promise<PagoResponse>
 
         console.log({ response })
 
-        const { data: { result, data, message } } = response
-
-        const { current_page, per_page, last_page, total, next_page_url, prev_page_url } = data
-
-        const paginationInfo = {
-            currentPage: current_page,
-            limit: per_page,
-            totalPages: last_page,
-            totalItems: total,
-            nextPage: next_page_url,
-            previousPage: prev_page_url
-        };
+        const { data: { result, data, message, pagination } } = response
 
         return {
             result,
             data: data.data,
             message,
-            pagination: paginationInfo
+            pagination
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

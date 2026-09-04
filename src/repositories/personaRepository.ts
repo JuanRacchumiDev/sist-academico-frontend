@@ -43,7 +43,7 @@ export const getAllPaginate = async (nombreGrupo: string, queryParams: string): 
             result,
             data,
             message,
-            pagination: pagination
+            pagination
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

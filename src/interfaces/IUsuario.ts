@@ -7,8 +7,9 @@ export interface Usuario {
     email?: string
     password?: string
     remember_token?: string
-    id_perfil?: number
+    codigo_perfil?: number
     id_persona?: number
+    user_crea?: string
     perfil?: DetalleParametro
     persona?: Persona
     estado?: boolean

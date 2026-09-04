@@ -26,7 +26,6 @@ export const AdjuntoGrid = () => {
   const [adjuntos, setAdjuntos] = useState<Adjunto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(8);
 
   const [paginationInfo, setPaginationInfo] = useState<
@@ -44,10 +43,6 @@ export const AdjuntoGrid = () => {
     fechaFinal: "",
     search: "",
   });
-
-  const handleShowDetail = (id: number) => {
-    navigate(`/adjunto/editar/${id}`);
-  };
 
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= paginationInfo.totalPages) {
@@ -84,8 +79,6 @@ export const AdjuntoGrid = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setAdjuntos([]);
@@ -108,59 +101,6 @@ export const AdjuntoGrid = () => {
     setCurrentPage(1); // Resetear a la primera página al filtrar
   };
 
-  const getFileConfig = (mimetype: string, originalname: string) => {
-    const ext = originalname.split(".").pop()?.toLowerCase() || "";
-
-    if (mimetype.includes("pdf") || ext === "pdf") {
-      return {
-        icon: <FileText className="w-8 h-8 text-red-500" />,
-        bg: "bg-red-50 border-red-100",
-      };
-    }
-    if (
-      mimetype.includes("excel") ||
-      mimetype.includes("spreadsheet") ||
-      ["xlsx", "xls", "csv"].includes(ext)
-    ) {
-      return {
-        icon: <FileSpreadsheet className="w-8 h-8 text-emerald-600" />,
-        bg: "bg-emerald-50 border-emerald-100",
-      };
-    }
-    if (
-      mimetype.includes("word") ||
-      mimetype.includes("officedocument.wordprocessingml") ||
-      ["docx", "doc"].includes(ext)
-    ) {
-      return {
-        icon: <FileCode className="w-8 h-8 text-blue-500" />,
-        bg: "bg-blue-50 border-blue-100",
-      };
-    }
-    if (
-      mimetype.includes("image") ||
-      ["png", "jpg", "jpeg", "svg", "webp"].includes(ext)
-    ) {
-      return {
-        icon: <Image className="w-8 h-8 text-purple-500" />,
-        bg: "bg-purple-50 border-purple-100",
-      };
-    }
-    return {
-      icon: <FileUp className="w-8 h-8 text-slate-500" />,
-      bg: "bg-slate-50 border-slate-100",
-    };
-  };
-
-  const formatBytes = (bytes: number, decimals = 2) => {
-    if (!bytes || bytes === 0) return "0 Bytes";
-    const k = 1024;
-    const dm = decimals < 0 ? 0 : decimals;
-    const sizes = ["Bytes", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
-  };
-
   const renderPaginationItems = (): JSX.Element[] => {
     const items: JSX.Element[] = [];
     const startPage = Math.max(1, currentPage - 2);
@@ -180,10 +120,10 @@ export const AdjuntoGrid = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`${
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
               i === currentPage
-                ? "bg-blue-600 text-white hover:bg-blue-700"
-                : "hover:bg-gray-100 transition-colors cursor-pointer"
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
             }`}
           >
             {i}
@@ -203,7 +143,6 @@ export const AdjuntoGrid = () => {
   };
 
   return (
-    // Reducción del espacio vertical (space-y-6 a space-y-3) para alinearse con PersonaTable
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
         <AdjuntoFilters onSearch={handleSearchSubmit} />
@@ -248,7 +187,11 @@ export const AdjuntoGrid = () => {
           <span className="text-slate-800 font-semibold">
             {adjuntos.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

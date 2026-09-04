@@ -33,8 +33,8 @@ export const SegmentoTable = () => {
   const [segmentos, setSegmentos] = useState<DetalleParametro[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
+
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
   >({
@@ -64,7 +64,7 @@ export const SegmentoTable = () => {
       };
 
       try {
-        const response = await getDetallesFiltered(currentPage, limit, filters);
+        const response = await getDetallesFiltered(pageToFetch, limit, filters);
 
         const { result, data, pagination: newPagination } = response;
 
@@ -78,8 +78,6 @@ export const SegmentoTable = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setSegmentos([]);
@@ -121,13 +119,11 @@ export const SegmentoTable = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`
-              ${
-                i === currentPage
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200 transition-colors"
-              }
-            `}
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
+              i === currentPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
+            }`}
           >
             {i}
           </PaginationLink>
@@ -203,7 +199,11 @@ export const SegmentoTable = () => {
           <span className="text-slate-800 font-semibold">
             {segmentos.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

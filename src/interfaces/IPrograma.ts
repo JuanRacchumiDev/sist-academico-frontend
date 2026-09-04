@@ -48,7 +48,6 @@ export interface ProgramaResponse {
 
 export interface PaginationType {
     currentPage: number
-    limit: number
     totalPages: number
     totalItems: number
     nextPage: number | null

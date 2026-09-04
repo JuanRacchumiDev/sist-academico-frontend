@@ -1,7 +1,7 @@
 export interface UserAuthenticated {
     id?: number
     id_persona?: number
-    id_perfil?: number
+    codigo_perfil?: number
     name?: string
     email?: string
     nombre_perfil?: string

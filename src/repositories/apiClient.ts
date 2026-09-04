@@ -1,10 +1,14 @@
 import axios, { AxiosError } from 'axios'
-import { useNavigate } from "react-router-dom";
+
+const baseURL = import.meta.env.VITE_API_URL
+
+if (!baseURL) {
+    console.warn("VITE_API_URL no está definida en las variables de entorno")
+}
 
 // Crea una instancia de axios con la URL base
 const apiClient = axios.create({
-    // baseURL: "http://3.15.34.71/sistema-academico/api/v1",
-    baseURL: "http://sistacademico-ipede/api/v1",
+    baseURL,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -40,12 +44,8 @@ apiClient.interceptors.response.use(
 
                 localStorage.removeItem('auth');
 
-                const navigate = useNavigate();
-                navigate('/login/')
-                // window.location.href = '/login'
+                window.location.href = '/login'
             }
-
-            // window.location.href = '/login';
         }
         return Promise.reject(error);
     }

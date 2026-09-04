@@ -24,6 +24,6 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src")
     }
-  }
-  // base: '/sistema-academico-front/',
+  },
+  base: '/',
 })

@@ -148,16 +148,20 @@ export const CertificadoRow: React.FC<Props> = ({
     }
   };
 
-  const handleCloseModal = () => {
-    setIsStatusModalOpen(false);
-  };
-
   const actionText = certificado.estado ? "Desactivar" : "Activar";
   const ActionIcon = certificado.estado ? ToggleLeft : ToggleRight;
   const actionColor = certificado.estado ? "text-red-600" : "text-green-600";
   const hoverBgColor = certificado.estado
     ? "hover:bg-red-100"
     : "hover:bg-green-100";
+
+  const nombreAlumno =
+    certificado.persona?.nombre_completo ||
+    `${certificado.persona?.nombres ?? ""} ${
+      certificado.persona?.apellido_paterno ?? ""
+    }`.trim();
+
+  const tituloPrograma = certificado.programa?.titulo ?? "--";
 
   return (
     <>
@@ -166,35 +170,32 @@ export const CertificadoRow: React.FC<Props> = ({
         className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
         {/* ID */}
-        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-500 whitespace-normal wrap-break-word">
+        <TableCell className="py-2.5 px-2 text-xs font-medium text-slate-500 break-all align-top">
           #{padString(4, certificado.id, "left")}
         </TableCell>
 
-        {/* Fila del alumno: se le aplican varias líneas en texto largo */}
-        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-700 whitespace-normal wrap-break-word leading-tight">
-          {certificado.persona?.nombre_completo ||
-            `${certificado.persona?.nombres ?? ""} ${
-              certificado.persona?.apellido_paterno ?? ""
-            }`}
+        {/* Alumno: Muestra texto completo con múltiples líneas según necesite */}
+        <TableCell className="py-2.5 px-2 text-xs font-medium text-slate-700 leading-tight whitespace-normal wrap-break-words align-top">
+          {nombreAlumno}
         </TableCell>
 
         {/* Tipo Certificado */}
-        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-700 whitespace-normal wrap-break-word">
+        <TableCell className="py-2.5 px-2 text-xs font-medium text-slate-700 leading-tight whitespace-normal wrap-break-words align-top">
           {certificado.tipo_certificado?.nombre ?? "--"}
         </TableCell>
 
-        {/* Programa: también se le aplican varias líneas en texto largo */}
-        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-500 whitespace-normal wrap-break-word leading-tight">
-          {certificado.programa?.titulo ?? "--"}
+        {/* Programa: Muestra texto completo con múltiples líneas según necesite */}
+        <TableCell className="py-2.5 px-2 text-xs font-medium text-slate-500 leading-tight whitespace-normal wrap-break-words align-top">
+          {tituloPrograma}
         </TableCell>
 
         {/* Fecha */}
-        <TableCell className="py-2.5 px-3 text-xs font-medium text-slate-500 whitespace-nowrap">
+        <TableCell className="py-2.5 px-2 text-[11px] font-medium text-slate-500 whitespace-nowrap align-top">
           {formatDate(certificado.fecha_crea)}
         </TableCell>
 
         {/* Estado */}
-        <TableCell className="py-2.5 px-3 text-center">
+        <TableCell className="py-2.5 px-1 text-center align-top">
           <div className="flex items-center justify-center">
             {certificado.estado ? (
               <CircleCheck className="text-emerald-500 w-4 h-4 stroke-[2.5]" />
@@ -205,7 +206,7 @@ export const CertificadoRow: React.FC<Props> = ({
         </TableCell>
 
         {/* Acciones */}
-        <TableCell className="py-2.5 px-3 text-right">
+        <TableCell className="py-2.5 px-1 text-right align-top">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
               <Button

@@ -4,26 +4,17 @@ import {
   AlertTriangle,
   CircleCheck,
   CircleX,
-  Edit,
   MoreHorizontal,
-  ToggleLeft,
-  ToggleRight,
   FileDown,
-  FileBadge,
 } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
@@ -45,22 +36,12 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
   const [isModalOpen, setIsModalOpen] = useState(false); // ⬅️ Estado para el modal
   const [isProcessing, setIsProcessing] = useState(false); // ⬅️ Estado para el loading
 
-  const navigate = useNavigate();
-
   const nuevoEstado = !pago.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
   const modalTitle = `${action.charAt(0).toUpperCase() + action.slice(1)} Pago`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el pago: <strong>${pago.id}</strong>?`;
 
   console.log({ pago });
-
-  const handleShowDetail = () => {
-    navigate(`/pago/editar/${pago.id}`);
-  };
-
-  const handleFormPago = () => {
-    navigate(`/pago/nuevo`);
-  };
 
   const handleDownloadConstanciaPago = async () => {
     setIsDropdownOpen(false); // Cierra el menú
@@ -111,9 +92,6 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
 
   // Determinar texto y color de acción
   const actionText = pago.estado ? "Desactivar" : "Activar";
-  const ActionIcon = pago.estado ? ToggleLeft : ToggleRight;
-  const actionColor = pago.estado ? "text-red-600" : "text-green-600";
-  const hoverBgColor = pago.estado ? "hover:bg-red-100" : "hover:bg-green-100";
 
   return (
     <>

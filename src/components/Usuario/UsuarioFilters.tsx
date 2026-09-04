@@ -18,7 +18,7 @@ interface UsuarioFilterProps {
 
 export interface UsuarioFiltersData {
   email: string;
-  id_perfil: string;
+  codigo_perfil: string;
 }
 
 export const UsuarioFilters: React.FC<UsuarioFilterProps> = ({
@@ -27,7 +27,7 @@ export const UsuarioFilters: React.FC<UsuarioFilterProps> = ({
 }) => {
   const [filters, setFilters] = useState({
     email: "",
-    id_perfil: "all",
+    codigo_perfil: "all",
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,7 +44,8 @@ export const UsuarioFilters: React.FC<UsuarioFilterProps> = ({
     // Limpiamos los valores "all" antes de enviar al servicio
     const cleanFilters = {
       ...filters,
-      id_perfil: filters.id_perfil === "all" ? "" : filters.id_perfil,
+      codigo_perfil:
+        filters.codigo_perfil === "all" ? "" : filters.codigo_perfil,
     };
     onSearch(cleanFilters);
   };
@@ -52,12 +53,12 @@ export const UsuarioFilters: React.FC<UsuarioFilterProps> = ({
   const handleReset = () => {
     const resetValues = {
       email: "",
-      id_perfil: "all",
+      codigo_perfil: "all",
     };
     setFilters(resetValues);
     onSearch({
       email: "",
-      id_perfil: "",
+      codigo_perfil: "",
     });
   };
 
@@ -72,8 +73,10 @@ export const UsuarioFilters: React.FC<UsuarioFilterProps> = ({
             Perfil
           </label>
           <Select
-            value={filters.id_perfil}
-            onValueChange={(value) => handleSelectChange("id_perfil", value)}
+            value={filters.codigo_perfil}
+            onValueChange={(value) =>
+              handleSelectChange("codigo_perfil", value)
+            }
           >
             <SelectTrigger className="bg-white border-slate-200 w-full">
               <SelectValue placeholder="Todos" />

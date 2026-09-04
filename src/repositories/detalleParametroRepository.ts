@@ -12,7 +12,9 @@ export const getAll = async (queryParams: string): Promise<DetalleParametroRespo
 
         const response = await apiClient.get(urlApi)
 
-        console.log('response getAll detalleParametroRepository', response)
+        console.log('response getAll detalleParametroRepository')
+
+        console.log({ response })
 
         const { data: { result, data, message, error, status } } = response
 
@@ -38,24 +40,13 @@ export const getAllFiltered = async (queryParams: string): Promise<DetalleParame
 
         const response = await apiClient.get(urlApi)
 
-        const { data: { result, data, message } } = response
-
-        // const listaItems = data.data
-
-        const paginationInfo = {
-            currentPage: data.current_page,
-            limit: data.per_page,
-            totalPages: data.last_page,
-            totalItems: data.total,
-            nextPage: data.next_page_url,
-            previousPage: data.prev_page_url
-        };
+        const { data: { result, data, message, pagination } } = response
 
         return {
             result,
             data: data.data,
             message,
-            pagination: paginationInfo
+            pagination
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

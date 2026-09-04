@@ -44,7 +44,6 @@ export interface PersonaResponse {
 
 export interface PaginationType {
     currentPage: number
-    limit: number
     totalPages: number
     totalItems: number
     nextPage: number | null

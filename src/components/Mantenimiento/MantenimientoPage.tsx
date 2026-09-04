@@ -22,18 +22,18 @@ export const MantenimientoPage = () => {
   return (
     <div>
       <Routes>
-        <Route path="/tipo-documento" element={<TipoDocumentoList />} />
+        {/* <Route path="/tipo-documento" element={<TipoDocumentoList />} />
         <Route path="/tipo-documento/nuevo" element={<TipoDocumentoForm />} />
         <Route
           path="/tipo-documento/editar/:id"
           element={<TipoDocumentoForm />}
-        />
+        /> */}
 
-        <Route path="/tipo-evento" element={<TipoEventoList />} />
+        {/* <Route path="/tipo-evento" element={<TipoEventoList />} />
         <Route path="/tipo-evento/nuevo" element={<TipoEventoForm />} />
-        <Route path="/tipo-evento/editar/:id" element={<TipoEventoForm />} />
+        <Route path="/tipo-evento/editar/:id" element={<TipoEventoForm />} /> */}
 
-        <Route path="/categoria-evento" element={<CategoriaEventoList />} />
+        {/* <Route path="/categoria-evento" element={<CategoriaEventoList />} />
         <Route
           path="/categoria-evento/nuevo"
           element={<CategoriaEventoForm />}
@@ -41,7 +41,7 @@ export const MantenimientoPage = () => {
         <Route
           path="/categoria-evento/editar/:id"
           element={<CategoriaEventoForm />}
-        />
+        /> */}
 
         <Route path="/tipo-certificado" element={<TipoCertificadoList />} />
         <Route
@@ -57,21 +57,21 @@ export const MantenimientoPage = () => {
         <Route path="/sede/nuevo" element={<SedeForm />} />
         <Route path="/sede/editar/:id" element={<SedeForm />} />
 
-        <Route path="/universidad" element={<UniversidadList />} />
+        {/* <Route path="/universidad" element={<UniversidadList />} />
         <Route path="/universidad/nuevo" element={<UniversidadForm />} />
-        <Route path="/universidad/editar/:id" element={<UniversidadForm />} />
+        <Route path="/universidad/editar/:id" element={<UniversidadForm />} /> */}
 
         <Route path="/segmento" element={<SegmentoList />} />
         <Route path="/segmento/nuevo" element={<SegmentoForm />} />
         <Route path="/segmento/editar/:id" element={<SegmentoForm />} />
 
-        <Route path="/metodo-pago" element={<MetodoPagoList />} />
+        {/* <Route path="/metodo-pago" element={<MetodoPagoList />} />
         <Route path="/metodo-pago/nuevo" element={<MetodoPagoForm />} />
         <Route path="/metodo-pago/editar/:id" element={<MetodoPagoForm />} />
 
         <Route path="/banco-cuenta" element={<BancoCuentaList />} />
         <Route path="/banco-cuenta/nuevo" element={<BancoCuentaForm />} />
-        <Route path="/banco-cuenta/editar/:id" element={<BancoCuentaForm />} />
+        <Route path="/banco-cuenta/editar/:id" element={<BancoCuentaForm />} /> */}
       </Routes>
     </div>
   );

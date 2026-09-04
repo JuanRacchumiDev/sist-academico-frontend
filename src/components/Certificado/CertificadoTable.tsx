@@ -29,8 +29,8 @@ export const CertificadoTable = () => {
   const [certificados, setCertificados] = useState<Certificado[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
+
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
   >({
@@ -72,7 +72,7 @@ export const CertificadoTable = () => {
 
       try {
         const response = await getCertificadosPaginate(
-          currentPage,
+          pageToFetch,
           limit,
           filters,
         );
@@ -89,8 +89,6 @@ export const CertificadoTable = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setCertificados([]);
@@ -132,13 +130,11 @@ export const CertificadoTable = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`
-              ${
-                i === currentPage
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200 transition-colors"
-              }
-            `}
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
+              i === currentPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
+            }`}
           >
             {i}
           </PaginationLink>
@@ -161,31 +157,30 @@ export const CertificadoTable = () => {
       <div className="bg-white overflow-hidden">
         <CertificadoFilters onSearch={handleSearchSubmit} />
 
-        {/* Mantenemos w-full en el contenedor sin overflow horizontal forzado salvo que la pantalla sea muy reducida (mobile) */}
-        <div className="w-full border-t border-slate-100">
+        <div className="w-full overflow-x-hidden border-t border-slate-100">
           <Table className="w-full table-fixed text-left border-collapse">
             <TableHeader>
               <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
-                <TableHead className="w-[5%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="w-[7%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   ID
                 </TableHead>
-                <TableHead className="w-[22%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="w-[30%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Alumno
                 </TableHead>
-                <TableHead className="w-[18%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
-                  Tipo Certificado
+                <TableHead className="w-[15%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Tipo Cert.
                 </TableHead>
-                <TableHead className="w-[23%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="w-[30%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Programa
                 </TableHead>
-                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="w-[10%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Fecha
                 </TableHead>
-                <TableHead className="w-[5%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
-                  Estado
+                <TableHead className="w-[4%] py-2.5 px-1 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
+                  Est.
                 </TableHead>
-                <TableHead className="w-[5%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
-                  Acciones
+                <TableHead className="w-[4%] py-2.5 px-1 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
+                  Acc.
                 </TableHead>
               </TableRow>
             </TableHeader>
@@ -225,7 +220,11 @@ export const CertificadoTable = () => {
           <span className="text-slate-800 font-semibold">
             {certificados.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

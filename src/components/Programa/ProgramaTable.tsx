@@ -79,7 +79,6 @@ export const ProgramaTable = () => {
   const [programas, setProgramas] = useState<Programa[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
   const [segmentos, setSegmentos] = useState<DetalleParametro[]>([]);
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
@@ -142,7 +141,6 @@ export const ProgramaTable = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setProgramas([]);
@@ -184,10 +182,10 @@ export const ProgramaTable = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`cursor-pointer transition-all rounded-md font-medium text-xs h-8 w-8 ${
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
               i === currentPage
-                ? "bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:text-white"
-                : "border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900"
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
             }`}
           >
             {i}
@@ -267,17 +265,12 @@ export const ProgramaTable = () => {
                 <TableRow>
                   <TableCell colSpan={9} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
-                      <div className="p-3 bg-slate-50 rounded-full border border-slate-100">
-                        <GraduationCap className="w-6 h-6 text-slate-400" />
-                      </div>
-                      <div>
-                        <span className="text-xs font-medium text-slate-600">
-                          No se encontraron registros
-                        </span>
-                        <p className="text-[11px]">
-                          Intenta ajustar o limpiar los filtros de búsqueda
-                        </p>
-                      </div>
+                      <span className="text-xs font-medium text-slate-600">
+                        No se encontraron registros
+                      </span>
+                      <p className="text-[11px]">
+                        Intenta ajustar los filtros de búsqueda
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -294,7 +287,11 @@ export const ProgramaTable = () => {
           <span className="text-slate-800 font-semibold">
             {programas.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

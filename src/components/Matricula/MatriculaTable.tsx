@@ -26,8 +26,8 @@ export const MatriculaTable = () => {
   const [matriculas, setMatriculas] = useState<Matricula[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
   const [limit] = useState(10);
+
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
   >({
@@ -61,7 +61,7 @@ export const MatriculaTable = () => {
 
       try {
         const response = await getMatriculasPaginate(
-          currentPage,
+          pageToFetch,
           limit,
           filters,
         );
@@ -78,8 +78,6 @@ export const MatriculaTable = () => {
               nextPage: newPagination.nextPage,
               previousPage: newPagination.previousPage,
             });
-
-            setTotalPages(newPagination.totalPages || 1);
           }
         } else {
           setMatriculas([]);
@@ -121,13 +119,11 @@ export const MatriculaTable = () => {
           <PaginationLink
             onClick={() => handlePageChange(i)}
             isActive={i === currentPage}
-            className={`
-              ${
-                i === currentPage
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-gray-200 transition-colors"
-              }
-            `}
+            className={`h-7 w-7 text-xs rounded-md font-medium cursor-pointer ${
+              i === currentPage
+                ? "bg-indigo-600 text-white hover:bg-indigo-700"
+                : "hover:bg-slate-100 text-slate-600 transition-colors"
+            }`}
           >
             {i}
           </PaginationLink>
@@ -210,7 +206,11 @@ export const MatriculaTable = () => {
           <span className="text-slate-800 font-semibold">
             {matriculas.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

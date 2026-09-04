@@ -1,13 +1,6 @@
 import { Usuario } from "../../interfaces/IUsuario";
 import { TableCell, TableRow } from "../ui/table";
-import {
-  CircleCheck,
-  CircleX,
-  Edit,
-  MoreHorizontal,
-  ToggleLeft,
-  ToggleRight,
-} from "lucide-react";
+import { CircleCheck, CircleX, Edit, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,24 +25,9 @@ export const UsuarioRow: React.FC<Props> = ({ usuario }) => {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  const nuevoEstado = !usuario.estado;
-  const action = nuevoEstado ? "activar" : "desactivar";
-  const modalTitle = `${
-    action.charAt(0).toUpperCase() + action.slice(1)
-  } Usuario`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> el usuario: <strong>${usuario.name}</strong>?`;
-
   const handleShowDetail = () => {
     navigate(`/usuarios/editar/${usuario.id}`);
   };
-
-  // Determinar texto y color de acción
-  const actionText = usuario.estado ? "Desactivar" : "Activar";
-  const ActionIcon = usuario.estado ? ToggleLeft : ToggleRight;
-  const actionColor = usuario.estado ? "text-red-600" : "text-green-600";
-  const hoverBgColor = usuario.estado
-    ? "hover:bg-red-100"
-    : "hover:bg-green-100";
 
   return (
     <>

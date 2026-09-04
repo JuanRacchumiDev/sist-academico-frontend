@@ -56,13 +56,6 @@ export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
     navigate(`/mantenimiento/segmento/editar/${segmento.codigo}`);
   };
 
-  // Abre el modal
-  const handleOpenStatusModal = (event: React.MouseEvent) => {
-    event.preventDefault();
-    setIsDropdownOpen(false);
-    setIsModalOpen(true);
-  };
-
   // Cierra el modal
   const handleCloseModal = () => {
     setIsModalOpen(false);
@@ -84,11 +77,6 @@ export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
 
   // Determinar texto y color de acción
   const actionText = segmento.estado ? "Desactivar" : "Activar";
-  const ActionIcon = segmento.estado ? ToggleLeft : ToggleRight;
-  const actionColor = segmento.estado ? "text-red-600" : "text-green-600";
-  const hoverBgColor = segmento.estado
-    ? "hover:bg-red-100"
-    : "hover:bg-green-100";
 
   return (
     <>

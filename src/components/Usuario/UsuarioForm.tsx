@@ -103,7 +103,7 @@ export const formSchema = z.object({
   email: z.string().email({
     message: "Por favor ingrese un correo válido",
   }),
-  idPerfil: z
+  codigoPerfil: z
     .string({
       message: "El perfil es requerido",
     })
@@ -120,7 +120,7 @@ type TFormValues = z.infer<typeof formSchema>;
 type TUsuario = {
   name?: string;
   email?: string;
-  idPerfil?: string;
+  codigoPerfil?: string;
   idPersona?: string;
 };
 
@@ -149,7 +149,7 @@ export const UsuarioForm = () => {
     defaultValues: {
       name: "",
       email: "",
-      idPerfil: "",
+      codigoPerfil: "",
       idPersona: "",
     },
   });
@@ -158,7 +158,7 @@ export const UsuarioForm = () => {
     form.reset({
       name: "",
       email: "",
-      idPerfil: "",
+      codigoPerfil: "",
       idPersona: "",
     });
   };
@@ -224,14 +224,15 @@ export const UsuarioForm = () => {
 
   const onSubmit = async (values: TFormValues) => {
     try {
-      const { name, email, idPerfil, idPersona } = values;
+      const { name, email, codigoPerfil, idPersona } = values;
 
       const payload: Usuario = {
         name,
         email,
-        id_perfil: +idPerfil,
+        codigo_perfil: +codigoPerfil,
         id_persona: +idPersona,
         ...(!isEditMode && { password: definePassword }),
+        estado: true,
       };
 
       const response = isEditMode
@@ -300,7 +301,7 @@ export const UsuarioForm = () => {
 
           <FormField
             control={form.control}
-            name="idPerfil"
+            name="codigoPerfil"
             render={({ field, fieldState }) => (
               <FormItem className="flex flex-col gap-1 w-full">
                 <RequiredLabel>
@@ -392,7 +393,7 @@ export const UsuarioForm = () => {
                   <Input
                     placeholder="jperez"
                     autoComplete="off"
-                    maxLength={20}
+                    maxLength={10}
                     {...field}
                     value={field.value ?? ""}
                     className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(fieldState.invalid)}`}

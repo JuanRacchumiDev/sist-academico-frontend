@@ -65,20 +65,19 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
               variant="outline"
               role="combobox"
               className={cn(
-                // Ajustado el ancho para evitar que sea fijo y mejor manejo de texto
-                "w-full justify-between cursor-pointer h-auto min-h-10 px-3 py-2 text-left",
+                "w-full justify-between cursor-pointer min-h-10 h-auto px-3 py-2 text-left whitespace-normal",
                 !value && "text-muted-foreground",
                 isInvalid
                   ? "border-red-500 focus:ring-red-500"
                   : "focus:ring-blue-500",
-                "focus:ring-2 focus:ring-offset-2 transition-all duration-300", // Altura y padding estándar
+                "focus:ring-2 focus:ring-offset-2 transition-all duration-300",
               )}
               disabled={disabled}
             >
-              <span className="block line-clamp-2 sm:line-clamp-1 pr-2 wrap-break-word">
+              <span className="line-clamp-2 wrap-break-word pr-2 text-sm leading-snug flex-1">
                 {displayValue}
               </span>
-              <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 self-center" />
+              <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 self-center ml-auto" />
             </Button>
           </FormControl>
         </PopoverTrigger>
@@ -101,7 +100,6 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                   options.map((option) => {
                     const optionValue = String(option[valueKey]);
 
-                    // Generar un valor de búsqueda que combine los campos especificados en `searchKeys`
                     const searchValue = searchKeys
                       .map((key) => option[key])
                       .join(" ")
@@ -126,7 +124,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
                           className={cn(
                             "mr-2 h-4 w-4 shrink-0",
                             value === option[valueKey]
-                              ? "opacity-100" // Color azul para el check
+                              ? "opacity-100"
                               : "opacity-0",
                           )}
                         />

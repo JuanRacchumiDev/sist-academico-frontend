@@ -3,7 +3,7 @@ export enum ParametroClase {
     PERFIL = 1001,
     TIPO_PROGRAMA = 1002,
     TIPO_CERTIFICADO = 1003,
-    SEDE = 1004,
+    SUCURSAL = 1004,
     UNIVERSIDAD = 1005,
     SEGMENTO = 1006,
     GRUPO = 1007,
@@ -11,5 +11,6 @@ export enum ParametroClase {
     CATEGORIA_PROGRAMA = 1009,
     ESTADO_MATRICULA = 1010,
     ESTADO_PAGO = 1011,
-    FORMA_PAGO = 1012
+    FORMA_PAGO = 1012,
+    SEDE = 1013
 }

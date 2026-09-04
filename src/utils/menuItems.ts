@@ -81,11 +81,23 @@ export const ADMIN_MENU_ITEMS = [
                 path: "/mantenimiento/segmento"
             },
             {
-                id: "tipo-documento",
-                label: "Tipo Documento",
-                icon: FileCheck,
-                path: "/mantenimiento/tipo-documento"
+                id: "sede",
+                label: "Sede",
+                icon: Layers,
+                path: "/mantenimiento/sede"
+            },
+            {
+                id: "institucion",
+                label: "Institución",
+                icon: Layers,
+                path: "/mantenimiento/institucion"
             }
+            // {
+            //     id: "tipo-documento",
+            //     label: "Tipo Documento",
+            //     icon: FileCheck,
+            //     path: "/mantenimiento/tipo-documento"
+            // }
         ]
     }
 ];

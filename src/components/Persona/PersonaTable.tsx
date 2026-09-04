@@ -216,7 +216,11 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
           <span className="text-slate-800 font-semibold">
             {personas.length}
           </span>{" "}
-          registros de este grupo
+          de{" "}
+          <span className="text-slate-800 font-semibold">
+            {paginationInfo.totalItems}
+          </span>{" "}
+          registros
         </div>
 
         <Pagination className="justify-end w-auto m-0">

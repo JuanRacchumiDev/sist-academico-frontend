@@ -37,24 +37,20 @@ export const getAllPaginate = async (queryParams: string): Promise<AdjuntoRespon
 
         console.log({ response })
 
-        const { data: { data, message, pagination, result }, status } = response
-
-        const { current_page, per_page, last_page, total, next_page_url, prev_page_url } = pagination
-
-        const paginationInfo = {
-            currentPage: current_page,
-            limit: per_page,
-            totalPages: last_page,
-            totalItems: total,
-            nextPage: next_page_url,
-            previousPage: prev_page_url
-        };
+        const { data: { data, result, message, pagination } } = response
 
         return {
             result,
             data,
             message,
-            pagination: paginationInfo
+            pagination
+        }
+
+        return {
+            result,
+            data,
+            message,
+            pagination
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'

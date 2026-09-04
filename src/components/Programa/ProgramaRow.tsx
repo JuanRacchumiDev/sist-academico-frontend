@@ -137,7 +137,10 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
         </TableCell>
 
         <TableCell className="py-2 px-3 text-xs text-slate-600 text-center font-medium">
-          {programa.duracion ?? "--"}
+          {/* {programa.duracion ?? "--"} */}
+          {programa.duracion
+            ? programa.duracion
+            : `${programa.horas_academicas} horas`}
         </TableCell>
 
         <TableCell className="py-2 px-3 text-xs text-slate-700 text-center font-bold">
