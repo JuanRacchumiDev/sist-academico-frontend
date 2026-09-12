@@ -41,29 +41,13 @@ export const getStorageUrl = (path: string | null | undefined): string => {
     return `${BASE_STORAGE_URL}/${cleanPath}`;
 };
 
-const cleanText = (text: string): string => {
-    return text
-        .trim()
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/ñ/g, "n")
-        .replace(/[^a-z0-9]/g, "")
-}
-
-interface getFullname {
-    nombres: string,
-    apellidoPaterno: string,
-    apellidoMaterno: string
-}
-
 export const generateUsername = ({
     nombres,
     apellidoPaterno,
     apellidoMaterno = ""
 }: getFullname): string => {
     const nombresLimpios = cleanText(nombres)
-    const primerNombre = cleanText(nombres.split(" ")[0] || "")
+    const primerNombre = cleanText(nombresLimpios.split(" ")[0] || "")
     const apePaterno = cleanText(apellidoPaterno)
     const apeMaterno = cleanText(apellidoMaterno)
 
@@ -90,4 +74,55 @@ export const generateUsername = ({
     // Regla 3: Nombres + apellidos (truncado a 10 caracteres)
     const cadenaCompleta = `${primerNombre}${apePaterno}${apeMaterno}`;
     return cadenaCompleta.substring(0, MAX_LENGTH)
+}
+
+/**
+ * Convierte un texto a Capital Case (Title Case), convirtiendo la primera letra
+ * de cada palabra a mayúscula y el resto a minúscula. Preserva tíldes y caracteres especiales.
+ * 
+ * @param texto - Cadena de texto a transformar
+ * @param preserveConnectors - (Opcional) Si es true, mantiene minúsculas en conectores de nombres propios (ej: "de", "la", "del", "y")
+ * @returns Cadena con formato Capitalized / Title Case.
+ */
+export const capitalize = (
+    texto: string | null | undefined,
+    preserveConnectors: boolean = false
+): string => {
+    if (!texto || typeof texto !== "string") return ""
+
+    const textoLimpio = texto.trim()
+    if (!textoLimpio) return ""
+
+    // Lista opcional de conectores o preposiciones en nombres
+    const connectors = new Set(["de", "del", "la", "las", "los", "y", "e"]);
+
+    return textoLimpio
+        .toLowerCase()
+        .split(/\s+/)
+        .map((word, index) => {
+            if (!word) return ""
+
+            if (preserveConnectors && index > 0 && connectors.has(word)) {
+                return word
+            }
+
+            return word.charAt(0).toUpperCase() + word.slice(1)
+        })
+        .join(" ");
+}
+
+const cleanText = (text: string): string => {
+    return text
+        .trim()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/ñ/g, "n")
+        .replace(/[^a-z0-9]/g, "")
+}
+
+interface getFullname {
+    nombres: string,
+    apellidoPaterno: string,
+    apellidoMaterno: string
 } 

@@ -82,9 +82,9 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
       setIsDeleting(true);
       const response = await deleteAdjunto(adjunto.id);
 
-      console.log("response delete adjunto");
+      // console.log("response delete adjunto");
 
-      console.log({ response });
+      // console.log({ response });
 
       if (response.result) {
         showToast(

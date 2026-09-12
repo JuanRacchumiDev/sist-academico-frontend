@@ -7,7 +7,9 @@ import {
     createModular,
     preview,
     generate,
-    destroy
+    destroy,
+    validar,
+    downloadByCodigo
 } from "../repositories/certificadoRepository"
 
 export const getCertificados = async () => {
@@ -53,6 +55,71 @@ export const getCertificadosById = async (id: number) => {
     }
 }
 
+/**
+ * Descarga el PDF del certificado por su ID
+ */
+export const downloadCertificado = async (id: number): Promise<void> => {
+    const response = await generate(id);
+
+    const { result, data, error, filename } = response
+
+    if (!result || !data) {
+        throw new Error(error || "No se pudo descargar el certificado.");
+    }
+
+    // Crear objeto Blob e iniciar la descarga en el navegador
+    const blob = new Blob([data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+
+    // Limpieza de recursos de la ventana
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
+};
+
+export const viewCertificado = async (id: number) => {
+    const response = await preview(id)
+
+    return {
+        ...response
+    }
+}
+
+export const validarCertificadoByCodigo = async (codigoQR: string) => {
+    const response = await validar(codigoQR)
+
+    return {
+        ...response
+    }
+}
+
+export const downloadCertificadoByCodigo = async (codigo: string): Promise<void> => {
+    const response = await downloadByCodigo(codigo);
+
+    console.log({ response })
+
+    const { result, data, error, filename } = response
+
+    if (!result || !data) {
+        throw new Error(error || "No se pudo descargar el certificado.");
+    }
+
+    const blob = new Blob([data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+
+    link.parentNode?.removeChild(link);
+    window.URL.revokeObjectURL(url);
+}
+
 export const createCertificado = async (payload: Certificado) => {
     const response = await create(payload)
 
@@ -68,38 +135,6 @@ export const createCertificadoModular = async (payload: Certificado) => {
         ...response
     }
 }
-
-export const viewCertificado = async (id: number) => {
-    const response = await preview(id)
-
-    return {
-        ...response
-    }
-}
-
-/**
- * Descarga el PDF del certificado por su ID
- */
-export const downloadCertificado = async (id: number): Promise<void> => {
-    const response = await generate(id);
-
-    if (!response.result || !response.data) {
-        throw new Error(response.error || "No se pudo descargar el certificado.");
-    }
-
-    // Crear objeto Blob e iniciar la descarga en el navegador
-    const blob = new Blob([response.data], { type: "application/pdf" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", response.filename);
-    document.body.appendChild(link);
-    link.click();
-
-    // Limpieza de recursos de la ventana
-    link.parentNode?.removeChild(link);
-    window.URL.revokeObjectURL(url);
-};
 
 export const deleteCertificado = async (id: number) => {
     const response = await destroy(id);

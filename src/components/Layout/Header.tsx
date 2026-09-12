@@ -21,7 +21,7 @@ export const Header = ({ sidebarCollapsed, onToggleSidebar }) => {
 
   const handleLogout = async () => {
     if (userProfile?.id) {
-      console.log(userProfile?.id);
+      // console.log(userProfile?.id);
       const response = await logoutAuth(userProfile.id);
       const { result, message } = response;
       const classResult = result ? "success" : "error";

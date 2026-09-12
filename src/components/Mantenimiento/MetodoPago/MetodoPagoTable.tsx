@@ -39,12 +39,12 @@ export const MetodoPagoTable: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const handlePageChange = (page: number) => {
-    console.log("---- page handlePageChange ----");
-    console.log({ page });
+    // console.log("---- page handlePageChange ----");
+    // console.log({ page });
 
     const validatePage = page > 0 && page <= pagination.totalPages;
 
-    console.log({ validatePage });
+    // console.log({ validatePage });
 
     if (validatePage) {
       setPagination((prev) => ({ ...prev, currentPage: page }));
@@ -56,21 +56,21 @@ export const MetodoPagoTable: React.FC = () => {
 
     const { currentPage, limit } = pagination;
 
-    console.log({ currentPage });
+    // console.log({ currentPage });
 
-    console.log({ limit });
+    // console.log({ limit });
 
     const filters = {
       parametro_clase: ParametroClase.FORMA_PAGO,
       estado: true,
     };
 
-    console.log({ filters });
+    // console.log({ filters });
 
     try {
       const response = await getDetallesFiltered(currentPage, limit, filters);
 
-      console.log("response metodoPagos", response);
+      // console.log("response metodoPagos", response);
 
       const { result, data, pagination: newPagination } = response;
 

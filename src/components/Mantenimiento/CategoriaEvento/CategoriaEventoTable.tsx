@@ -13,7 +13,7 @@ import { DetalleParametro } from "@/interfaces/IDetalleParametro";
 
 export const CategoriaEventoTable: React.FC = () => {
   const [categoriaEventos, setCategoriaEventos] = useState<DetalleParametro[]>(
-    []
+    [],
   );
 
   const [isLoading, setIsLoading] = useState(true);
@@ -26,7 +26,7 @@ export const CategoriaEventoTable: React.FC = () => {
         data: null,
       };
 
-      console.log("response categoriaEventos", response);
+      // console.log("response categoriaEventos", response);
 
       const { result, data } = response;
 

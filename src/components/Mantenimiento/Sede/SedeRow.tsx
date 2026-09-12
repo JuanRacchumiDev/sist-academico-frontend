@@ -48,7 +48,7 @@ export const SedeRow: React.FC<Props> = ({ sede }) => {
   const modalTitle = `${action.charAt(0).toUpperCase() + action.slice(1)} Sede`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la sede: <strong>${sede.nombre}</strong>?`;
 
-  console.log({ sede });
+  // console.log({ sede });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/sede/editar/${sede.codigo}`);

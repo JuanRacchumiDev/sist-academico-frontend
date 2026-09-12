@@ -171,8 +171,8 @@ export const UsuarioForm = () => {
     try {
       const persona = await getPersona(idPersona);
 
-      console.log("---- persona seleccionada ----");
-      console.log({ persona });
+      // console.log("---- persona seleccionada ----");
+      // console.log({ persona });
 
       const { nombres, apellido_paterno, apellido_materno, email } = persona;
 
@@ -182,7 +182,7 @@ export const UsuarioForm = () => {
         apellidoMaterno: apellido_materno,
       });
 
-      console.log({ usernameSugerido });
+      // console.log({ usernameSugerido });
 
       form.setValue("name", usernameSugerido, { shouldValidate: true });
 

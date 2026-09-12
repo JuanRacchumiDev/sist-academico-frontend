@@ -187,7 +187,7 @@ export const EventoForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log({ values });
+      // console.log({ values });
 
       const {
         idTipoEvento,
@@ -208,29 +208,29 @@ export const EventoForm = () => {
         ? fechaInicio.toISOString()
         : null;
 
-      console.log({ fechaInicioToString });
+      // console.log({ fechaInicioToString });
 
       const partsFechaInicio: string[] = fechaInicioToString!.split("T");
 
-      console.log({ partsFechaInicio });
+      // console.log({ partsFechaInicio });
 
       const fechaInicioStr: string = partsFechaInicio[0];
 
-      console.log({ fechaInicioStr });
+      // console.log({ fechaInicioStr });
 
       const fechaFinalToString: string | null = fechaFinal
         ? fechaFinal.toISOString()
         : null;
 
-      console.log({ fechaFinalToString });
+      // console.log({ fechaFinalToString });
 
       const partsFechaFinal: string[] = fechaFinalToString!.split("T");
 
-      console.log({ partsFechaFinal });
+      // console.log({ partsFechaFinal });
 
       const fechaFinalStr: string = partsFechaFinal[0];
 
-      console.log({ fechaFinalStr });
+      // console.log({ fechaFinalStr });
 
       let payload: Evento = {
         id_tipoevento: +idTipoEvento,
@@ -259,20 +259,20 @@ export const EventoForm = () => {
         payload.capacidad_maxima = parseInt(capacidadMaxima, 10);
       }
 
-      console.log("payload new evento");
-      console.log({ payload });
+      // console.log("payload new evento");
+      // console.log({ payload });
 
       const response = await createEvento(payload);
 
-      console.log("response create", response);
+      // console.log("response create", response);
 
       const { result, message, data } = response as EventoResponse;
 
-      console.log({ result });
+      // console.log({ result });
 
-      console.log({ message });
+      // console.log({ message });
 
-      console.log({ data });
+      // console.log({ data });
 
       if (result && data) {
         showToast("success", message as string);
@@ -296,20 +296,6 @@ export const EventoForm = () => {
 
         let listCategoriaEventos: DetalleParametro[] = [];
 
-        // const filtersTipoEventos: DetalleParametroFilters = {
-        //   parametro_clase: ParametroClase.TIPO_PROGRAMA,
-        //   en_persona: true,
-        //   en_empresa: false,
-        //   estado: true,
-        // };
-
-        // const filtersCategoriaEventos: DetalleParametroFilters = {
-        //   parametro_clase: ParametroClase.CATEGORIA_PROGRAMA,
-        //   en_persona: true,
-        //   en_empresa: false,
-        //   estado: true,
-        // };
-
         const queryParamsTipoEvento = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=true&en_empresa=false&estado=true`;
         const queryParamsCategoriaEvento = `parametro_clase=${ParametroClase.CATEGORIA_PROGRAMA}&en_persona=true&en_empresa=false&estado=true`;
 
@@ -319,9 +305,9 @@ export const EventoForm = () => {
             getDetalles(queryParamsCategoriaEvento),
           ]);
 
-        console.log({ responseTipoEventos });
+        // console.log({ responseTipoEventos });
 
-        console.log({ responseCategoriaEventos });
+        // console.log({ responseCategoriaEventos });
 
         const { result: resultTipoEventos, data: dataTipoEventos } =
           responseTipoEventos;
@@ -342,7 +328,7 @@ export const EventoForm = () => {
 
         if (id) {
           const responseEvento = await getEventoById(+id);
-          console.log({ responseEvento });
+          // console.log({ responseEvento });
 
           const { result, data, message } = responseEvento;
 

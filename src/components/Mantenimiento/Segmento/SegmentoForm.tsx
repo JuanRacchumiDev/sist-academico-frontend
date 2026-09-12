@@ -71,15 +71,10 @@ export const SegmentoForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log({ values });
+      // console.log({ values });
 
       let messageError: string = "";
       let response: DetalleParametroResponse;
-
-      // const payloadData: DetalleParametro = {
-      //   ...values,
-      //   estado: true,
-      // };
 
       const payloadData: DetalleParametro = {
         nombre: values.nombre,
@@ -98,7 +93,7 @@ export const SegmentoForm = () => {
         response = await createDetalle("segmento", payloadData);
       }
 
-      console.log({ response });
+      // console.log({ response });
 
       const { result, message, error, code } = response;
 

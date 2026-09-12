@@ -1,6 +1,5 @@
 import {
     DetalleParametro,
-    DetalleParametroFilters,
     DetalleParametroResponse,
     DetalleParametroPaginateResponse
 } from "@/interfaces/IDetalleParametro"
@@ -32,7 +31,7 @@ export const getAll = async (queryParams: string): Promise<DetalleParametroRespo
     }
 }
 
-export const getAllFiltered = async (queryParams: string): Promise<DetalleParametroPaginateResponse> => {
+export const getAllPaginate = async (queryParams: string): Promise<DetalleParametroPaginateResponse> => {
     try {
         const urlApi = `/catalogos/paginate?${queryParams}`
 

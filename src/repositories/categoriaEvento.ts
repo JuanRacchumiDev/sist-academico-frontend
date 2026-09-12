@@ -16,7 +16,7 @@ export const getAll = async (): Promise<DetalleParametroResponse> => {
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -25,7 +25,7 @@ export const getById = async (id: string): Promise<DetalleParametroResponse> => 
     try {
         const urlApi = `${'/catalogos/categoria-evento/'}${id}`
 
-        console.log({ urlApi })
+        // console.log({ urlApi })
 
         const response = await apiClient.get(urlApi)
 
@@ -38,7 +38,7 @@ export const getById = async (id: string): Promise<DetalleParametroResponse> => 
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -57,7 +57,7 @@ export const create = async (payload: DetalleParametro): Promise<DetalleParametr
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }

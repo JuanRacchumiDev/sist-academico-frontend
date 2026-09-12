@@ -225,7 +225,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
       ? "border-destructive focus-visible:ring-destructive focus:ring-destructive"
       : "focus:ring-indigo-500";
 
-  console.log({ matriculaSeleccionada });
+  // console.log({ matriculaSeleccionada });
 
   // Obteniendo id de la matrícula y detalles
   const { id: idMatricula, persona, detalles } = matriculaSeleccionada;
@@ -276,9 +276,9 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
           const { valor_modulo: valorModuloDefined } = detalleMatricula;
 
-          console.log({ detalleMatricula });
+          // console.log({ detalleMatricula });
 
-          console.log({ valorModuloDefined });
+          // console.log({ valorModuloDefined });
 
           if (valorModuloDefined) {
             setValorPorModulo(Number(valorModuloDefined));
@@ -309,8 +309,8 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
 
   const onSubmit: SubmitHandler<TFormOutput> = async (values) => {
     try {
-      console.log({ totalRecibido });
-      console.log({ valorPorModulo });
+      // console.log({ totalRecibido });
+      // console.log({ valorPorModulo });
 
       if (totalRecibido > valorPorModulo) {
         showToast(

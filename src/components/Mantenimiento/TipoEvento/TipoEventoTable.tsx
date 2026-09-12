@@ -23,7 +23,7 @@ export const TipoEventoTable: React.FC = () => {
       // const response = await getDetalle("tipo-evento");
       const response = { result: null, data: null };
 
-      console.log("response tipoEventos", response);
+      // console.log("response tipoEventos", response);
 
       const { result, data } = response;
 

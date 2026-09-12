@@ -76,7 +76,7 @@ export const BancoCuentaForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log({ values });
+      // console.log({ values });
 
       let messageError: string = "";
       let response: DetalleParametroResponse;
@@ -85,7 +85,7 @@ export const BancoCuentaForm = () => {
         ...values,
       };
 
-      console.log({ payloadData });
+      // console.log({ payloadData });
 
       if (isEditMode && id) {
         messageError = "Error al actualizar la cuenta";
@@ -99,9 +99,9 @@ export const BancoCuentaForm = () => {
 
       const messageStr = message as string;
 
-      console.log({ messageStr });
+      // console.log({ messageStr });
 
-      console.log({ code });
+      // console.log({ code });
 
       if (result) {
         if (code === "PREVIOUSLY_REGISTERED") {
@@ -133,8 +133,8 @@ export const BancoCuentaForm = () => {
     const fetchData = async () => {
       try {
         if (isEditMode) {
-          const queryParams = `parametro_clase=${ParametroClase.BANCO_CUENTA}&codigo=${id}`
-          
+          const queryParams = `parametro_clase=${ParametroClase.BANCO_CUENTA}&codigo=${id}`;
+
           const responseBancoCuenta = await getDetalleByParams(queryParams);
 
           const { result, data, message } = responseBancoCuenta;

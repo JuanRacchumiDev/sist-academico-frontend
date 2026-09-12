@@ -73,8 +73,8 @@ export const UniversidadForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log("--- values universidad ----");
-      console.log({ values });
+      // console.log("--- values universidad ----");
+      // console.log({ values });
 
       let messageError: string = "";
       let response: DetalleParametroResponse;
@@ -83,7 +83,7 @@ export const UniversidadForm = () => {
         ...values,
       };
 
-      console.log({ payloadData });
+      // console.log({ payloadData });
 
       if (isEditMode && id) {
         messageError = "Error al actualizar la universidad";
@@ -97,9 +97,9 @@ export const UniversidadForm = () => {
 
       const messageStr = message as string;
 
-      console.log({ messageStr });
+      // console.log({ messageStr });
 
-      console.log({ code });
+      // console.log({ code });
 
       if (result) {
         if (code === "PREVIOUSLY_REGISTERED") {

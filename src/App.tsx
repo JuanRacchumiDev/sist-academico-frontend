@@ -26,6 +26,7 @@ import { DashboardAlumno } from "./components/Alumno/DashboardAlumno";
 import { MisMatriculasListPage } from "./components/Alumno/Page/MisMatriculasListPage";
 import { CertificadoListPage } from "./components/Certificado/Page/CertificadoListPage";
 import { CertificadoFormPage } from "./components/Certificado/Page/CertificadoFormPage";
+import { ValidarCertificadoPage } from "./components/Certificado/Page/ValidarCertificadoPage";
 
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
@@ -33,6 +34,10 @@ function App() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Definición de rutas públicas
+  const isValidarCertificadoRoute = location.pathname.startsWith(
+    "/validar-certificado/",
+  );
   const isLoginPage =
     location.pathname === "/login" || location.pathname === "/";
 
@@ -44,23 +49,30 @@ function App() {
     const storedAuth = localStorage.getItem("auth");
     if (storedAuth) {
       setIsLoggedIn(true);
-    } else if (!isLoginPage) {
+    } else if (!isLoginPage && !isValidarCertificadoRoute) {
       navigate("/login");
     }
-  }, [isLoginPage, navigate]);
+  }, [isLoginPage, isValidarCertificadoRoute, navigate]);
+
+  // Si se accede a la ruta pública de validación de certificado, renderiza únicamente la página sin layout protegido
+  if (isValidarCertificadoRoute) {
+    return (
+      <Routes>
+        <Route
+          path="/validar-certificado/:codigoQR"
+          element={<ValidarCertificadoPage />}
+        />
+        <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    );
+  }
 
   return (
     <div
       className={`min-h-screen ${isLoginPage ? "bg-slate-50 flex items-center justify-center" : "bg-slate-100"}`}
     >
       <div className="flex h-screen overflow-hidden w-full max-w-full">
-        {!isLoginPage && isLoggedIn && (
-          <Sidebar
-            collapsed={sideBarCollapsed}
-            // onToggle={() => setSideBarCollapsed(!sideBarCollapsed)}
-            // currentPage={location.pathname}
-          />
-        )}
+        {!isLoginPage && isLoggedIn && <Sidebar collapsed={sideBarCollapsed} />}
 
         <div
           className={`flex-1 flex flex-col overflow-hidden ${isLoginPage ? "h-auto" : "h-screen"}`}
@@ -73,7 +85,6 @@ function App() {
           )}
 
           <main className="flex-1 overflow-y-auto bg-transparent">
-            {/* Espaciado reducido de p-6 a p-4 y space-y-4 para un look más compacto y corporativo */}
             <div
               className={
                 isLoginPage

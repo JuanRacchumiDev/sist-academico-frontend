@@ -1,4 +1,4 @@
-import { DetalleParametro } from "../../../interfaces/IDetalleParametro";
+import { Institucion } from "../../../interfaces/IInstitucion";
 import { TableCell, TableRow } from "../../ui/table";
 import {
   AlertTriangle,
@@ -30,11 +30,11 @@ import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 
 interface Props {
-  segmento: DetalleParametro;
-  onStatusChange?: (segmentoId: number) => void;
+  institucion: Institucion;
+  onStatusChange?: (institucionId: number) => void;
 }
 
-export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
+export const InstitucionRow: React.FC<Props> = ({ institucion }) => {
   const { showToast } = useToast();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -43,17 +43,15 @@ export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
 
   const navigate = useNavigate();
 
-  const nuevoEstado = !segmento.estado;
+  const nuevoEstado = !institucion.estado;
   const action = nuevoEstado ? "activar" : "desactivar";
-  const modalTitle = `${
-    action.charAt(0).toUpperCase() + action.slice(1)
-  } Segmento`;
-  const modalMessage = `¿Deseas <strong>${action}</strong> el segmento: <strong>${segmento.nombre}</strong>?`;
+  const modalTitle = `${action.charAt(0).toUpperCase() + action.slice(1)} Institución`;
+  const modalMessage = `¿Deseas <strong>${action}</strong> la institución: <strong>${institucion.nombre}</strong>?`;
 
-  // console.log({ segmento });
+  // console.log({ institucion });
 
   const handleShowDetail = () => {
-    navigate(`/mantenimiento/segmento/editar/${segmento.codigo}`);
+    navigate(`/mantenimiento/institucion/editar/${institucion.id}`);
   };
 
   // Cierra el modal
@@ -76,23 +74,29 @@ export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
   };
 
   // Determinar texto y color de acción
-  const actionText = segmento.estado ? "Desactivar" : "Activar";
+  const actionText = institucion.estado ? "Desactivar" : "Activar";
 
   return (
     <>
       <TableRow
-        key={segmento.codigo}
+        key={institucion.id}
         className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
         <TableCell className="py-2 px-3 text-xs font-medium text-slate-500">
-          {segmento.nombre}
+          {institucion.nombre}
         </TableCell>
         <TableCell className="py-2 px-3 text-xs font-medium text-slate-700">
-          {segmento.descripcion}
+          {institucion.sede?.nombre}
+        </TableCell>
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700">
+          {institucion.nombre_director}
+        </TableCell>
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700">
+          {institucion.telefono_contacto}
         </TableCell>
         <TableCell className="py-2 px-3 text-center">
           <div className="flex items-center justify-center">
-            {segmento.estado ? (
+            {institucion.estado ? (
               <CircleCheck className="text-emerald-500 w-4 h-4 stroke-[2.5]" />
             ) : (
               <CircleX className="text-rose-500 w-4 h-4 stroke-[2.5]" />
@@ -143,7 +147,7 @@ export const SegmentoRow: React.FC<Props> = ({ segmento }) => {
         isProcessing={isProcessing}
         icon={
           <AlertTriangle
-            className={segmento.estado ? "text-red-500" : "text-green-500"}
+            className={institucion.estado ? "text-red-500" : "text-green-500"}
           />
         }
       />

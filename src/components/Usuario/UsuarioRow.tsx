@@ -19,7 +19,7 @@ interface Props {
 }
 
 export const UsuarioRow: React.FC<Props> = ({ usuario }) => {
-  console.log({ usuario });
+  // console.log({ usuario });
 
   const navigate = useNavigate();
 

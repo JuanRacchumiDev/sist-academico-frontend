@@ -9,7 +9,7 @@ export const getAll = async (): Promise<AdjuntoResponse> => {
 
         const response = await apiClient.get(urlApi)
 
-        console.log({ response })
+        // console.log({ response })
 
         const { data: { result, data, message } } = response
 
@@ -20,7 +20,7 @@ export const getAll = async (): Promise<AdjuntoResponse> => {
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -29,13 +29,13 @@ export const getAllPaginate = async (queryParams: string): Promise<AdjuntoRespon
     try {
         const urlApi = `/adjuntos/paginate?${queryParams}`
 
-        console.log({ urlApi })
+        // console.log({ urlApi })
 
         const response = await apiClient.get(urlApi)
 
-        console.log('---- response getAllPaginate adjuntoRepository ----')
+        // console.log('---- response getAllPaginate adjuntoRepository ----')
 
-        console.log({ response })
+        // console.log({ response })
 
         const { data: { data, result, message, pagination } } = response
 
@@ -54,7 +54,7 @@ export const getAllPaginate = async (queryParams: string): Promise<AdjuntoRespon
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -63,7 +63,7 @@ export const getById = async (id: number): Promise<AdjuntoResponse> => {
     try {
         const urlApi = `${'/adjuntos/'}${id}`
 
-        console.log({ urlApi })
+        // console.log({ urlApi })
 
         const response = await apiClient.get(urlApi)
 
@@ -76,7 +76,7 @@ export const getById = async (id: number): Promise<AdjuntoResponse> => {
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -111,8 +111,8 @@ export const create = async (
     try {
         const response = await apiClient.post('/adjuntos', payload, config)
 
-        console.log('---- response create adjuntoRepository ----')
-        console.log({ response })
+        // console.log('---- response create adjuntoRepository ----')
+        // console.log({ response })
 
         const { data: { result, message, data } } = response
 
@@ -124,7 +124,7 @@ export const create = async (
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -139,7 +139,7 @@ export const update = async (
 
         const response = await apiClient.post(urlApi, payload, config)
 
-        console.log({ response })
+        // console.log({ response })
 
         const { data: { result, data, message, error, status } } = response
 
@@ -152,7 +152,7 @@ export const update = async (
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }

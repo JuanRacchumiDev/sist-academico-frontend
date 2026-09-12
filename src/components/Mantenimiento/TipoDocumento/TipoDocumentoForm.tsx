@@ -76,7 +76,7 @@ export const TipoDocumentoForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log({ values });
+      // console.log({ values });
 
       let messageError: string = "";
       let response: DetalleParametroResponse;
@@ -94,15 +94,15 @@ export const TipoDocumentoForm = () => {
         response = await createDetalle("tipo-documento", payloadData);
       }
 
-      console.log({ response });
+      // console.log({ response });
 
       const { result, message, error, code } = response;
 
       const messageStr = message as string;
 
-      console.log({ messageStr });
+      // console.log({ messageStr });
 
-      console.log({ code });
+      // console.log({ code });
 
       if (result) {
         if (code === "PREVIOUSLY_REGISTERED") {

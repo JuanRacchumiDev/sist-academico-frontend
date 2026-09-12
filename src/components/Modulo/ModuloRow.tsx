@@ -44,7 +44,7 @@ export const ModuloRow: React.FC<Props> = ({ modulo }) => {
   } Módulo`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el módulo: <strong>${modulo.titulo}</strong>?`;
 
-  console.log({ modulo });
+  // console.log({ modulo });
 
   const handleShowDetail = () => {
     navigate(`/modulo/editar/${modulo.id}`);

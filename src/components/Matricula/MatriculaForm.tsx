@@ -298,13 +298,6 @@ const loadInstituciones = async () => {
 const loadTipoProgramas = async () => {
   let tipoProgramas: DetalleParametro[] = [];
 
-  // const filters: DetalleParametroFilters = {
-  //   parametro_clase: ParametroClase.TIPO_PROGRAMA,
-  //   en_persona: false,
-  //   en_empresa: false,
-  //   estado: true,
-  // };
-
   const queryParams = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=false&en_empresa=false&estado=true`;
 
   const response = await getDetalles(queryParams);
@@ -320,13 +313,6 @@ const loadTipoProgramas = async () => {
 
 const loadFormasPago = async () => {
   let formasPago: DetalleParametro[] = [];
-
-  // const filters: DetalleParametroFilters = {
-  //   parametro_clase: ParametroClase.FORMA_PAGO,
-  //   en_persona: false,
-  //   en_empresa: false,
-  //   estado: true,
-  // };
 
   const queryParams = `parametro_clase=${ParametroClase.FORMA_PAGO}&en_persona=false&en_empresa=false&estado=true`;
 
@@ -467,8 +453,8 @@ export const MatriculaForm = () => {
         if (isEditMode && id) {
           // Obtener detalle de una matrícula
           const res = await getMatriculaById(+id);
-          console.log("---- res MatriculaForm ----");
-          console.log({ res });
+          // console.log("---- res MatriculaForm ----");
+          // console.log({ res });
 
           // Obteniendo propiedades result y data
           const { result, data } = res;
@@ -478,9 +464,9 @@ export const MatriculaForm = () => {
             // Seteando la data obtenida del tipo Matricula
             const mat = data as Matricula;
 
-            console.log("---- data matrícula ----");
+            // console.log("---- data matrícula ----");
 
-            console.log({ mat });
+            // console.log({ mat });
 
             const {
               id_persona,
@@ -508,12 +494,12 @@ export const MatriculaForm = () => {
               detalles[0].valor_matricula || 0,
             );
 
-            console.log({ montoMatricula });
+            // console.log({ montoMatricula });
 
             // Obteniendo el pago de matrícula
             const pagoMatricula: Pago = pago_matricula?.[0];
 
-            console.log({ pagoMatricula });
+            // console.log({ pagoMatricula });
 
             // Obteniendo el detalle del pago de matrícula
             const {
@@ -533,7 +519,7 @@ export const MatriculaForm = () => {
               +codigoFormaPagoMatricula,
             );
 
-            console.log({ detalleFormaPagoMatricula });
+            // console.log({ detalleFormaPagoMatricula });
 
             // Obteniendo forma de pago de módulo
             const codigoFormaPagoModulo: string = validarPrimerPagoModulo
@@ -701,8 +687,8 @@ export const MatriculaForm = () => {
 
   const onSubmit = async (values: TFormValues) => {
     try {
-      console.log("---- values onSubmit registro matrícula ----");
-      console.log({ values });
+      // console.log("---- values onSubmit registro matrícula ----");
+      // console.log({ values });
 
       const {
         fechaMatricula,
@@ -792,14 +778,14 @@ export const MatriculaForm = () => {
           (payload.concepto_modulo = "PAGO DE MÓDULO #1")));
       }
 
-      console.log({ payload });
+      // console.log({ payload });
 
       const response = isEditMode
         ? await updateMatricula(+id, payload)
         : await createMatricula(payload);
 
-      console.log("---- response in MatriculaForm ----");
-      console.log({ response });
+      // console.log("---- response in MatriculaForm ----");
+      // console.log({ response });
 
       const { result, message } = response as MatriculaResponse;
 

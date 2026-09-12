@@ -71,7 +71,7 @@ export const SedeForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log({ values });
+      // console.log({ values });
 
       let messageError: string = "";
       let response: DetalleParametroResponse;
@@ -93,7 +93,7 @@ export const SedeForm = () => {
         response = await createDetalle("sede", payloadData);
       }
 
-      console.log({ response });
+      // console.log({ response });
 
       const { result, message, error, code } = response;
 

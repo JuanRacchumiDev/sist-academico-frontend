@@ -44,11 +44,11 @@ export const TipoCertificadoRow: React.FC<Props> = ({ tipoCertificado }) => {
   } Empresa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el tipo de certificado: <strong>${tipoCertificado.nombre}</strong>?`;
 
-  console.log({ tipoCertificado });
+  // console.log({ tipoCertificado });
 
   const handleShowDetail = () => {
     navigate(
-      `/mantenimiento/tipo-certificado/editar/${tipoCertificado.codigo}`
+      `/mantenimiento/tipo-certificado/editar/${tipoCertificado.codigo}`,
     );
   };
 

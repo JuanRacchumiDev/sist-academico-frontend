@@ -1,8 +1,5 @@
 import { JSX, useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { getAdjuntosPaginate } from "../../services/adjuntoService";
-import { AdjuntoFilters, AdjuntoFiltersData } from "./AdjuntoFilters";
-import { AdjuntoItem } from "./AdjuntoItem";
+import { getInstitucionesPaginate } from "../../../services/institucionService";
 import {
   Pagination,
   PaginationContent,
@@ -11,22 +8,28 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../ui/pagination";
-import { Adjunto, PaginationType } from "@/interfaces/IAdjunto";
+} from "../../ui/pagination";
 import {
-  FileText,
-  FileSpreadsheet,
-  FileUp,
-  Image,
-  FileCode,
-} from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../../ui/table";
+import { InstitucionRow } from "./InstitucionRow";
+import { TableSpinner } from "../../../components/Common/TableSpinner";
+import { Institucion, PaginationType } from "@/interfaces/IInstitucion";
+import {
+  InstitucionFilters,
+  InstitucionFiltersData,
+} from "./InstitucionFilters";
 
-export const AdjuntoGrid = () => {
-  const navigate = useNavigate();
-  const [adjuntos, setAdjuntos] = useState<Adjunto[]>([]);
+export const InstitucionTable = () => {
+  const [instituciones, setInstituciones] = useState<Institucion[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [limit] = useState(8);
+  const [limit] = useState(10);
 
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
@@ -37,10 +40,7 @@ export const AdjuntoGrid = () => {
     previousPage: null,
   });
 
-  const [searchFilters, setSearchFilters] = useState<AdjuntoFiltersData>({
-    codigoTipoPrograma: "",
-    fechaInicio: "",
-    fechaFinal: "",
+  const [searchFilters, setSearchFilters] = useState<InstitucionFiltersData>({
     search: "",
   });
 
@@ -51,26 +51,25 @@ export const AdjuntoGrid = () => {
   };
 
   const fetchData = useCallback(
-    async (pageToFetch: number, filtersData: AdjuntoFiltersData) => {
+    async (pageToFetch: number, filtersData: InstitucionFiltersData) => {
       setIsLoading(true);
 
       const filters = {
-        codigo_tipoprograma: filtersData.codigoTipoPrograma,
         search: filtersData.search,
-        fecha_inicio: filtersData.fechaInicio,
-        fecha_final: filtersData.fechaFinal,
+        is_cliente: true,
       };
 
       try {
-        const response = await getAdjuntosPaginate(pageToFetch, limit, filters);
-
-        // console.log("---- response paginate adjuntos ----");
-        // console.log({ response });
+        const response = await getInstitucionesPaginate(
+          pageToFetch,
+          limit,
+          filters,
+        );
 
         const { result, data, pagination: newPagination } = response;
 
         if (result && data) {
-          setAdjuntos(data as Adjunto[]);
+          setInstituciones(data as Institucion[]);
 
           if (newPagination) {
             setPaginationInfo({
@@ -81,10 +80,10 @@ export const AdjuntoGrid = () => {
             });
           }
         } else {
-          setAdjuntos([]);
+          setInstituciones([]);
         }
       } catch (error) {
-        console.error("Error al obtener adjuntos", error);
+        console.error("Error al obtener instituciones", error);
       } finally {
         setIsLoading(false);
       }
@@ -96,9 +95,9 @@ export const AdjuntoGrid = () => {
     fetchData(currentPage, searchFilters);
   }, [currentPage, searchFilters, fetchData]);
 
-  const handleSearchSubmit = (newFilters: AdjuntoFiltersData) => {
+  const handleSearchSubmit = (newFilters: InstitucionFiltersData) => {
     setSearchFilters(newFilters);
-    setCurrentPage(1); // Resetear a la primera página al filtrar
+    setCurrentPage(1);
   };
 
   const renderPaginationItems = (): JSX.Element[] => {
@@ -145,47 +144,67 @@ export const AdjuntoGrid = () => {
   return (
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
-        <AdjuntoFilters onSearch={handleSearchSubmit} />
+        <InstitucionFilters onSearch={handleSearchSubmit}></InstitucionFilters>
 
-        {/* Contenedor de contenido principal con borde superior sutil idéntico al de la tabla */}
-        <div className="pt-3 border-t border-slate-100">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center h-48 space-y-2">
-              <div className="animate-spin rounded-full h-7 w-7 border-b-2 border-blue-600"></div>
-              <span className="text-[11px] text-slate-400 font-medium">
-                Cargando archivos...
-              </span>
-            </div>
-          ) : adjuntos.length > 0 ? (
-            // Grid optimizado con espaciado consistente y alineación limpia
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start px-3">
-              {adjuntos.map((adjunto) => (
-                <AdjuntoItem key={adjunto.id} adjunto={adjunto} />
-              ))}
-            </div>
-          ) : (
-            // Estado vacío rediseñado con textos compactos y profesionales basados en PersonaTable
-            <div className="flex flex-col items-center justify-center rounded-xl h-48 bg-slate-50/50 border border-dashed border-slate-200">
-              <div className="text-center space-y-1 max-w-sm px-4">
-                <span className="text-xs font-medium text-slate-600 block">
-                  No se encontraron registros
-                </span>
-                <p className="text-[11px] text-slate-400">
-                  Aún no hay archivos registrados en esta categoría o los
-                  filtros aplicados no arrojaron resultados.
-                </p>
-              </div>
-            </div>
-          )}
+        <div className="overflow-x-auto border-t border-slate-100">
+          <Table className="w-full text-left border-collapse">
+            <TableHeader>
+              <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Nombre
+                </TableHead>
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Sede
+                </TableHead>
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Director / Representante
+                </TableHead>
+                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Teléfono contacto
+                </TableHead>
+                <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
+                  Estado
+                </TableHead>
+                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
+                  Acciones
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {isLoading ? (
+                <TableSpinner colSpan={6} />
+              ) : instituciones.length > 0 ? (
+                instituciones.map((institucion) => (
+                  <InstitucionRow
+                    key={institucion.id}
+                    institucion={institucion}
+                  />
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-24 text-center">
+                    <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
+                      <span className="text-xs font-medium text-slate-600">
+                        No se encontraron registros
+                      </span>
+                      <p className="text-[11px]">
+                        Intenta ajustar los filtros de búsqueda
+                      </p>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </div>
       </div>
 
-      {/* Sección inferior de paginación integrada y limpia, calco exacto de PersonaTable */}
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="text-[11px] text-slate-500 font-medium">
           Mostrando{" "}
           <span className="text-slate-800 font-semibold">
-            {adjuntos.length}
+            {instituciones.length}
           </span>{" "}
           de{" "}
           <span className="text-slate-800 font-semibold">

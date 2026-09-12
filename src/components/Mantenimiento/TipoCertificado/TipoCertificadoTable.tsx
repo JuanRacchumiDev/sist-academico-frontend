@@ -36,17 +36,17 @@ export const TipoCertificadoTable = () => {
     previousPage: null,
   });
 
-  console.log({ pagination });
+  // console.log({ pagination });
 
   const [isLoading, setIsLoading] = useState(true);
 
   const handlePageChange = (page: number) => {
-    console.log("---- page handlePageChange ----");
-    console.log({ page });
+    // console.log("---- page handlePageChange ----");
+    // console.log({ page });
 
     const validatePage = page > 0 && page <= pagination.totalPages;
 
-    console.log({ validatePage });
+    // console.log({ validatePage });
 
     if (validatePage) {
       setPagination((prev) => ({ ...prev, currentPage: page }));
@@ -58,21 +58,21 @@ export const TipoCertificadoTable = () => {
 
     const { currentPage, limit } = pagination;
 
-    console.log({ currentPage });
+    // console.log({ currentPage });
 
-    console.log({ limit });
+    // console.log({ limit });
 
     const filters = {
       parametro_clase: ParametroClase.TIPO_CERTIFICADO,
       estado: true,
     };
 
-    console.log({ filters });
+    // console.log({ filters });
 
     try {
       const response = await getDetallesFiltered(currentPage, limit, filters);
 
-      console.log("response tipo certificados", response);
+      // console.log("response tipo certificados", response);
 
       const { result, data, pagination: newPagination } = response;
 

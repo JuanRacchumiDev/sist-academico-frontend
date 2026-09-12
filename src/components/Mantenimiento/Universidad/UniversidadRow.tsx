@@ -44,7 +44,7 @@ export const UniversidadRow: React.FC<Props> = ({ universidad }) => {
   } Empresa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la universidad: <strong>${universidad.nombre}</strong>?`;
 
-  console.log({ universidad });
+  // console.log({ universidad });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/universidad/editar/${universidad.codigo}`);

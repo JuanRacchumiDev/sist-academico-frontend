@@ -44,7 +44,7 @@ export const MetodoPagoRow: React.FC<Props> = ({ metodoPago }) => {
   } Empresa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el método de pago: <strong>${metodoPago.nombre}</strong>?`;
 
-  console.log({ metodoPago });
+  // console.log({ metodoPago });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/metodo-pago/editar/${metodoPago.codigo}`);

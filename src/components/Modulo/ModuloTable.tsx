@@ -32,17 +32,17 @@ export const ModuloTable = () => {
     previousPage: null,
   });
 
-  console.log({ pagination });
+  // console.log({ pagination });
 
   const [isLoading, setIsLoading] = useState(true);
 
   const handlePageChange = (page: number) => {
-    console.log("---- page handlePageChange ----");
-    console.log({ page });
+    // console.log("---- page handlePageChange ----");
+    // console.log({ page });
 
     const validatePage = page > 0 && page <= pagination.totalPages;
 
-    console.log({ validatePage });
+    // console.log({ validatePage });
 
     if (validatePage) {
       setPagination((prev) => ({ ...prev, currentPage: page }));
@@ -53,13 +53,13 @@ export const ModuloTable = () => {
     // setIsLoading(true);
     const { currentPage, limit } = pagination;
 
-    console.log({ currentPage });
+    // console.log({ currentPage });
 
-    console.log({ limit });
+    // console.log({ limit });
 
     const filters = {};
 
-    console.log({ filters });
+    // console.log({ filters });
 
     try {
       const response = await getModulosPaginate(currentPage, limit, filters);

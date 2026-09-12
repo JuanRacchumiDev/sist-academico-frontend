@@ -199,7 +199,7 @@ export const ProgramaForm = () => {
   const watchFechaFinal = form.watch("fechaFinal");
   const watchcodigoTipoPrograma = form.watch("codigoTipoPrograma");
 
-  console.log({ watchcodigoTipoPrograma });
+  // console.log({ watchcodigoTipoPrograma });
 
   const selectedTipo = tipoProgramas.find(
     (item) => item.codigo?.toString() === watchcodigoTipoPrograma,
@@ -264,14 +264,14 @@ export const ProgramaForm = () => {
 
         if (isEditMode && id) {
           const responsePrograma = await getProgramaById(+id);
-          console.log({ responsePrograma });
+          // console.log({ responsePrograma });
 
           const { result, data } = responsePrograma;
 
           if (result && data) {
             const programa = data as Programa;
 
-            console.log({ programa });
+            // console.log({ programa });
 
             form.reset({
               codigoSegmento: programa.codigo_segmento?.toString() ?? "",
@@ -311,8 +311,8 @@ export const ProgramaForm = () => {
     try {
       const formData = new FormData();
 
-      console.log("---- values onSubmit ProgramaForm ----");
-      console.log({ values });
+      // console.log("---- values onSubmit ProgramaForm ----");
+      // console.log({ values });
 
       const {
         codigoSegmento,
@@ -331,8 +331,8 @@ export const ProgramaForm = () => {
       const fechaInicioStr = format(fechaInicio, "yyyy-MM-dd");
       const fechaFinalStr = format(fechaFinal, "yyyy-MM-dd");
 
-      console.log({ fechaInicioStr });
-      console.log({ fechaFinalStr });
+      // console.log({ fechaInicioStr });
+      // console.log({ fechaFinalStr });
 
       if (isEditMode) {
         formData.append("_method", "PATCH");
@@ -362,8 +362,8 @@ export const ProgramaForm = () => {
         formData.append("plan", plan_file);
       }
 
-      console.log("--- formData ----");
-      console.log({ formData });
+      // console.log("--- formData ----");
+      // console.log({ formData });
 
       let response = null;
 
@@ -373,22 +373,22 @@ export const ProgramaForm = () => {
         },
       };
 
-      console.log({ isEditMode });
+      // console.log({ isEditMode });
 
       if (isEditMode && id) {
-        console.log("---- actualizar programa ----");
+        // console.log("---- actualizar programa ----");
         response = await updatePrograma(+id, formData, config);
       } else {
-        console.log("---- crear programa ----");
+        // console.log("---- crear programa ----");
         response = await createPrograma(formData, config);
       }
 
-      console.log("response create/update", response);
+      // console.log("response create/update", response);
       const { result, message, data } = response as ProgramaResponse;
 
-      console.log({ result });
-      console.log({ message });
-      console.log({ data });
+      // console.log({ result });
+      // console.log({ message });
+      // console.log({ data });
 
       if (result && data) {
         showToast(

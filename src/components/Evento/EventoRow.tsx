@@ -44,7 +44,7 @@ export const EventoRow: React.FC<Props> = ({ evento }) => {
   } Evento`;
   const modalMessage = `¿Deseas <strong>${action}</strong> al evento: <strong>${evento.titulo}</strong>?`;
 
-  console.log({ evento });
+  // console.log({ evento });
 
   const handleShowDetail = () => {
     navigate(`/evento/editar/${evento.id}`);

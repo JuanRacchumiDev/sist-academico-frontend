@@ -44,7 +44,7 @@ export const TipoEventoRow: React.FC<Props> = ({ tipoEvento }) => {
   } Empresa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el tipo de evento: <strong>${tipoEvento.nombre}</strong>?`;
 
-  console.log({ tipoEvento });
+  // console.log({ tipoEvento });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/tipo-evento/editar/${tipoEvento.codigo}`);

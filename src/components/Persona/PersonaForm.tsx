@@ -76,15 +76,17 @@ const formSchema = z.object({
     .refine((val) => val !== null, {
       message: "La fecha de nacimiento es requerida",
     }),
-  email: z.string().email({
-    message: "Por favor ingrese un correo válido",
-  }),
   sexo: z.string().min(1, {
     message: "El sexo es requerido",
   }),
-  telefono: z.string().min(2, {
-    message: "El teléfono es requerido.",
-  }),
+  email: z.string().nullable().optional(),
+  telefono: z.string().nullable().optional(),
+  // email: z.string().email({
+  //   message: "Por favor ingrese un correo válido",
+  // }),
+  // telefono: z.string().min(2, {
+  //   message: "El teléfono es requerido.",
+  // }),
 });
 
 const defaultValues = {
@@ -394,7 +396,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                                 descGrupo,
                               );
 
-                              console.log({ responsePersona });
+                              // console.log({ responsePersona });
 
                               const { result, data, message } = responsePersona;
 

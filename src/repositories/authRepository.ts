@@ -8,12 +8,12 @@ export const login = async (email: string, password: string): Promise<TAuthRespo
             password
         }
 
-        console.log({ credenciales })
+        // console.log({ credenciales })
 
         const response = await apiClient.post('/auth/login', credenciales)
 
-        console.log('---- response authRepository ----')
-        console.log({ response })
+        // console.log('---- response authRepository ----')
+        // console.log({ response })
 
         const { data: { access_token, result, message, usuario, error }, status } = response
 
@@ -38,7 +38,7 @@ export const login = async (email: string, password: string): Promise<TAuthRespo
         }
 
     } catch (error) {
-        console.log('Error capturado en el repositorio:', error);
+        // console.log('Error capturado en el repositorio:', error);
 
         if (error.response && error.response.data) {
             const { message, error: resError, result } = error.response.data;
@@ -51,7 +51,7 @@ export const login = async (email: string, password: string): Promise<TAuthRespo
         }
 
         const errorMessage = error instanceof Error ? error.message : 'Error de red o conexión';
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return {
             result: false,
             message: errorMessage,
@@ -66,8 +66,8 @@ export const logout = async (id: number): Promise<TAuthResponse> => {
     try {
         const response = await apiClient.post('/auth/logout', { id })
 
-        console.log('logout authRepository')
-        console.log({ response })
+        // console.log('logout authRepository')
+        // console.log({ response })
 
         const { data: { result, status, message, error } } = response
 
@@ -90,7 +90,7 @@ export const logout = async (id: number): Promise<TAuthResponse> => {
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error de inicio de sesión'
-        console.log('errorMessage', errorMessage)
+        // console.log('errorMessage', errorMessage)
         return { result: false, error: errorMessage, status: 500 }
     }
 }

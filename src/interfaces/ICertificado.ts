@@ -29,7 +29,7 @@ export interface Certificado {
 
     persona?: Persona
     tipo_certificado?: DetalleParametro
-    institucion?: Institucion
+    sucursal?: Institucion
     plantilla?: Plantilla
     programa?: Programa
     modulo?: Modulo

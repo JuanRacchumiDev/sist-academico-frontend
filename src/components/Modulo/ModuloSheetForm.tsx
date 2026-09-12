@@ -96,7 +96,7 @@ export const ModuloSheetForm: React.FC<Props> = ({
         try {
           const response = await getModulosByPrograma(programa.id);
 
-          console.log({ response });
+          // console.log({ response });
 
           const { result, data } = response;
 
@@ -148,17 +148,17 @@ export const ModuloSheetForm: React.FC<Props> = ({
     setIsSubmitting(true);
 
     try {
-      console.log({ values });
+      // console.log({ values });
 
       const { modulos } = values;
 
-      console.log({ modulos });
+      // console.log({ modulos });
 
       const response = existsModulos
         ? await updateModulosMultiple(programa.id, modulos)
         : await createModulosMultiple(programa.id, modulos);
 
-      console.log({ response });
+      // console.log({ response });
 
       const { result, message, data } = response;
 

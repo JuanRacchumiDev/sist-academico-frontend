@@ -1,7 +1,7 @@
 import { DetalleParametro, DetalleParametroFilters } from '@/interfaces/IDetalleParametro'
 import {
     getAll,
-    getAllFiltered,
+    getAllPaginate,
     getAllByClase,
     getByParams,
     create,
@@ -47,7 +47,7 @@ export const getDetallesFiltered = async (
 
     console.log({ queryParams })
 
-    const response = await getAllFiltered(queryParams)
+    const response = await getAllPaginate(queryParams)
 
     console.log({ response })
 

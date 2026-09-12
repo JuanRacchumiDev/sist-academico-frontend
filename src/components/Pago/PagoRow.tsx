@@ -41,7 +41,7 @@ export const PagoRow: React.FC<Props> = ({ pago }) => {
   const modalTitle = `${action.charAt(0).toUpperCase() + action.slice(1)} Pago`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el pago: <strong>${pago.id}</strong>?`;
 
-  console.log({ pago });
+  // console.log({ pago });
 
   const handleDownloadConstanciaPago = async () => {
     setIsDropdownOpen(false); // Cierra el menú

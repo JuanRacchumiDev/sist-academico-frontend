@@ -50,7 +50,7 @@ export const TipoDocumentoRow: React.FC<Props> = ({ tipoDocumento }) => {
   } Tipo Documento`;
   const modalMessage = `¿Deseas <strong>${action}</strong> el tipo de documento: <strong>${tipoDocumento.nombre}</strong>?`;
 
-  console.log({ tipoDocumento });
+  // console.log({ tipoDocumento });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/tipo-documento/editar/${tipoDocumento.codigo}`);

@@ -87,7 +87,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "../ui/dialog";
-import { getStorageUrl } from "@/utils/stringUtils";
+import { capitalize, getStorageUrl } from "@/utils/stringUtils";
 
 const loadGrupoPersonas = async (): Promise<DetalleParametro[]> => {
   let grupos: DetalleParametro[] = [];
@@ -385,6 +385,9 @@ export const CertificadoForm = () => {
 
         const response = await getPlantillas(filters);
 
+        // console.log("---- response plantillas ----");
+        // console.log({ response });
+
         const { result, data } = response;
 
         if (result && data) {
@@ -424,7 +427,11 @@ export const CertificadoForm = () => {
         (p) => p.id?.toString() === selectedPersonaId.toString(),
       );
       if (personaSeleccionada?.nombre_completo) {
-        form.setValue("nombreImpresion", personaSeleccionada.nombre_completo, {
+        const nombreCapitalized = capitalize(
+          personaSeleccionada.nombre_completo,
+        );
+
+        form.setValue("nombreImpresion", nombreCapitalized, {
           shouldValidate: true,
         });
       }
@@ -439,7 +446,7 @@ export const CertificadoForm = () => {
         return;
       }
 
-      console.log({ selectedTipoProgramaCodigo });
+      // console.log({ selectedTipoProgramaCodigo });
 
       setIsLoadingProgramas(true);
 
@@ -448,7 +455,7 @@ export const CertificadoForm = () => {
         (tipo) => tipo.codigo.toString() === selectedTipoProgramaCodigo,
       );
 
-      console.log({ selectTipoPrograma });
+      // console.log({ selectTipoPrograma });
 
       if (selectTipoPrograma) {
         const { programas_por_tipo } = selectTipoPrograma;
@@ -478,7 +485,7 @@ export const CertificadoForm = () => {
       );
 
       const nombreGrupo = selectGrupo.nombre_url || selectedGrupoId;
-      console.log({ nombreGrupo });
+      // console.log({ nombreGrupo });
 
       setIsLoadingPersonas(true);
 
@@ -528,7 +535,7 @@ export const CertificadoForm = () => {
       estado: true,
     };
 
-    console.log({ payload });
+    // console.log({ payload });
 
     try {
       const response = await createCertificado(payload);

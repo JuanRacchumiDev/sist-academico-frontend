@@ -88,7 +88,7 @@ export const ModuloForm = () => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      console.log({ values });
+      // console.log({ values });
 
       const { idPrograma, titulo, descripcion, video } = values;
 
@@ -100,19 +100,19 @@ export const ModuloForm = () => {
         estado: true,
       };
 
-      console.log("payload new modulo", { payload });
+      // console.log("payload new modulo", { payload });
 
       const response = await createModulo(payload);
 
-      console.log("response create", response);
+      // console.log("response create", response);
 
       const { result, message, data } = response as ModuloResponse;
 
-      console.log({ result });
+      // console.log({ result });
 
-      console.log({ message });
+      // console.log({ message });
 
-      console.log({ data });
+      // console.log({ data });
 
       if (result && data) {
         showToast("success", message as string);
@@ -135,7 +135,7 @@ export const ModuloForm = () => {
 
         const [responseProgramas] = await Promise.all([getProgramas()]);
 
-        console.log({ responseProgramas });
+        // console.log({ responseProgramas });
 
         const { result: resultProgramas, data: dataProgramas } =
           responseProgramas;

@@ -201,7 +201,7 @@ export const AdjuntoForm = () => {
 
         if (isEditMode && id) {
           const responseAdjunto = await getAdjuntoById(+id);
-          console.log({ responseAdjunto });
+          // console.log({ responseAdjunto });
           const { result, data } = responseAdjunto;
 
           if (result && data) {
@@ -271,11 +271,11 @@ export const AdjuntoForm = () => {
       const { idPrograma, idModulo, nombre, adjunto_file } = values;
 
       if (isEditMode && id) {
-        console.log("actualizar adjunto");
+        // console.log("actualizar adjunto");
         formData.append("fecha_actualiza", fechaActual);
         formData.append("_method", "PATCH");
       } else {
-        console.log("crear adjunto");
+        // console.log("crear adjunto");
         formData.append("fecha_crea", fechaActual);
       }
 
@@ -292,7 +292,7 @@ export const AdjuntoForm = () => {
         formData.append("file", adjunto_file);
       }
 
-      console.log({ formData });
+      // console.log({ formData });
 
       const config = { headers: { "Content-Type": "multipart/form-data" } };
 

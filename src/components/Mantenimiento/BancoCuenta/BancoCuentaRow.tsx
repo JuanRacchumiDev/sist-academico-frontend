@@ -44,7 +44,7 @@ export const BancoCuentaRow: React.FC<Props> = ({ bancoCuenta }) => {
   } Cuenta`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la cuenta: <strong>${bancoCuenta.nombre}</strong>?`;
 
-  console.log({ bancoCuenta });
+  // console.log({ bancoCuenta });
 
   const handleShowDetail = () => {
     navigate(`/mantenimiento/banco-cuenta/editar/${bancoCuenta.codigo}`);

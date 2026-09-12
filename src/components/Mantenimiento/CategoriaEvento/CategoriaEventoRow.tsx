@@ -45,11 +45,11 @@ export const CategoriaEventoRow: React.FC<Props> = ({ categoriaEvento }) => {
   } Empresa`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la categoría de evento: <strong>${categoriaEvento.nombre}</strong>?`;
 
-  console.log({ categoriaEvento });
+  // console.log({ categoriaEvento });
 
   const handleShowDetail = () => {
     navigate(
-      `/mantenimiento/categoria-evento/editar/${categoriaEvento.codigo}`
+      `/mantenimiento/categoria-evento/editar/${categoriaEvento.codigo}`,
     );
   };
 

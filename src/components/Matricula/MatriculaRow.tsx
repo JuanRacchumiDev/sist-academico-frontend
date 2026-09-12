@@ -50,7 +50,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   } Matrícula`;
   const modalMessage = `¿Deseas <strong>${action}</strong> la matrícula: <strong>${matricula.persona.nombre_completo}</strong>?`;
 
-  console.log({ matricula });
+  // console.log({ matricula });
 
   const handleShowDetail = () => {
     navigate(`/matricula/editar/${matricula.id}`);
@@ -113,7 +113,7 @@ export const MatriculaRow: React.FC<Props> = ({ matricula }) => {
   const handleFormPago = async () => {
     if (matricula.id) {
       const urlApi = `/matricula/${matricula.id}/pago-modulo`;
-      console.log(urlApi);
+      // console.log(urlApi);
       navigate(urlApi);
     } else {
       showToast("error", "La matrícula seleccionada no posee un ID válido");

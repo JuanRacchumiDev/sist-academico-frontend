@@ -18,7 +18,7 @@ export const PagoFormPage = () => {
 
       try {
         const response = await getMatriculaById(+id);
-        console.log({ response });
+        // console.log({ response });
 
         const { result, data } = response;
 
