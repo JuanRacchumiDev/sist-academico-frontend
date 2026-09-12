@@ -120,11 +120,11 @@ export const CertificadoCard: React.FC<CertificadoCardProps> = ({
             </div>
           )}
 
-          {certificado.institucion && (
+          {certificado.sucursal && (
             <div className="flex items-center gap-1.5 text-xs text-slate-500">
               <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <span className="truncate" title={certificado.institucion.nombre}>
-                {certificado.institucion.nombre}
+              <span className="truncate" title={certificado.sucursal.nombre}>
+                {certificado.sucursal.nombre}
               </span>
             </div>
           )}
