@@ -514,13 +514,9 @@ export const CertificadoForm = () => {
 
   const onSubmit = async (values: TFormValues) => {
     const {
-      idGrupoPersona,
       codigoTipoCertificado,
       idPersona,
-      idInstitucion,
-      codigoTipoPrograma,
       idPrograma,
-      idModulo,
       idPlantilla,
       nombreImpresion,
     } = values;
@@ -534,8 +530,6 @@ export const CertificadoForm = () => {
       nombre_impresion: nombreImpresion,
       estado: true,
     };
-
-    // console.log({ payload });
 
     try {
       const response = await createCertificado(payload);

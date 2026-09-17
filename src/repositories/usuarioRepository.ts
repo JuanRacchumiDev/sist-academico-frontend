@@ -1,6 +1,5 @@
 import { Usuario, UsuarioResponse } from "@/interfaces/IUsuario";
 import apiClient from "./apiClient";
-import { AxiosRequestConfig } from "axios";
 
 export const getAll = async (): Promise<UsuarioResponse> => {
     try {
@@ -101,7 +100,7 @@ export const update = async (
     try {
         const urlApi = `${'/usuarios/'}${id}`
 
-        const response = await apiClient.post(urlApi, payload)
+        const response = await apiClient.patch(urlApi, payload)
 
         console.log({ response })
 

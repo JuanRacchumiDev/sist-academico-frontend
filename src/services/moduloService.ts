@@ -1,3 +1,4 @@
+import { AxiosRequestConfig } from "axios"
 import { Modulo } from "../interfaces/IModulo"
 import {
     getAllPaginate,
@@ -61,10 +62,17 @@ export const createModulo = async (payload: Modulo) => {
     }
 }
 
-export const createModulosMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]) => {
-    console.log('---- method createModulosMultiple in ModuloSheetForm ----')
+export const createModulosMultiple = async (
+    idPrograma: number,
+    modulos: (Partial<Modulo> & { plan?: File | string | null })[],
+    config?: AxiosRequestConfig
+) => {
 
-    const response = await createMultiple(idPrograma, modulos)
+    console.log('---- createModulosMultiple ----')
+    console.log({ modulos })
+
+    console.log('---- method createModulosMultiple in ModuloSheetForm ----')
+    const response = await createMultiple(idPrograma, modulos, config)
 
     console.log('---- response createModulosMultiple ----')
     console.log({ response })
@@ -74,10 +82,14 @@ export const createModulosMultiple = async (idPrograma: number, modulos: Partial
     }
 }
 
-export const updateModulosMultiple = async (idPrograma: number, modulos: { id?: number; titulo: string }[]) => {
+export const updateModulosMultiple = async (
+    idPrograma: number,
+    modulos: (Partial<Modulo> & { plan?: File | string | null })[],
+    config?: AxiosRequestConfig
+) => {
     console.log('---- method updateModulosMultiple in ModuloSheetForm ----')
 
-    const response = await updateMultiple(idPrograma, modulos)
+    const response = await updateMultiple(idPrograma, modulos, config)
 
     console.log('---- response updateModulosMultiple ----')
     console.log({ response })

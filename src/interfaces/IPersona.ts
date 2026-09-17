@@ -28,6 +28,7 @@ export interface Persona {
     nombre_grupo?: string
     estado?: boolean
     tipo_documento?: DetalleParametro
+    grupos?: DetalleParametro[]
     matriculas?: Matricula[]
     certificados?: Certificado[]
 }

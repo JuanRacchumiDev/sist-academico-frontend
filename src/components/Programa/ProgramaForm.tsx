@@ -38,7 +38,13 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { RequiredLabel } from "../Common/RequiredLabel";
 import { Programa, ProgramaResponse } from "../../interfaces/IPrograma";
-import { ArrowLeft, Save, XCircle } from "lucide-react";
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Save,
+  UploadCloud,
+  XCircle,
+} from "lucide-react";
 import { getDetalles } from "../../services/detalleParametroService";
 import {
   DetalleParametro,
@@ -408,320 +414,328 @@ export const ProgramaForm = () => {
   };
 
   return (
-    <>
-      <Card className="shadow-xl border-none bg-white">
-        <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
-          <div className="space-y-1">
-            <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
-              {isEditMode ? `Editar programa` : `Nuevo Registro de programa`}
-            </CardTitle>
-            <CardDescription className="text-slate-500 font-medium">
-              {isEditMode
-                ? `Actualización de información de programa`
-                : `Complete la información para registrar un programa`}
-            </CardDescription>
+    <Card className="shadow-xl border-none bg-white rounded-xl">
+      <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
+        <div className="space-y-1">
+          <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
+            {isEditMode ? "Editar programa" : "Nuevo Registro de programa"}
+          </CardTitle>
+          <CardDescription className="text-slate-500 font-medium">
+            {isEditMode
+              ? "Actualización de información de programa"
+              : "Complete la información para registrar un programa"}
+          </CardDescription>
+        </div>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={handleGoBack}
+          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Volver
+        </Button>
+      </CardHeader>
+
+      <CardContent className="px-6 sm:px-8 py-6 relative">
+        {isLoadingData && (
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10 rounded-b-xl">
+            <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
           </div>
-          <Button
-            variant="ghost"
-            onClick={handleGoBack}
-            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Volver
-          </Button>
-        </CardHeader>
-        <CardContent className="px-6 sm:px-8 relative">
-          {isLoadingData && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
-              <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
-            </div>
-          )}
+        )}
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              <div className="relative">
-                <div className="flex items-center gap-4 mb-6">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
-                    01
-                  </span>
-                  <h3 className="text-lg font-semibold text-slate-800">
-                    Información de registro
-                  </h3>
-                  <div className="h-px bg-gray-200 flex-1"></div>
-                </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Encabezado de Sección */}
+            <div className="relative">
+              <div className="flex items-center gap-4 mb-2">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold shadow-sm">
+                  01
+                </span>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  Información de registro
+                </h3>
+                <div className="h-px bg-gray-200 flex-1"></div>
               </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
-                <FormField
-                  control={form.control}
-                  name="codigoSegmento"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col">
-                      <RequiredLabel>Segmento</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
+            </div>
+
+            {/* Grid de Inputs Principales */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+              {/* Segmento */}
+              <FormField
+                control={form.control}
+                name="codigoSegmento"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col">
+                    <RequiredLabel>Segmento</RequiredLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={`${inputErrorClass(fieldState.invalid)} w-full`}
+                        >
+                          <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {segmentos.map((segmento: any) => (
+                          <SelectItem
+                            value={segmento.codigo!.toString()}
+                            key={segmento.codigo!.toString()}
                           >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {segmentos.map((segmento) => (
-                            <SelectItem
-                              value={segmento.codigo!.toString()}
-                              key={segmento.codigo!.toString()}
-                            >
-                              {segmento.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="codigoTipoPrograma"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col">
-                      <RequiredLabel>Tipo Programa</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
-                          >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {tipoProgramas.map((tipoPrograma) => (
-                            <SelectItem
-                              value={tipoPrograma.codigo!.toString()}
-                              key={tipoPrograma.codigo!.toString()}
-                            >
-                              {tipoPrograma.nombre}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="titulo"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <RequiredLabel>Título</RequiredLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="ADMINISTRACIÓN EJECUTIVA"
-                          autoComplete="off"
-                          maxLength={100}
-                          {...field}
-                          value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="fechaInicio"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <RequiredLabel>Fecha Inicio</RequiredLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          autoComplete="off"
-                          value={
-                            field.value instanceof Date &&
-                            !isNaN(field.value.getTime())
-                              ? format(field.value, "yyyy-MM-dd")
-                              : ""
-                          }
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? parseISO(e.target.value) : null,
-                            )
-                          }
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="fechaFinal"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <RequiredLabel>Fecha Final</RequiredLabel>
-                      <FormControl>
-                        <Input
-                          type="date"
-                          autoComplete="off"
-                          value={
-                            field.value instanceof Date &&
-                            !isNaN(field.value.getTime())
-                              ? format(field.value, "yyyy-MM-dd")
-                              : ""
-                          }
-                          onChange={(e) =>
-                            field.onChange(
-                              e.target.value ? parseISO(e.target.value) : null,
-                            )
-                          }
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                {isEspecializacion && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="duracion"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <label className="text-sm font-medium text-slate-700">
-                            Duración
-                          </label>
-                          {/* <RequiredLabel>Duración</RequiredLabel> */}
-                          <FormControl>
-                            <Input
-                              placeholder="12 MESES"
-                              autoComplete="off"
-                              maxLength={20}
-                              {...field}
-                              value={field.value ?? ""}
-                              className={inputErrorClass(fieldState.invalid)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={form.control}
-                      name="modulos"
-                      render={({ field, fieldState }) => (
-                        <FormItem>
-                          <label className="text-sm font-medium text-slate-700">
-                            Módulos
-                          </label>
-                          <FormControl>
-                            <Input
-                              placeholder="12"
-                              autoComplete="off"
-                              type="number"
-                              min={0}
-                              value={field.value ?? ""}
-                              onChange={(e) => {
-                                const value = e.target.value;
-                                field.onChange(
-                                  value === "" ? null : parseInt(value, 10),
-                                );
-                              }}
-                              className={inputErrorClass(fieldState.invalid)}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
+                            {segmento.nombre}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
                 )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="horasAcademicas"
-                  render={({ field, fieldState }) => (
-                    <FormItem>
-                      <label className="text-sm font-medium text-slate-700">
-                        Horas académicas
-                      </label>
+              {/* Tipo Programa */}
+              <FormField
+                control={form.control}
+                name="codigoTipoPrograma"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col">
+                    <RequiredLabel>Tipo Programa</RequiredLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
                       <FormControl>
-                        <Input
-                          type="number"
-                          placeholder="120"
-                          step={1}
-                          min={0}
-                          autoComplete="off"
-                          value={field.value ?? ""}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            field.onChange(
-                              val === "" ? null : parseInt(val, 10),
-                            );
-                          }}
-                          className={inputErrorClass(fieldState.invalid)}
-                        />
+                        <SelectTrigger
+                          className={`${inputErrorClass(fieldState.invalid)} w-full`}
+                        >
+                          <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="modalidad"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col">
-                      <RequiredLabel>Modalidad</RequiredLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        value={field.value ?? ""}
-                      >
-                        <FormControl>
-                          <SelectTrigger
-                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
+                      <SelectContent>
+                        {tipoProgramas.map((tipoPrograma: any) => (
+                          <SelectItem
+                            value={tipoPrograma.codigo!.toString()}
+                            key={tipoPrograma.codigo!.toString()}
                           >
-                            <SelectValue placeholder="Seleccionar..." />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="VIRTUAL" key="VIRTUAL">
-                            VIRTUAL
+                            {tipoPrograma.nombre}
                           </SelectItem>
-                          <SelectItem value="PRESENCIAL" key="PRESENCIAL">
-                            PRESENCIAL
-                          </SelectItem>
-                          <SelectItem value="MIXTA" key="MIXTRA">
-                            MIXTA
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="temario"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="md:col-span-2">
+              {/* Título */}
+              <FormField
+                control={form.control}
+                name="titulo"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <RequiredLabel>Título</RequiredLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="ADMINISTRACIÓN EJECUTIVA"
+                        autoComplete="off"
+                        maxLength={100}
+                        {...field}
+                        value={field.value ?? ""}
+                        className={inputErrorClass(fieldState.invalid)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Fecha Inicio */}
+              <FormField
+                control={form.control}
+                name="fechaInicio"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <RequiredLabel>Fecha Inicio</RequiredLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        autoComplete="off"
+                        value={
+                          field.value instanceof Date &&
+                          !isNaN(field.value.getTime())
+                            ? format(field.value, "yyyy-MM-dd")
+                            : ""
+                        }
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value ? parseISO(e.target.value) : null,
+                          )
+                        }
+                        className={inputErrorClass(fieldState.invalid)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Fecha Final */}
+              <FormField
+                control={form.control}
+                name="fechaFinal"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <RequiredLabel>Fecha Final</RequiredLabel>
+                    <FormControl>
+                      <Input
+                        type="date"
+                        autoComplete="off"
+                        value={
+                          field.value instanceof Date &&
+                          !isNaN(field.value.getTime())
+                            ? format(field.value, "yyyy-MM-dd")
+                            : ""
+                        }
+                        onChange={(e) =>
+                          field.onChange(
+                            e.target.value ? parseISO(e.target.value) : null,
+                          )
+                        }
+                        className={inputErrorClass(fieldState.invalid)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Modalidad */}
+              <FormField
+                control={form.control}
+                name="modalidad"
+                render={({ field, fieldState }) => (
+                  <FormItem className="flex flex-col">
+                    <RequiredLabel>Modalidad</RequiredLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value ?? ""}
+                    >
+                      <FormControl>
+                        <SelectTrigger
+                          className={`${inputErrorClass(fieldState.invalid)} w-full`}
+                        >
+                          <SelectValue placeholder="Seleccionar..." />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="VIRTUAL">VIRTUAL</SelectItem>
+                        <SelectItem value="PRESENCIAL">PRESENCIAL</SelectItem>
+                        <SelectItem value="MIXTA">MIXTA</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Campos Condicionales de Especialización */}
+              {isEspecializacion && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="duracion"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <label className="text-sm font-medium text-slate-700">
+                          Duración
+                        </label>
+                        <FormControl>
+                          <Input
+                            placeholder="12 MESES"
+                            autoComplete="off"
+                            maxLength={20}
+                            {...field}
+                            value={field.value ?? ""}
+                            className={inputErrorClass(fieldState.invalid)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="modulos"
+                    render={({ field, fieldState }) => (
+                      <FormItem>
+                        <label className="text-sm font-medium text-slate-700">
+                          Módulos
+                        </label>
+                        <FormControl>
+                          <Input
+                            placeholder="12"
+                            autoComplete="off"
+                            type="number"
+                            min={0}
+                            value={field.value ?? ""}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              field.onChange(
+                                value === "" ? null : parseInt(value, 10),
+                              );
+                            }}
+                            className={inputErrorClass(fieldState.invalid)}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
+
+              {/* Horas Académicas */}
+              <FormField
+                control={form.control}
+                name="horasAcademicas"
+                render={({ field, fieldState }) => (
+                  <FormItem>
+                    <label className="text-sm font-medium text-slate-700">
+                      Horas académicas
+                    </label>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        placeholder="120"
+                        step={1}
+                        min={0}
+                        autoComplete="off"
+                        value={field.value ?? ""}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          field.onChange(val === "" ? null : parseInt(val, 10));
+                        }}
+                        className={inputErrorClass(fieldState.invalid)}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {/* Sección Inferior: Contenido Extenso (Temario & Documento Plan de Estudios) */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-2">
+              {/* Textarea: Temario (Ocupa 2 columnas en Desktop) */}
+              <FormField
+                control={form.control}
+                name="temario"
+                render={({ field, fieldState }) => (
+                  <FormItem className="lg:col-span-2 flex flex-col justify-between">
+                    <div>
                       {isCapacitacion ? (
                         <RequiredLabel>Temario del programa</RequiredLabel>
                       ) : (
@@ -729,75 +743,134 @@ export const ProgramaForm = () => {
                           Temario del programa
                         </label>
                       )}
-                      <FormControl>
+                      <FormControl className="mt-1.5">
                         <Textarea
                           {...field}
                           placeholder="Detalle los temas, unidades o contenido general del programa..."
-                          rows={4}
-                          className={`resize-y ${inputErrorClass(fieldState.invalid)}`}
+                          rows={6}
+                          className={`min-h-40 resize-y ${inputErrorClass(fieldState.invalid)}`}
                         />
                       </FormControl>
-                      <FormDescription>
+                    </div>
+                    <div className="space-y-1 mt-1.5">
+                      <FormDescription className="text-xs text-slate-500">
                         Describa el contenido temático del programa.{" "}
                         {isCapacitacion && "(Obligatorio para Capacitación)"}
                       </FormDescription>
                       <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                    </div>
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="plan_file"
-                  render={({ field, fieldState }) => (
-                    <FormItem className="md:col-span-2">
-                      <RequiredLabel>Plan de estudios</RequiredLabel>
-                      <FormControl>
-                        <Input
-                          id="plan_file"
-                          type="file"
-                          accept=".pdf"
-                          onChange={(e) =>
-                            field.onChange(e.target.files?.[0] ?? null)
-                          }
-                          className={`cursor-pointer file:bg-blue-50 file:text-blue-700 file:rounded-md hover:file:bg-blue-100 ${inputErrorClass(fieldState.invalid)}`}
-                        />
-                      </FormControl>
-                      <FormDescription>PDF (Máx. 2MB)</FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* File Upload: Plan de Estudios (Diseño Dropzone Profesional - Ocupa 1 columna) */}
+              <FormField
+                control={form.control}
+                name="plan_file"
+                render={({ field, fieldState }) => {
+                  const selectedFile = field.value as File | null;
 
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
-                >
-                  {isSubmitting ? (
-                    <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
-                </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  disabled={isSubmitting}
-                  onClick={resetForm}
-                  className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
-                >
-                  <XCircle className="h-4 w-4 mr-2 text-slate-500" />
-                  Cancelar
-                </Button>
-              </div>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
-    </>
+                  return (
+                    <FormItem className="flex flex-col justify-between">
+                      <div>
+                        <RequiredLabel>Plan de estudios</RequiredLabel>
+                        <FormControl className="mt-1.5">
+                          <div className="relative">
+                            <input
+                              id="plan_file"
+                              type="file"
+                              accept=".pdf"
+                              onChange={(e) =>
+                                field.onChange(e.target.files?.[0] ?? null)
+                              }
+                              className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            />
+                            <div
+                              className={`border-2 border-dashed rounded-xl p-4 flex flex-col items-center justify-center text-center transition-all bg-slate-50/50 hover:bg-slate-100/60 min-h-40 ${
+                                fieldState.invalid
+                                  ? "border-red-400 bg-red-50/20"
+                                  : selectedFile
+                                    ? "border-emerald-400 bg-emerald-50/20"
+                                    : "border-slate-300 hover:border-blue-400"
+                              }`}
+                            >
+                              {selectedFile ? (
+                                <div className="flex flex-col items-center space-y-2 p-2">
+                                  <div className="p-2.5 bg-emerald-100 text-emerald-600 rounded-full">
+                                    <CheckCircle2 className="h-6 w-6" />
+                                  </div>
+                                  <div className="space-y-0.5 max-w-[200px]">
+                                    <p className="text-xs font-semibold text-slate-800 truncate">
+                                      {selectedFile.name}
+                                    </p>
+                                    <p className="text-[11px] text-slate-500">
+                                      {(
+                                        selectedFile.size /
+                                        (1024 * 1024)
+                                      ).toFixed(2)}{" "}
+                                      MB
+                                    </p>
+                                  </div>
+                                  <span className="text-[11px] text-blue-600 font-medium hover:underline pt-1">
+                                    Haga clic para cambiar archivo
+                                  </span>
+                                </div>
+                              ) : (
+                                <div className="flex flex-col items-center space-y-2">
+                                  <div className="p-3 bg-blue-50 text-blue-600 rounded-full group-hover:scale-105 transition-transform">
+                                    <UploadCloud className="h-6 w-6" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <p className="text-xs font-semibold text-slate-700">
+                                      Haga clic o arrastre un archivo
+                                    </p>
+                                    <p className="text-[11px] text-slate-400">
+                                      Soporta formato PDF (Máx. 2MB)
+                                    </p>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </FormControl>
+                      </div>
+                      <div className="mt-1.5">
+                        <FormMessage />
+                      </div>
+                    </FormItem>
+                  );
+                }}
+              />
+            </div>
+
+            {/* Acciones del Formulario */}
+            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={isSubmitting}
+                onClick={resetForm}
+                className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
+              >
+                <XCircle className="h-4 w-4 mr-2 text-slate-500" />
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
+              >
+                {isSubmitting ? (
+                  <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
+              </Button>
+            </div>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 };

@@ -27,6 +27,7 @@ import { MisMatriculasListPage } from "./components/Alumno/Page/MisMatriculasLis
 import { CertificadoListPage } from "./components/Certificado/Page/CertificadoListPage";
 import { CertificadoFormPage } from "./components/Certificado/Page/CertificadoFormPage";
 import { ValidarCertificadoPage } from "./components/Certificado/Page/ValidarCertificadoPage";
+import { MisCertificadosListPage } from "./components/Alumno/Page/MisCertificadosListPage";
 
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
@@ -181,6 +182,10 @@ function App() {
                       path="/usuario/nuevo"
                       element={<UsuarioFormPage />}
                     />
+                    <Route
+                      path="/usuario/editar/:id"
+                      element={<UsuarioFormPage />}
+                    />
 
                     <Route
                       path="/certificado"
@@ -206,6 +211,10 @@ function App() {
                     <Route
                       path="/mis-matriculas"
                       element={<MisMatriculasListPage />}
+                    />
+                    <Route
+                      path="/mis-certificados"
+                      element={<MisCertificadosListPage />}
                     />
                   </>
                 ) : (

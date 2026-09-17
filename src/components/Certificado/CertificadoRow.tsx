@@ -179,9 +179,14 @@ export const CertificadoRow: React.FC<Props> = ({
           {nombreAlumno}
         </TableCell>
 
-        {/* Tipo Certificado */}
+        {/* Tipo Institución */}
         <TableCell className="py-2.5 px-2 text-xs font-medium text-slate-700 leading-tight whitespace-normal wrap-break-words align-top">
-          {certificado.tipo_certificado?.nombre ?? "--"}
+          {certificado.plantilla.institucion?.nombre ?? "----"}
+        </TableCell>
+
+        {/* Tipo Programa */}
+        <TableCell className="py-2.5 px-2 text-xs font-medium text-slate-700 leading-tight whitespace-normal wrap-break-words align-top">
+          {certificado.programa.tipo_programa?.nombre ?? "--"}
         </TableCell>
 
         {/* Programa: Muestra texto completo con múltiples líneas según necesite */}

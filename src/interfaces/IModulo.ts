@@ -8,9 +8,12 @@ export interface Modulo {
     descripcion?: string | null
     temario?: string
     nota?: number
+    plan?: File | string | null | undefined
     adjunto?: string
     video?: string | null
     orden?: number
+    plan_existe?: boolean
+    plan_url?: string | null
     estado?: boolean
     programa?: Programa
 }

@@ -26,7 +26,7 @@ export const UsuarioRow: React.FC<Props> = ({ usuario }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleShowDetail = () => {
-    navigate(`/usuarios/editar/${usuario.id}`);
+    navigate(`/usuario/editar/${usuario.id}`);
   };
 
   return (

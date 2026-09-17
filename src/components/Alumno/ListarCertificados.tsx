@@ -1,95 +1,152 @@
-import React from "react";
+import React, { useState } from "react";
 import { Certificado } from "@/interfaces/ICertificado";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Award, Download, QrCode, Hash } from "lucide-react";
+import {
+  downloadCertificadoByCodigo,
+  downloadCertificado,
+} from "@/services/certificadoService";
+import { useToast } from "@/context/ToastContext";
+import {
+  Award,
+  Calendar,
+  Download,
+  Loader2,
+  QrCode,
+  GraduationCap,
+  FileCheck,
+} from "lucide-react";
 
-interface ListarCertificadosProps {
+export interface ListarCertificadosProps {
   certificados: Certificado[];
+  loading?: boolean;
 }
 
 export const ListarCertificados: React.FC<ListarCertificadosProps> = ({
   certificados,
+  loading = false,
 }) => {
-  if (certificados.length === 0) {
+  const [downloadingId, setDownloadingId] = useState<number | string | null>(
+    null,
+  );
+  const { showToast } = useToast();
+
+  const handleDownload = async (cert: Certificado) => {
+    const certIdentifier = cert.codigo_verificacion || cert.id;
+    setDownloadingId(certIdentifier);
+
+    try {
+      if (cert.codigo_verificacion) {
+        await downloadCertificadoByCodigo(cert.codigo_verificacion);
+      } else if (cert.id) {
+        await downloadCertificado(cert.id);
+      } else {
+        throw new Error("Sin identificador válido para descarga.");
+      }
+      showToast("success", "Certificado descargado correctamente.");
+    } catch (error) {
+      console.error("Error al descargar el certificado:", error);
+      showToast("error", "No se pudo descargar el archivo PDF.");
+    } finally {
+      setDownloadingId(null);
+    }
+  };
+
+  if (loading) {
     return (
-      <Card className="border-dashed border-slate-200 p-8 text-center text-muted-foreground shadow-sm">
-        No se registran certificados digitales emitidos a tu nombre todavía.
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="animate-pulse bg-white rounded-xl p-6 border border-slate-200 shadow-sm space-y-4"
+          >
+            <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+            <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+            <div className="h-10 bg-slate-200 rounded w-full mt-4"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (!certificados || certificados.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center p-12 bg-white rounded-xl border border-dashed border-slate-300 text-center shadow-sm">
+        <div className="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mb-4">
+          <Award className="w-8 h-8" />
+        </div>
+        <h3 className="text-lg font-semibold text-slate-800">
+          No hay certificados disponibles
+        </h3>
+        <p className="text-sm text-slate-500 max-w-sm mt-1">
+          Aún no tienes certificados emitidos a tu nombre. Completa tus
+          programas de estudio para obtenerlos.
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {certificados
-        .filter((c) => c.estado)
-        .map((cert) => (
-          <Card
-            key={cert.id}
-            className="border-slate-200 shadow-md bg-white hover:border-indigo-200 transition-all group overflow-hidden"
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {certificados.map((cert) => {
+        const isDownloading =
+          downloadingId === (cert.codigo_verificacion || cert.id);
+        const tituloPrograma = cert.programa?.titulo;
+        const fechaEmision = cert.fecha_crea;
+
+        return (
+          <div
+            key={cert.id || cert.codigo_verificacion}
+            className="group relative bg-white border border-slate-200 hover:border-blue-300 rounded-xl p-5 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
           >
-            <CardContent className="p-5 flex flex-col justify-between h-full space-y-4">
-              {/* Cabecera Tarjeta Certificado */}
-              <div className="flex gap-3 items-start">
-                <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 group-hover:bg-amber-100/70 transition-colors shrink-0">
-                  <Award className="h-5 w-5 text-amber-600" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <span className="text-[10px] uppercase font-extrabold tracking-wider text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
-                    {cert.tipo_certificado?.nombre || "Certificación"}
-                  </span>
-                  <h4 className="text-sm font-bold text-slate-800 line-clamp-2 pt-1 leading-snug">
-                    {cert.nombre_impresion || "Certificado Académico"}
-                  </h4>
-                  <p className="text-[11px] text-muted-foreground truncate">
-                    Evento: {cert.programa?.titulo || "---"}
-                  </p>
-                </div>
+            <div>
+              {/* Header Badge */}
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200/60">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  Oficial
+                </span>
+                <span className="inline-flex items-center gap-1 text-xs text-slate-500 font-mono bg-slate-100 px-2 py-0.5 rounded">
+                  <QrCode className="w-3 h-3 text-slate-400 mr-1" />
+                  {cert.codigo_verificacion || `#${cert.id}`}
+                </span>
               </div>
 
-              {/* Código e Identificador QR */}
-              <div className="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
-                <div className="text-left font-mono">
-                  <span className="block text-[9px] uppercase font-bold tracking-widest text-slate-400">
-                    Código de Verificación
-                  </span>
-                  <span className="text-xs font-bold text-slate-700 flex items-center gap-1">
-                    <Hash className="h-3 w-3 text-indigo-500" />
-                    {cert.codigo_verificacion || "C-PROV"}
-                  </span>
-                </div>
-                {cert.codigo_qr_path && (
-                  <div className="p-1 bg-white border border-slate-200 rounded-lg shadow-inner">
-                    <img
-                      src={cert.codigo_qr_path}
-                      alt="QR"
-                      className="h-8 w-8 object-contain"
-                    />
-                  </div>
-                )}
-              </div>
+              {/* Título */}
+              <h3 className="font-semibold text-slate-900 text-base line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+                {tituloPrograma}
+              </h3>
 
-              {/* Acciones */}
-              {cert.path_file && (
-                <Button
-                  size="sm"
-                  className="w-full bg-slate-900 text-white font-bold hover:bg-slate-800 shadow-sm rounded-xl gap-2 mt-2"
-                  asChild
-                >
-                  <a
-                    href={cert.path_file}
-                    download={cert.filename || "certificado.pdf"}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    <Download className="h-4 w-4" />
-                    Descargar Certificado PDF
-                  </a>
-                </Button>
+              {/* Metadatos */}
+              {fechaEmision && (
+                <div className="flex items-center text-xs text-slate-500 mb-4">
+                  <Calendar className="w-3.5 h-3.5 mr-1.5 text-slate-400" />
+                  Emitido: {fechaEmision}
+                </div>
               )}
-            </CardContent>
-          </Card>
-        ))}
+            </div>
+
+            {/* Footer / Action */}
+            <div className="pt-4 border-t border-slate-100 mt-2">
+              <button
+                onClick={() => handleDownload(cert)}
+                disabled={isDownloading}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 active:bg-blue-800 rounded-lg transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+              >
+                {isDownloading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Descargando...</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-4 h-4" />
+                    <span>Descargar PDF</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 };

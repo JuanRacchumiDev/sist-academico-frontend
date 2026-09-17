@@ -1,5 +1,10 @@
 import { Modulo, ModuloResponse } from "@/interfaces/IModulo";
 import apiClient from "./apiClient";
+import { AxiosRequestConfig } from "axios";
+
+export interface ModuloFormInput extends Partial<Modulo> {
+    plan?: File | string | null
+}
 
 export const getAllPaginate = async (queryParams: string): Promise<ModuloResponse> => {
     try {
@@ -96,14 +101,52 @@ export const getByPrograma = async (idPrograma: number) => {
     }
 }
 
-export const createMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]): Promise<ModuloResponse> => {
+export const createMultiple = async (
+    idPrograma: number,
+    modulos: ModuloFormInput[],
+    config?: AxiosRequestConfig
+): Promise<ModuloResponse> => {
     try {
         const urlApi = `${'/programas/'}${idPrograma}${'/actualizar-modulos'}`
         console.log({ urlApi })
 
-        const response = await apiClient.post(urlApi, {
-            modulos: modulos
+        const formData = new FormData();
+
+        modulos.forEach((modulo, index) => {
+            if (modulo.id !== undefined && modulo.id !== null) {
+                formData.append(`modulos[${index}][id]`, modulo.id.toString())
+            }
+
+            if (modulo.titulo) {
+                formData.append(`modulos[${index}][titulo]`, modulo.titulo)
+            }
+
+            if (modulo.temario) {
+                formData.append(`modulos[${index}][temario]`, modulo.temario)
+            }
+
+            if (modulo.orden !== undefined && modulo.orden !== null) {
+                formData.append(`modulos[${index}][orden]`, modulo.orden.toString())
+            }
+
+            if (modulo.plan instanceof File) {
+                formData.append(`modulos[${index}][plan]`, modulo.plan)
+            } else if (typeof modulo.plan === 'string' && modulo.plan.trim() !== '') {
+                formData.append(`modulos[${index}][plan]`, modulo.plan)
+            }
         })
+
+        console.log({ formData })
+
+        const requestConfig: AxiosRequestConfig = {
+            ...config,
+            headers: {
+                ...config?.headers,
+                'Content-Type': 'multipart/form-data',
+            },
+        };
+
+        const response = await apiClient.post(urlApi, formData, requestConfig)
 
         console.log('---- response moduloRepository ----')
         console.log({ response })
@@ -120,6 +163,14 @@ export const createMultiple = async (idPrograma: number, modulos: Partial<Modulo
         console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
+}
+
+export const updateMultiple = async (
+    idPrograma: number,
+    modulos: ModuloFormInput[],
+    config?: AxiosRequestConfig
+): Promise<ModuloResponse> => {
+    return createMultiple(idPrograma, modulos, config);
 }
 
 export const create = async (payload: Modulo): Promise<ModuloResponse> => {
@@ -134,32 +185,6 @@ export const create = async (payload: Modulo): Promise<ModuloResponse> => {
             data
         }
 
-    } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
-        return { result: false, data: [], error: errorMessage, status: 500 }
-    }
-}
-
-export const updateMultiple = async (idPrograma: number, modulos: Partial<Modulo>[]): Promise<ModuloResponse> => {
-    try {
-        const urlApi = `${'/programas/'}${idPrograma}${'/actualizar-modulos'}`
-        console.log({ urlApi })
-
-        const response = await apiClient.post(urlApi, {
-            modulos: modulos
-        })
-
-        console.log('---- response moduloRepository ----')
-        console.log({ response })
-
-        const { data: { result, message, data } } = response
-
-        return {
-            result,
-            message,
-            data
-        }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         console.log('errorMessage', errorMessage)

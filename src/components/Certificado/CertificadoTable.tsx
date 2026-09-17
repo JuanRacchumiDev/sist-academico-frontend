@@ -164,13 +164,16 @@ export const CertificadoTable = () => {
                 <TableHead className="w-[7%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   ID
                 </TableHead>
-                <TableHead className="w-[30%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="w-[20%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Alumno
                 </TableHead>
                 <TableHead className="w-[15%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
-                  Tipo Cert.
+                  Institución
                 </TableHead>
-                <TableHead className="w-[30%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="w-[15%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Tipo Programa
+                </TableHead>
+                <TableHead className="w-[15%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Programa
                 </TableHead>
                 <TableHead className="w-[10%] py-2.5 px-2 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
@@ -187,7 +190,7 @@ export const CertificadoTable = () => {
 
             <TableBody>
               {isLoading ? (
-                <TableSpinner colSpan={7} />
+                <TableSpinner colSpan={8} />
               ) : certificados.length > 0 ? (
                 certificados.map((certificado) => (
                   <CertificadoRow
@@ -197,7 +200,7 @@ export const CertificadoTable = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center">
+                  <TableCell colSpan={8} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
                       <span className="text-xs font-medium text-slate-600">
                         No se encontraron registros
