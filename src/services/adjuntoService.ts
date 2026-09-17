@@ -95,3 +95,17 @@ export const deleteAdjunto = async (id: number) => {
         ...response,
     };
 };
+
+export const verificarAdjuntoExistencia = async (params: {
+    id_programa: number;
+    id_modulo?: number | null;
+    titulo: string;
+}) => {
+    const response = await verificarAdjuntoExistencia(params);
+
+    console.log("---- response verificarAdjuntoExistencia service ----", { response });
+
+    return {
+        ...response,
+    };
+};

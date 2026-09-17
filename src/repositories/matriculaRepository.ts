@@ -90,17 +90,16 @@ export const getCrogramaPagos = async (queryParams: string) => {
         const params = new URLSearchParams(queryParams);
 
         // Obtenemos los valores y los convertimos a número
-        const id_m = Number(params.get('id_matricula')) || 0;
+        const idMatricula = Number(params.get('id_matricula')) || 0;
 
         // Aplicamos el padding usando tu utilitario stringUtils
-        const mId = padString(4, id_m, 'left');
+        const idMatriculaPadding = padString(4, idMatricula, 'left');
 
-        // let filename = `certificado.pdf`; // Nombre por defecto
-        let filename = `cronograma_pagos_matricula_${mId}.pdf`;
+        let filename = `cronograma_pagos_matricula_${idMatriculaPadding}.pdf`;
 
         if (contentDisposition) {
-            // Intenta extraer el nombre del archivo del header 'Content-Disposition'
             const filenameMatch = contentDisposition.match(/filename="(.+)"/i);
+
             if (filenameMatch && filenameMatch[1]) {
                 filename = filenameMatch[1];
             }

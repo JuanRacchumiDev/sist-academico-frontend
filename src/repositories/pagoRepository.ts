@@ -89,13 +89,12 @@ export const getConstanciaPago = async (queryParams: string) => {
         const params = new URLSearchParams(queryParams);
 
         // Obtenemos los valores y los convertimos a número
-        const id_p = Number(params.get('id_pago')) || 0;
+        const idPago = Number(params.get('id_pago')) || 0;
 
         // Aplicamos el padding usando tu utilitario stringUtils
-        const pId = padString(4, id_p, 'left');
+        const idPagoPadding = padString(4, idPago, 'left');
 
-        // let filename = `certificado.pdf`; // Nombre por defecto
-        let filename = `constancia_pago_${pId}.pdf`;
+        let filename = `constancia_pago_${idPagoPadding}.pdf`;
 
         if (contentDisposition) {
             // Intenta extraer el nombre del archivo del header 'Content-Disposition'

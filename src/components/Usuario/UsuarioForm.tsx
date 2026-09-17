@@ -227,7 +227,13 @@ export const UsuarioForm = () => {
 
       if (!persona) return;
 
-      const { nombres, apellido_paterno, apellido_materno, email } = persona;
+      const {
+        nombres,
+        apellido_paterno,
+        apellido_materno,
+        email,
+        numero_documento,
+      } = persona;
 
       const usernameSugerido = generateUsername({
         nombres,
@@ -245,7 +251,7 @@ export const UsuarioForm = () => {
         form.setValue("email", "", { shouldValidate: true });
       }
 
-      setDefinePassword(email || "");
+      setDefinePassword(numero_documento || "");
       showToast("success", `Datos de ${persona.nombre_completo} cargados`);
     } catch (error) {
       console.error(error);
@@ -308,6 +314,8 @@ export const UsuarioForm = () => {
   const onSubmit = async (values: TFormValues) => {
     try {
       const { name, email, codigoPerfil, idPersona } = values;
+
+      console.log({ definePassword });
 
       const payload: Usuario = {
         name,

@@ -25,7 +25,7 @@ import { useToast } from "../../context/ToastContext";
 import { useState } from "react";
 import { ConfirmDialog } from "@/components/Common/ConfirmDialog";
 import { ModuloSheetForm } from "../Modulo/ModuloSheetForm";
-import { downloadProgramaPlan } from "@/services/programaService";
+// import { downloadProgramaPlan } from "@/services/programaService";
 import { formatDate } from "../../utils/dateUtils";
 
 interface Props {
@@ -77,22 +77,22 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
     }
   };
 
-  const handleDownloadPlan = async (event: React.MouseEvent) => {
-    event.preventDefault();
-    setIsDropdownOpen(false);
-    if (!programa.id) {
-      showToast("error", "Programa no disponible para descargar");
-      return;
-    }
+  // const handleDownloadPlan = async (event: React.MouseEvent) => {
+  //   event.preventDefault();
+  //   setIsDropdownOpen(false);
+  //   if (!programa.id) {
+  //     showToast("error", "Programa no disponible para descargar");
+  //     return;
+  //   }
 
-    showToast("info", "Iniciando descarga del plan de estudios");
-    try {
-      await downloadProgramaPlan(programa.id);
-    } catch (error) {
-      console.error("Error al iniciar la descarga:", error);
-      showToast("error", "Error al descargar el archivo.");
-    }
-  };
+  //   showToast("info", "Iniciando descarga del plan de estudios");
+  //   try {
+  //     await downloadProgramaPlan(programa.id);
+  //   } catch (error) {
+  //     console.error("Error al iniciar la descarga:", error);
+  //     showToast("error", "Error al descargar el archivo.");
+  //   }
+  // };
 
   const actionText = programa.estado ? "Desactivar" : "Activar";
   const ActionIcon = programa.estado ? ToggleLeft : ToggleRight;
@@ -192,7 +192,7 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
                 <span>Ver/Editar detalle</span>
               </DropdownMenuItem>
 
-              {programa.plan && (
+              {/* {programa.plan && (
                 <>
                   <DropdownMenuSeparator className="bg-slate-100" />
                   <DropdownMenuItem
@@ -203,7 +203,7 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
                     <span>Descargar Plan</span>
                   </DropdownMenuItem>
                 </>
-              )}
+              )} */}
 
               {tieneModulos && (
                 <>

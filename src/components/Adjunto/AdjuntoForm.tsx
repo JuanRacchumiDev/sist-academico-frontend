@@ -15,7 +15,6 @@ import { Spinner } from "../../components/Common/Spinner";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormMessage,
@@ -37,8 +36,11 @@ import {
   UploadCloud,
   FileCheck,
   FileText,
-  ExternalLink,
   Download,
+  Youtube,
+  HardDrive,
+  Link2,
+  Paperclip,
 } from "lucide-react";
 
 import { getProgramas } from "../../services/programaService";
@@ -51,30 +53,54 @@ import {
 } from "../../services/adjuntoService";
 import { Programa } from "@/interfaces/IPrograma";
 import { Modulo } from "@/interfaces/IModulo";
-import { Adjunto } from "@/interfaces/IAdjunto";
+import { Adjunto, TipoAdjunto } from "@/interfaces/IAdjunto";
 import SearchableCombobox from "../../components/Common/SearchableCombobox";
 import { formatInTimeZone } from "date-fns-tz";
 import { TIMEZONE_AMERICA_LIMA } from "@/params/constants";
 
 const MAX_FILE_SIZE = 5242880; // 5MB
 
-const formSchema = z.object({
-  idPrograma: z
-    .string({ message: "El programa es requerido" })
-    .min(1, "El programa es requerido"),
-  idModulo: z.string().optional().nullable(),
-  nombre: z
-    .string({ message: "El nombre es requerido" })
-    .min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
-  adjunto_file: z
-    .instanceof(File)
-    .nullable()
-    .optional()
-    .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
-      `El archivo debe ser menor a 5MB`,
-    ),
-});
+const formSchema = z
+  .object({
+    idPrograma: z
+      .string({ message: "El programa es requerido" })
+      .min(1, "El programa es requerido"),
+    idModulo: z.string().optional().nullable(),
+    nombre: z
+      .string({ message: "El nombre es requerido" })
+      .min(3, { message: "El nombre debe tener al menos 3 caracteres" }),
+    tipo: z.enum(["FILE", "YOUTUBE", "DRIVE", "URL"]),
+    adjunto_file: z
+      .instanceof(File)
+      .nullable()
+      .optional()
+      .refine(
+        (file) => !file || file.size <= MAX_FILE_SIZE,
+        `El archivo debe ser menor a 5MB`,
+      ),
+    url: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.tipo !== "FILE") {
+      if (!data.url || data.url.trim() === "") {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "El enlace o URL externa es requerido",
+          path: ["url"],
+        });
+      } else {
+        try {
+          new URL(data.url);
+        } catch {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "Ingrese una URL válida (Ej: https://...)",
+            path: ["url"],
+          });
+        }
+      }
+    }
+  });
 
 export const AdjuntoForm = () => {
   const navigate = useNavigate();
@@ -91,7 +117,7 @@ export const AdjuntoForm = () => {
   ] = useState(false);
   const [isDragActive, setIsDragActive] = useState(false);
 
-  // Estado para rastrear el archivo previamente subido
+  // Archivo previo subido
   const [existingFilepath, setExistingFilepath] = useState<string | null>(null);
   const [existingOriginalName, setExistingOriginalName] = useState<
     string | null
@@ -122,8 +148,10 @@ export const AdjuntoForm = () => {
       if (result && data) {
         const adjunto = data as Adjunto;
         const { filename } = adjunto;
-        await downloadAdjunto(+id, filename);
-        showToast("success", message || "Descarga iniciada correctamente");
+        if (filename) {
+          await downloadAdjunto(+id, filename);
+          showToast("success", message || "Descarga iniciada correctamente");
+        }
       } else {
         showToast(
           "error",
@@ -144,15 +172,17 @@ export const AdjuntoForm = () => {
       idPrograma: "",
       idModulo: null,
       nombre: "",
+      tipo: "FILE",
       adjunto_file: null,
+      url: "",
     },
   });
 
   const watchIdPrograma = form.watch("idPrograma");
+  const watchTipoAdjunto = form.watch("tipo");
   const watchFile = form.watch("adjunto_file");
   const { isSubmitting } = form.formState;
 
-  // Detectar cambios en el Programa y validar existencia real de módulos relacionales
   useEffect(() => {
     const handleProgramaChange = async () => {
       if (!watchIdPrograma) {
@@ -164,7 +194,6 @@ export const AdjuntoForm = () => {
 
       try {
         const response = await getModulosByPrograma(+watchIdPrograma);
-
         const { result, data } = response;
 
         if (result && data && data.length > 0) {
@@ -188,7 +217,7 @@ export const AdjuntoForm = () => {
     };
 
     handleProgramaChange();
-  }, [watchIdPrograma, form]);
+  }, [watchIdPrograma, form, showToast]);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -201,7 +230,6 @@ export const AdjuntoForm = () => {
 
         if (isEditMode && id) {
           const responseAdjunto = await getAdjuntoById(+id);
-          // console.log({ responseAdjunto });
           const { result, data } = responseAdjunto;
 
           if (result && data) {
@@ -214,6 +242,8 @@ export const AdjuntoForm = () => {
               idPrograma: adjunto.id_programa?.toString() || "",
               idModulo: adjunto.id_modulo?.toString() || null,
               nombre: adjunto.titulo,
+              tipo: adjunto.tipo || "FILE",
+              url: adjunto.url || "",
               adjunto_file: null,
             });
           }
@@ -268,19 +298,18 @@ export const AdjuntoForm = () => {
 
     try {
       const formData = new FormData();
-      const { idPrograma, idModulo, nombre, adjunto_file } = values;
+      const { idPrograma, idModulo, nombre, tipo, url, adjunto_file } = values;
 
       if (isEditMode && id) {
-        // console.log("actualizar adjunto");
         formData.append("fecha_actualiza", fechaActual);
         formData.append("_method", "PATCH");
       } else {
-        // console.log("crear adjunto");
         formData.append("fecha_crea", fechaActual);
       }
 
       formData.append("titulo", nombre);
       formData.append("id_programa", idPrograma);
+      formData.append("tipo", tipo);
 
       if (programaSeleccionadoTieneModulos && idModulo) {
         formData.append("id_modulo", idModulo);
@@ -288,11 +317,13 @@ export const AdjuntoForm = () => {
         formData.append("id_modulo", "");
       }
 
-      if (adjunto_file) {
-        formData.append("file", adjunto_file);
+      if (tipo === "FILE") {
+        if (adjunto_file) {
+          formData.append("file", adjunto_file);
+        }
+      } else if (url) {
+        formData.append("url", url);
       }
-
-      // console.log({ formData });
 
       const config = { headers: { "Content-Type": "multipart/form-data" } };
 
@@ -319,23 +350,59 @@ export const AdjuntoForm = () => {
     }
   };
 
+  const tiposOpciones: {
+    id: TipoAdjunto;
+    label: string;
+    sublabel: string;
+    icon: React.ElementType;
+    color: string;
+  }[] = [
+    {
+      id: "FILE",
+      label: "Documento Local",
+      sublabel: "PDF, Word, Excel",
+      icon: Paperclip,
+      color: "text-blue-600 bg-blue-50 border-blue-200",
+    },
+    {
+      id: "YOUTUBE",
+      label: "Video de YouTube",
+      sublabel: "Enlace o URL de video",
+      icon: Youtube,
+      color: "text-red-600 bg-red-50 border-red-200",
+    },
+    {
+      id: "DRIVE",
+      label: "Google Drive",
+      sublabel: "Carpeta o archivo en la nube",
+      icon: HardDrive,
+      color: "text-emerald-600 bg-emerald-50 border-emerald-200",
+    },
+    {
+      id: "URL",
+      label: "Enlace Externo",
+      sublabel: "URL descargable o web",
+      icon: Link2,
+      color: "text-amber-600 bg-amber-50 border-amber-200",
+    },
+  ];
+
   return (
-    // Reducción de márgenes y sombras agresivas para integrarse al look corporativo y plano
     <div className="max-w-3xl mx-auto py-5 px-4 sm:px-6">
       <Card className="shadow-sm border border-slate-200/80 bg-white rounded-xl overflow-hidden">
-        {/* Cabecera compacta y balanceada */}
+        {/* Cabecera */}
         <CardHeader className="border-b border-slate-100 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between bg-slate-50/50 gap-3">
           <div className="space-y-0.5">
             <CardTitle className="text-base font-semibold text-slate-800 tracking-tight flex items-center gap-2">
               <span className="p-1.5 rounded-md bg-blue-50 text-blue-600">
                 <FileText className="h-4 w-4" />
               </span>
-              {isEditMode ? "Editar Adjunto" : "Nuevo Archivo Adjunto"}
+              {isEditMode ? "Editar Adjunto" : "Nuevo Recurso / Adjunto"}
             </CardTitle>
             <CardDescription className="text-slate-500 text-[11px] font-normal pl-8">
               {isEditMode
-                ? "Modifique el archivo o ubicación del adjunto en el sistema"
-                : "Asigne y cargue un adjunto a un programa o módulo específico"}
+                ? "Modifique el archivo, enlace o ubicación del recurso"
+                : "Asigne un documento o enlace externo a un programa académico"}
             </CardDescription>
           </div>
           <Button
@@ -348,8 +415,7 @@ export const AdjuntoForm = () => {
           </Button>
         </CardHeader>
 
-        {/* Cuerpo del formulario con p-6 para mejor flujo visual */}
-        <CardContent className="px-6 sm:px-8 relative">
+        <CardContent className="px-6 sm:px-8 relative pt-6">
           {isLoadingData && (
             <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
               <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
@@ -449,12 +515,12 @@ export const AdjuntoForm = () => {
                       <FormItem className="flex flex-col gap-1 w-full">
                         <RequiredLabel>
                           <span className="text-xs font-medium text-slate-700">
-                            Nombre del Documento / Adjunto
+                            Nombre o Título del Recurso
                           </span>
                         </RequiredLabel>
                         <FormControl>
                           <Input
-                            placeholder="Ej. Sílabo Integrado, Guía de Aprendizaje Ciclo I..."
+                            placeholder="Ej. Sílabo del curso, Grabación Clase 1, Carpeta Drive..."
                             autoComplete="off"
                             maxLength={150}
                             {...field}
@@ -468,142 +534,233 @@ export const AdjuntoForm = () => {
                 </div>
               </div>
 
-              {/* Sección 02: Carga del Archivo */}
+              {/* Sección 02: Tipo y Origen del Recurso */}
               <div className="space-y-4 pt-1">
                 <div className="flex items-center gap-2.5">
                   <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
                     2
                   </span>
                   <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                    Carga del Archivo Binario
+                    Tipo y Origen del Adjunto
                   </h3>
                   <div className="h-px bg-slate-100 flex-1"></div>
                 </div>
 
+                {/* Selector de tipo de adjunto */}
                 <FormField
                   control={form.control}
-                  name="adjunto_file"
-                  render={({ field, fieldState }) => (
+                  name="tipo"
+                  render={({ field }) => (
                     <FormItem className="w-full">
-                      <FormControl>
-                        <div
-                          onDragEnter={handleDrag}
-                          onDragLeave={handleDrag}
-                          onDragOver={handleDrag}
-                          onDrop={handleDrop}
-                          onClick={() => fileInputRef.current?.click()}
-                          className={`relative border border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group text-center
-                            ${isDragActive ? "border-blue-500 bg-blue-50/30" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"}
-                            ${fieldState.invalid ? "border-red-300 bg-red-50/10 hover:border-red-400" : ""}
-                          `}
-                        >
-                          <input
-                            ref={fileInputRef}
-                            type="file"
-                            className="hidden"
-                            accept=".pdf,.docx,.xlsx"
-                            onChange={(e) =>
-                              field.onChange(e.target.files?.[0] ?? null)
-                            }
-                          />
-
-                          {watchFile ? (
-                            <>
-                              <div className="p-2.5 rounded-full bg-emerald-50 text-emerald-600 shadow-none">
-                                <FileCheck className="h-6 w-6" />
-                              </div>
-                              <div className="space-y-0.5">
-                                <p className="text-xs font-medium text-slate-800 line-clamp-1 max-w-md px-4">
-                                  {watchFile.name}
-                                </p>
-                                <p className="text-[11px] text-slate-400 font-medium">
-                                  Tamaño: {formatBytes(watchFile.size)}
-                                </p>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  field.onChange(null);
-                                  if (fileInputRef.current)
-                                    fileInputRef.current.value = "";
-                                }}
-                                className="mt-0.5 h-7 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 text-[11px] px-2.5 font-medium shadow-none"
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                        {tiposOpciones.map((tipo) => {
+                          const Icon = tipo.icon;
+                          const isSelected = field.value === tipo.id;
+                          return (
+                            <button
+                              type="button"
+                              key={tipo.id}
+                              onClick={() => field.onChange(tipo.id)}
+                              className={`flex flex-col items-start p-3 rounded-xl border text-left transition-all ${
+                                isSelected
+                                  ? "border-blue-600 bg-blue-50/40 ring-2 ring-blue-600/20 shadow-xs"
+                                  : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/60"
+                              }`}
+                            >
+                              <div
+                                className={`p-2 rounded-lg mb-2 border ${tipo.color}`}
                               >
-                                Quitar archivo seleccionado
-                              </Button>
-                            </>
-                          ) : existingFilepath ? (
-                            <>
-                              <div className="p-2.5 rounded-full bg-blue-50 text-blue-600 shadow-none">
-                                <FileText className="h-6 w-6" />
+                                <Icon className="h-4 w-4" />
                               </div>
-                              <div className="space-y-0.5">
-                                <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-                                  Archivo actualmente guardado:
-                                </p>
-                                <p className="text-xs font-medium text-slate-700 line-clamp-1 max-w-md px-4">
-                                  {existingOriginalName || "Ver archivo actual"}
-                                </p>
-
-                                <Button
-                                  type="button"
-                                  variant="link"
-                                  disabled={isDownloading}
-                                  onClick={handleDownload}
-                                  className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 hover:text-blue-800 underline font-medium h-auto p-0 shadow-none"
-                                >
-                                  {isDownloading ? (
-                                    <>
-                                      <Spinner className="h-3 w-3 animate-spin text-blue-600" />
-                                      Descargando...
-                                    </>
-                                  ) : (
-                                    <>
-                                      Descargar archivo actual{" "}
-                                      <Download className="h-3 w-3 ml-0.5" />
-                                    </>
-                                  )}
-                                </Button>
-                              </div>
-                              <p className="text-[11px] text-slate-400 mt-1 italic">
-                                Arrastre o haga click aquí si desea{" "}
-                                <span className="font-medium text-slate-500">
-                                  reemplazar
-                                </span>{" "}
-                                este archivo.
-                              </p>
-                            </>
-                          ) : (
-                            <>
-                              <div className="p-2.5 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors shadow-none">
-                                <UploadCloud className="h-6 w-6" />
-                              </div>
-                              <div className="space-y-0.5">
-                                <p className="text-xs font-medium text-slate-700">
-                                  Suelte su archivo aquí o{" "}
-                                  <span className="text-blue-600 group-hover:text-blue-700 underline underline-offset-2">
-                                    explore localmente
-                                  </span>
-                                </p>
-                                <p className="text-[11px] text-slate-400 font-normal">
-                                  Soporta formatos PDF, Word o Excel de hasta
-                                  5MB.
-                                </p>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      </FormControl>
-                      <FormMessage className="text-[11px] text-red-500 font-medium mt-1" />
+                              <span className="text-xs font-semibold text-slate-800">
+                                {tipo.label}
+                              </span>
+                              <span className="text-[10px] text-slate-500 leading-tight mt-0.5">
+                                {tipo.sublabel}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     </FormItem>
                   )}
                 />
+
+                {/* Renderizado condicional según tipo de adjunto */}
+                {watchTipoAdjunto === "FILE" ? (
+                  <FormField
+                    control={form.control}
+                    name="adjunto_file"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="w-full animate-in fade-in duration-200">
+                        <FormControl>
+                          <div
+                            onDragEnter={handleDrag}
+                            onDragLeave={handleDrag}
+                            onDragOver={handleDrag}
+                            onDrop={handleDrop}
+                            onClick={() => fileInputRef.current?.click()}
+                            className={`relative border border-dashed rounded-xl p-6 flex flex-col items-center justify-center gap-2 cursor-pointer transition-colors group text-center
+                              ${isDragActive ? "border-blue-500 bg-blue-50/30" : "border-slate-200 hover:border-slate-300 hover:bg-slate-50/50"}
+                              ${fieldState.invalid ? "border-red-300 bg-red-50/10 hover:border-red-400" : ""}
+                            `}
+                          >
+                            <input
+                              ref={fileInputRef}
+                              type="file"
+                              className="hidden"
+                              accept=".pdf,.docx,.xlsx"
+                              onChange={(e) =>
+                                field.onChange(e.target.files?.[0] ?? null)
+                              }
+                            />
+
+                            {watchFile ? (
+                              <>
+                                <div className="p-2.5 rounded-full bg-emerald-50 text-emerald-600 shadow-none">
+                                  <FileCheck className="h-6 w-6" />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p className="text-xs font-medium text-slate-800 line-clamp-1 max-w-md px-4">
+                                    {watchFile.name}
+                                  </p>
+                                  <p className="text-[11px] text-slate-400 font-medium">
+                                    Tamaño: {formatBytes(watchFile.size)}
+                                  </p>
+                                </div>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    field.onChange(null);
+                                    if (fileInputRef.current)
+                                      fileInputRef.current.value = "";
+                                  }}
+                                  className="mt-0.5 h-7 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 text-[11px] px-2.5 font-medium shadow-none"
+                                >
+                                  Quitar archivo seleccionado
+                                </Button>
+                              </>
+                            ) : existingFilepath ? (
+                              <>
+                                <div className="p-2.5 rounded-full bg-blue-50 text-blue-600 shadow-none">
+                                  <FileText className="h-6 w-6" />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+                                    Archivo actualmente guardado:
+                                  </p>
+                                  <p className="text-xs font-medium text-slate-700 line-clamp-1 max-w-md px-4">
+                                    {existingOriginalName ||
+                                      "Ver archivo actual"}
+                                  </p>
+
+                                  <Button
+                                    type="button"
+                                    variant="link"
+                                    disabled={isDownloading}
+                                    onClick={handleDownload}
+                                    className="inline-flex items-center gap-1 mt-1 text-[11px] text-blue-600 hover:text-blue-800 underline font-medium h-auto p-0 shadow-none"
+                                  >
+                                    {isDownloading ? (
+                                      <>
+                                        <Spinner className="h-3 w-3 animate-spin text-blue-600" />
+                                        Descargando...
+                                      </>
+                                    ) : (
+                                      <>
+                                        Descargar archivo actual{" "}
+                                        <Download className="h-3 w-3 ml-0.5" />
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
+                                <p className="text-[11px] text-slate-400 mt-1 italic">
+                                  Arrastre o haga clic aquí si desea{" "}
+                                  <span className="font-medium text-slate-500">
+                                    reemplazar
+                                  </span>{" "}
+                                  este archivo.
+                                </p>
+                              </>
+                            ) : (
+                              <>
+                                <div className="p-2.5 rounded-full bg-slate-50 text-slate-400 group-hover:bg-blue-50 group-hover:text-blue-500 transition-colors shadow-none">
+                                  <UploadCloud className="h-6 w-6" />
+                                </div>
+                                <div className="space-y-0.5">
+                                  <p className="text-xs font-medium text-slate-700">
+                                    Suelte su archivo aquí o{" "}
+                                    <span className="text-blue-600 group-hover:text-blue-700 underline underline-offset-2">
+                                      explore localmente
+                                    </span>
+                                  </p>
+                                  <p className="text-[11px] text-slate-400 font-normal">
+                                    Soporta PDF, Word (.docx) o Excel (.xlsx) de
+                                    hasta 5MB.
+                                  </p>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-[11px] text-red-500 font-medium mt-1" />
+                      </FormItem>
+                    )}
+                  />
+                ) : (
+                  <FormField
+                    control={form.control}
+                    name="url"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="flex flex-col gap-1 w-full animate-in fade-in duration-200">
+                        <RequiredLabel>
+                          <span className="text-xs font-medium text-slate-700">
+                            {watchTipoAdjunto === "YOUTUBE" &&
+                              "Enlace del Video de YouTube"}
+                            {watchTipoAdjunto === "DRIVE" &&
+                              "Enlace de Compartición de Google Drive"}
+                            {watchTipoAdjunto === "URL" &&
+                              "Enlace de Descarga / URL Externa"}
+                          </span>
+                        </RequiredLabel>
+                        <FormControl>
+                          <div className="relative flex items-center">
+                            <Input
+                              placeholder={
+                                watchTipoAdjunto === "YOUTUBE"
+                                  ? "https://www.youtube.com/watch?v=..."
+                                  : watchTipoAdjunto === "DRIVE"
+                                    ? "https://drive.google.com/file/d/..."
+                                    : "https://ejemplo.com/recurso.pdf"
+                              }
+                              autoComplete="off"
+                              {...field}
+                              className={`h-9 pl-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(fieldState.invalid)}`}
+                            />
+                            <div className="absolute left-3 pointer-events-none text-slate-400">
+                              {watchTipoAdjunto === "YOUTUBE" && (
+                                <Youtube className="h-4 w-4 text-red-500" />
+                              )}
+                              {watchTipoAdjunto === "DRIVE" && (
+                                <HardDrive className="h-4 w-4 text-emerald-500" />
+                              )}
+                              {watchTipoAdjunto === "URL" && (
+                                <Link2 className="h-4 w-4 text-amber-500" />
+                              )}
+                            </div>
+                          </div>
+                        </FormControl>
+                        <FormMessage className="text-[11px] text-red-500 font-medium" />
+                      </FormItem>
+                    )}
+                  />
+                )}
               </div>
 
-              {/* Botones de acción limpios y proporcionales */}
+              {/* Botones de acción */}
               <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-slate-100">
                 <Button
                   type="button"

@@ -2,14 +2,18 @@ import { Institucion } from "./IInstitucion"
 import { Modulo } from "./IModulo"
 import { Programa } from "./IPrograma"
 
+export type TipoAdjunto = 'FILE' | 'YOUTUBE' | 'DRIVE' | 'URL'
+
 export interface Adjunto {
     id?: number
     id_programa?: number
     id_modulo?: number
     id_sucursal?: number
+    tipo?: TipoAdjunto
     titulo?: string
     titulo_url?: string
     descripcion?: string
+    url?: string
     filename?: string
     originalname?: string
     filepath?: string
@@ -39,8 +43,10 @@ export interface PaginationType {
 export interface AdjuntoResponse {
     result?: boolean
     message?: string
+    exists?: boolean
     data?: Adjunto | Adjunto[]
     error?: string
-    status?: number
+    status?: number,
+    code?: number | string
     pagination?: PaginationType
 }

@@ -72,9 +72,32 @@ export const getById = async (id: number): Promise<ProgramaResponse> => {
     }
 }
 
-export const downloadPlan = async (id: number, filename: string): Promise<void> => {
+// export const downloadProgramaPDF = async (id: number, filename: string): Promise<void> => {
+//     try {
+//         const urlApi = `/programas/${id}/descargar-plan`
+
+//         const response = await apiClient.get(
+//             urlApi,
+//             {
+//                 responseType: 'blob'
+//             }
+//         )
+
+//         const { data } = response
+
+//         const setBlob = new Blob([data])
+
+//         downloadFile(setBlob, filename);
+//     } catch (error) {
+//         console.error("Error al descargar el plan:", error);
+//         // Podrías usar showToast aquí para notificar al usuario
+//         throw new Error("No se pudo descargar el archivo.");
+//     }
+// }
+
+export const downloadModuloPDF = async (id: number, idModulo: number, filename: string): Promise<void> => {
     try {
-        const urlApi = `/programas/${id}/descargar-plan`
+        const urlApi = `/programas/${id}/modulos/${idModulo}/descargar-plan`
 
         const response = await apiClient.get(
             urlApi,

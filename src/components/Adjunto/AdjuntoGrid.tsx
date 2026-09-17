@@ -1,5 +1,4 @@
 import { JSX, useCallback, useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { getAdjuntosPaginate } from "../../services/adjuntoService";
 import { AdjuntoFilters, AdjuntoFiltersData } from "./AdjuntoFilters";
 import { AdjuntoItem } from "./AdjuntoItem";
@@ -13,16 +12,8 @@ import {
   PaginationPrevious,
 } from "../ui/pagination";
 import { Adjunto, PaginationType } from "@/interfaces/IAdjunto";
-import {
-  FileText,
-  FileSpreadsheet,
-  FileUp,
-  Image,
-  FileCode,
-} from "lucide-react";
 
 export const AdjuntoGrid = () => {
-  const navigate = useNavigate();
   const [adjuntos, setAdjuntos] = useState<Adjunto[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,9 +55,6 @@ export const AdjuntoGrid = () => {
       try {
         const response = await getAdjuntosPaginate(pageToFetch, limit, filters);
 
-        // console.log("---- response paginate adjuntos ----");
-        // console.log({ response });
-
         const { result, data, pagination: newPagination } = response;
 
         if (result && data) {
@@ -98,7 +86,11 @@ export const AdjuntoGrid = () => {
 
   const handleSearchSubmit = (newFilters: AdjuntoFiltersData) => {
     setSearchFilters(newFilters);
-    setCurrentPage(1); // Resetear a la primera página al filtrar
+    setCurrentPage(1);
+  };
+
+  const handleRefreshGrid = () => {
+    fetchData(currentPage, searchFilters);
   };
 
   const renderPaginationItems = (): JSX.Element[] => {
@@ -147,7 +139,6 @@ export const AdjuntoGrid = () => {
       <div className="bg-white overflow-hidden">
         <AdjuntoFilters onSearch={handleSearchSubmit} />
 
-        {/* Contenedor de contenido principal con borde superior sutil idéntico al de la tabla */}
         <div className="pt-3 border-t border-slate-100">
           {isLoading ? (
             <div className="flex flex-col items-center justify-center h-48 space-y-2">
@@ -157,14 +148,16 @@ export const AdjuntoGrid = () => {
               </span>
             </div>
           ) : adjuntos.length > 0 ? (
-            // Grid optimizado con espaciado consistente y alineación limpia
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 items-start px-3">
               {adjuntos.map((adjunto) => (
-                <AdjuntoItem key={adjunto.id} adjunto={adjunto} />
+                <AdjuntoItem
+                  key={adjunto.id}
+                  adjunto={adjunto}
+                  onDeleteSuccess={handleRefreshGrid}
+                />
               ))}
             </div>
           ) : (
-            // Estado vacío rediseñado con textos compactos y profesionales basados en PersonaTable
             <div className="flex flex-col items-center justify-center rounded-xl h-48 bg-slate-50/50 border border-dashed border-slate-200">
               <div className="text-center space-y-1 max-w-sm px-4">
                 <span className="text-xs font-medium text-slate-600 block">
@@ -180,7 +173,6 @@ export const AdjuntoGrid = () => {
         </div>
       </div>
 
-      {/* Sección inferior de paginación integrada y limpia, calco exacto de PersonaTable */}
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="text-[11px] text-slate-500 font-medium">
           Mostrando{" "}

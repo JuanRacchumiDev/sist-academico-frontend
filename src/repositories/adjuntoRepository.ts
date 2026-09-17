@@ -45,16 +45,8 @@ export const getAllPaginate = async (queryParams: string): Promise<AdjuntoRespon
             message,
             pagination
         }
-
-        return {
-            result,
-            data,
-            message,
-            pagination
-        }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -176,3 +168,26 @@ export const destroy = async (id: number): Promise<AdjuntoResponse> => {
         return { result: false, data: [], error: errorMessage, status: 500 };
     }
 };
+
+export const verificarExistencia = async (params: {
+    id_programa: number,
+    id_modulo?: number | null,
+    titulo: string
+}): Promise<AdjuntoResponse> => {
+    try {
+        const urlApi = `/adjuntos/verificar`
+        const response = await apiClient.post(urlApi, params)
+
+        const { data: { result, exists, data, message, code } } = response
+
+        return {
+            result,
+            exists,
+            data,
+            message,
+            code
+        }
+    } catch (error) {
+
+    }
+}

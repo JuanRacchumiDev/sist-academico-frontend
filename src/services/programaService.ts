@@ -6,8 +6,10 @@ import {
     getById,
     create,
     update,
-    downloadPlan
+    // downloadProgramaPDF,
+    downloadModuloPDF
 } from "../repositories/programaRepository"
+import { padString } from "@/utils/stringUtils"
 
 export const getProgramas = async () => {
     const response = await getAll()
@@ -52,9 +54,19 @@ export const getProgramaById = async (id: number) => {
     }
 }
 
-export const downloadProgramaPlan = async (id: number): Promise<void> => {
-    const filename: string = `plan_programa_${id}.pdf`
-    return downloadPlan(id, filename)
+// export const downloadProgramaPlan = async (id: number): Promise<void> => {
+//     const idPadding = padString(4, id, 'left');
+
+//     const filename: string = `plan_programa_${idPadding}.pdf`
+//     return downloadProgramaPDF(id, filename)
+// }
+
+export const downloadModuloPlan = async (id: number, idModulo: number): Promise<void> => {
+    const idProgramaPadding: string = padString(4, id, 'left');
+    const idModuloPadding: string = padString(4, idModulo, 'left');
+
+    const filename: string = `plan_programa_${idProgramaPadding}_modulo_${idModuloPadding}.pdf`;
+    return downloadModuloPDF(id, idModulo, filename);
 }
 
 export const createPrograma = async (

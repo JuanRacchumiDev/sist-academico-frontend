@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Adjunto } from "@/interfaces/IAdjunto";
+import { Adjunto, TipoAdjunto } from "@/interfaces/IAdjunto";
 import {
   FileText,
   FileSpreadsheet,
@@ -14,6 +14,11 @@ import {
   Bookmark,
   Loader2,
   AlertTriangle,
+  Youtube,
+  HardDrive,
+  Link2,
+  ExternalLink,
+  Paperclip,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -65,6 +70,15 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
     }
   };
 
+  const handleOpenLink = () => {
+    setIsDropdownOpen(false);
+    if (adjunto.url) {
+      window.open(adjunto.url, "_blank", "noopener,noreferrer");
+    } else {
+      showToast("error", "El adjunto no cuenta con una URL válida");
+    }
+  };
+
   const handleOpenDeleteModal = (event: React.MouseEvent) => {
     event.preventDefault();
     setIsDropdownOpen(false);
@@ -81,10 +95,6 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
     try {
       setIsDeleting(true);
       const response = await deleteAdjunto(adjunto.id);
-
-      // console.log("response delete adjunto");
-
-      // console.log({ response });
 
       if (response.result) {
         showToast(
@@ -109,52 +119,95 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
     }
   };
 
-  const getFileConfig = (mimetype: string, originalname: string) => {
-    const ext = originalname.split(".").pop()?.toLowerCase() || "";
+  /**
+   * Configuración visual dinámica por Tipo de Adjunto
+   */
+  const getAdjuntoTypeConfig = (
+    tipo?: TipoAdjunto,
+    mimetype = "",
+    originalname = "",
+  ) => {
+    switch (tipo) {
+      case "YOUTUBE":
+        return {
+          icon: <Youtube className="w-6 h-6 text-red-600" />,
+          bg: "bg-red-50/80 border-red-200/80",
+          badgeText: "YouTube",
+          badgeClass: "bg-red-50 text-red-700 border-red-200",
+        };
+      case "DRIVE":
+        return {
+          icon: <HardDrive className="w-6 h-6 text-emerald-600" />,
+          bg: "bg-emerald-50/80 border-emerald-200/80",
+          badgeText: "Google Drive",
+          badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
+        };
+      case "URL":
+        return {
+          icon: <Link2 className="w-6 h-6 text-amber-600" />,
+          bg: "bg-amber-50/80 border-amber-200/80",
+          badgeText: "Enlace Web",
+          badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
+        };
+      case "FILE":
+      default: {
+        const ext = originalname.split(".").pop()?.toLowerCase() || "";
 
-    if (mimetype.includes("pdf") || ext === "pdf") {
-      return {
-        icon: <FileText className="w-7 h-7 text-red-500" />,
-        bg: "bg-red-50/80 border-red-100",
-      };
+        if (mimetype.includes("pdf") || ext === "pdf") {
+          return {
+            icon: <FileText className="w-6 h-6 text-red-500" />,
+            bg: "bg-red-50/80 border-red-100",
+            badgeText: "Documento PDF",
+            badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+          };
+        }
+        if (
+          mimetype.includes("excel") ||
+          mimetype.includes("spreadsheet") ||
+          ["xlsx", "xls", "csv"].includes(ext)
+        ) {
+          return {
+            icon: <FileSpreadsheet className="w-6 h-6 text-emerald-600" />,
+            bg: "bg-emerald-50/80 border-emerald-100",
+            badgeText: "Hoja de Cálculo",
+            badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+          };
+        }
+        if (
+          mimetype.includes("word") ||
+          mimetype.includes("officedocument.wordprocessingml") ||
+          ["docx", "doc"].includes(ext)
+        ) {
+          return {
+            icon: <FileCode className="w-6 h-6 text-blue-500" />,
+            bg: "bg-blue-50/80 border-blue-100",
+            badgeText: "Documento Word",
+            badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+          };
+        }
+        if (
+          mimetype.includes("image") ||
+          ["png", "jpg", "jpeg", "svg", "webp"].includes(ext)
+        ) {
+          return {
+            icon: <Image className="w-6 h-6 text-purple-500" />,
+            bg: "bg-purple-50/80 border-purple-100",
+            badgeText: "Imagen",
+            badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+          };
+        }
+        return {
+          icon: <Paperclip className="w-6 h-6 text-indigo-500" />,
+          bg: "bg-indigo-50/80 border-indigo-100",
+          badgeText: "Archivo Local",
+          badgeClass: "bg-slate-100 text-slate-700 border-slate-200",
+        };
+      }
     }
-    if (
-      mimetype.includes("excel") ||
-      mimetype.includes("spreadsheet") ||
-      ["xlsx", "xls", "csv"].includes(ext)
-    ) {
-      return {
-        icon: <FileSpreadsheet className="w-7 h-7 text-emerald-600" />,
-        bg: "bg-emerald-50/80 border-emerald-100",
-      };
-    }
-    if (
-      mimetype.includes("word") ||
-      mimetype.includes("officedocument.wordprocessingml") ||
-      ["docx", "doc"].includes(ext)
-    ) {
-      return {
-        icon: <FileCode className="w-7 h-7 text-blue-500" />,
-        bg: "bg-blue-50/80 border-blue-100",
-      };
-    }
-    if (
-      mimetype.includes("image") ||
-      ["png", "jpg", "jpeg", "svg", "webp"].includes(ext)
-    ) {
-      return {
-        icon: <Image className="w-7 h-7 text-purple-500" />,
-        bg: "bg-purple-50/80 border-purple-100",
-      };
-    }
-    return {
-      icon: <FileUp className="w-7 h-7 text-slate-500" />,
-      bg: "bg-slate-50/80 border-slate-100",
-    };
   };
 
-  const formatBytes = (bytes: number, decimals = 2) => {
-    if (!bytes || bytes === 0) return "0 Bytes";
+  const formatBytes = (bytes?: number, decimals = 2) => {
+    if (!bytes || bytes === 0) return "—";
     const k = 1024;
     const dm = decimals < 0 ? 0 : decimals;
     const sizes = ["Bytes", "KB", "MB", "GB"];
@@ -162,7 +215,8 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
     return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
   };
 
-  const fileConfig = getFileConfig(
+  const typeConfig = getAdjuntoTypeConfig(
+    adjunto.tipo,
     adjunto.mimetype || "",
     adjunto.originalname || "",
   );
@@ -170,7 +224,9 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
   const nombrePrograma = adjunto.programa?.titulo || "Sin programa asignado";
   const tipoPrograma = adjunto.programa?.tipo_programa?.nombre || "General";
   const nombreArchivo =
-    adjunto.titulo || adjunto.originalname || "este archivo";
+    adjunto.titulo || adjunto.originalname || "este adjunto";
+
+  const isFile = adjunto.tipo === "FILE" || !adjunto.tipo;
 
   return (
     <>
@@ -180,23 +236,27 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
         }`}
       >
         <div>
-          {/* Cabecera: Icono de Archivo, Badge Tipo Programa y Menú */}
+          {/* Cabecera: Icono, Badge Tipo Adjunto y Menú de Acciones */}
           <div className="flex items-start justify-between gap-2 mb-3">
             <div className="flex items-center gap-2 min-w-0">
               <div
-                className={`p-2 rounded-lg border ${fileConfig.bg} transition-transform group-hover:scale-105 shrink-0`}
+                className={`p-2 rounded-lg border ${typeConfig.bg} transition-transform group-hover:scale-105 shrink-0`}
               >
-                {fileConfig.icon}
+                {typeConfig.icon}
               </div>
 
-              {/* Badge para Tipo de Programa */}
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200/60 truncate max-w-[130px]">
-                <Bookmark className="w-2.5 h-2.5 text-slate-400 shrink-0" />
-                <span className="truncate">{tipoPrograma}</span>
+              {/* Badge del Tipo de Adjunto */}
+              <span
+                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold border truncate shrink-0 ${typeConfig.badgeClass}`}
+              >
+                {typeConfig.badgeText}
               </span>
             </div>
 
-            <DropdownMenu>
+            <DropdownMenu
+              open={isDropdownOpen}
+              onOpenChange={setIsDropdownOpen}
+            >
               <DropdownMenuTrigger
                 disabled={isDownloading || isDeleting}
                 className="p-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors shrink-0 disabled:opacity-50"
@@ -208,7 +268,7 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
                 )}
               </DropdownMenuTrigger>
 
-              <DropdownMenuContent align="end" className="w-40 bg-white">
+              <DropdownMenuContent align="end" className="w-44 bg-white">
                 <DropdownMenuItem
                   onClick={handleShowDetail}
                   className="gap-2 text-slate-600 cursor-pointer"
@@ -216,13 +276,22 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
                   <Edit className="w-4 h-4" /> Editar
                 </DropdownMenuItem>
 
-                <DropdownMenuItem
-                  onClick={handleDownload}
-                  disabled={isDownloading}
-                  className="gap-2 text-slate-600 cursor-pointer"
-                >
-                  <Download className="w-4 h-4" /> Descargar
-                </DropdownMenuItem>
+                {isFile ? (
+                  <DropdownMenuItem
+                    onClick={handleDownload}
+                    disabled={isDownloading}
+                    className="gap-2 text-slate-600 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" /> Descargar
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={handleOpenLink}
+                    className="gap-2 text-blue-600 focus:text-blue-700 focus:bg-blue-50 cursor-pointer"
+                  >
+                    <ExternalLink className="w-4 h-4" /> Abrir Enlace
+                  </DropdownMenuItem>
+                )}
 
                 <DropdownMenuItem
                   onClick={handleOpenDeleteModal}
@@ -236,13 +305,13 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
           </div>
 
           {/* Contenido Principal */}
-          <div className="space-y-2 mb-4">
+          <div className="space-y-1.5 mb-3">
             {/* Título del Adjunto */}
             <h3 className="font-bold text-slate-800 text-sm leading-snug wrap-break-word group-hover:text-blue-600 transition-colors">
               {adjunto.titulo || "Sin título"}
             </h3>
 
-            {/* Nombre del Programa con Icono */}
+            {/* Programa asignado */}
             <div className="flex items-start gap-1.5 text-xs text-slate-600 font-medium">
               <GraduationCap className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
               <span
@@ -253,25 +322,55 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
               </span>
             </div>
 
-            {/* Nombre Original del Archivo */}
-            <p className="text-[11px] text-slate-400 font-normal break-all truncate">
-              {adjunto.originalname}
-            </p>
+            {/* Subtítulo: Nombre original o URL externa */}
+            <div className="pt-0.5">
+              {isFile ? (
+                <p
+                  className="text-[11px] text-slate-400 font-normal truncate"
+                  title={adjunto.originalname}
+                >
+                  {adjunto.originalname || "Sin archivo físico"}
+                </p>
+              ) : (
+                <a
+                  href={adjunto.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:underline font-normal truncate max-w-full"
+                  title={adjunto.url}
+                >
+                  <ExternalLink className="w-3 h-3 shrink-0" />
+                  <span className="truncate">{adjunto.url}</span>
+                </a>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Footer de la tarjeta */}
+        {/* Footer de la Tarjeta */}
         <div className="pt-2.5 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-400 font-medium mt-auto">
-          <span>{formatBytes(adjunto.size || 0)}</span>
-          <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide ${
-              adjunto.estado
-                ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                : "bg-rose-50 text-rose-700 border border-rose-200"
-            }`}
-          >
-            {adjunto.estado ? "Activo" : "Inactivo"}
+          {/* Badge secundario de Tipo de Programa */}
+          <span className="inline-flex items-center gap-1 text-[10px] text-slate-500 font-medium truncate max-w-[120px]">
+            <Bookmark className="w-3 h-3 text-slate-400 shrink-0" />
+            <span className="truncate">{tipoPrograma}</span>
           </span>
+
+          <div className="flex items-center gap-2">
+            {isFile && (
+              <span className="text-[10px] font-mono text-slate-400">
+                {formatBytes(adjunto.size)}
+              </span>
+            )}
+            <span
+              className={`px-2 py-0.5 rounded-full text-[10px] font-semibold tracking-wide ${
+                adjunto.estado
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-rose-50 text-rose-700 border border-rose-200"
+              }`}
+            >
+              {adjunto.estado ? "Activo" : "Inactivo"}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -284,7 +383,7 @@ export const AdjuntoItem: React.FC<AdjuntoItemProps> = ({
         message={
           <span
             dangerouslySetInnerHTML={{
-              __html: `¿Está seguro de eliminar el archivo <strong>${nombreArchivo}</strong>? Esta acción no se puede deshacer.`,
+              __html: `¿Está seguro de eliminar el adjunto <strong>${nombreArchivo}</strong>? Esta acción no se puede deshacer.`,
             }}
           />
         }
