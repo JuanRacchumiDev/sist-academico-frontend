@@ -1,9 +1,14 @@
 import axios, { AxiosError } from 'axios'
 
 const baseURL = import.meta.env.VITE_API_URL
+const nestBaseURL = import.meta.env.VITE_NEST_API_URL
 
 if (!baseURL) {
     console.warn("VITE_API_URL no está definida en las variables de entorno")
+}
+
+if (!nestBaseURL) {
+    console.warn("VITE_NEST_API_URL no está definida en las variables de entorno")
 }
 
 // Crea una instancia de axios con la URL base
@@ -50,5 +55,9 @@ apiClient.interceptors.response.use(
         return Promise.reject(error);
     }
 )
+
+export const nestApiClient = axios.create({
+    baseURL: nestBaseURL
+});
 
 export default apiClient

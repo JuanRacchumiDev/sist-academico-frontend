@@ -1,4 +1,4 @@
-import apiClient from "./apiClient";
+import apiClient, { nestApiClient } from "./apiClient";
 import { Certificado, CertificadoResponse } from "../interfaces/ICertificado"
 import { padString } from "@/utils/stringUtils";
 
@@ -197,9 +197,14 @@ export const preview = async (id: number) => {
 
 export const generate = async (id: number) => {
     try {
-        const urlApi = `/certificados/${id}/download`
+        // const urlApi = `/certificados/${id}/download`
+        const urlApi = `/certificados/${id}/pdf`;
 
-        const response = await apiClient.get(urlApi, {
+        // const response = await apiClient.get(urlApi, {
+        //     responseType: 'blob'
+        // });
+
+        const response = await nestApiClient.get(urlApi, {
             responseType: 'blob'
         });
 
