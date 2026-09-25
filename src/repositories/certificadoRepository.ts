@@ -101,9 +101,15 @@ export const downloadByCodigo = async (codigo: string) => {
     try {
         const urlApi = `/certificados/descargar/${encodeURIComponent(codigo)}`;
 
-        const response = await apiClient.get(urlApi, {
+        const response = await nestApiClient.get(urlApi, {
             responseType: 'blob'
         });
+
+        // const urlApi = `/certificados/descargar/${encodeURIComponent(codigo)}`;
+
+        // const response = await apiClient.get(urlApi, {
+        //     responseType: 'blob'
+        // });
 
         // console.log('---- response downloadByCodigo ----')
         // console.log({ response })
