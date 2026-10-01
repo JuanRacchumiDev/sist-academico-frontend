@@ -534,16 +534,13 @@ export const CertificadoForm = () => {
     try {
       const response = await createCertificado(payload);
 
-      const { result, message } = response;
+      const { status, statusText } = response;
 
-      if (result) {
-        showToast(
-          "success",
-          message || "Certificado registrado correctamente.",
-        );
+      if (status === 201) {
+        showToast("success", "Certificado registrado correctamente.");
         handleGoBack();
       } else {
-        showToast("error", message || "Error al guardar el certificado.");
+        showToast("error", statusText || "Error al guardar el certificado.");
       }
     } catch (error) {
       console.error("Error guardando certificado:", error);

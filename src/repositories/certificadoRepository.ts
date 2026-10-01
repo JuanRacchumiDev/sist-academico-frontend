@@ -1,5 +1,5 @@
 import apiClient, { nestApiClient } from "./apiClient";
-import { Certificado, CertificadoResponse } from "../interfaces/ICertificado"
+import { Certificado, CertificadoResponse, CertificadoResponseGeneral } from "../interfaces/ICertificado"
 import { padString } from "@/utils/stringUtils";
 
 export const getAll = async (): Promise<CertificadoResponse> => {
@@ -139,28 +139,28 @@ export const downloadByCodigo = async (codigo: string) => {
     }
 };
 
-export const create = async (payload: Certificado): Promise<CertificadoResponse> => {
+export const create = async (payload: Certificado): Promise<CertificadoResponseGeneral> => {
     try {
         // console.log('certificadoRepository method: create')
         // console.log({ payload })
 
-        const response = await apiClient.post('/certificados', payload)
+        const response = await nestApiClient.post('/certificados', payload)
 
-        // console.log('response create certificadoRepository')
-        // console.log({ response })
+        console.log('response create certificadoRepository')
+        console.log({ response })
 
-        const { data: { result, message, data } } = response
+        const { data, status, statusText } = response
 
         return {
-            result,
-            message,
-            data
+            data,
+            status,
+            statusText
         }
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
         // console.log('errorMessage', errorMessage)
-        return { result: false, data: [], error: errorMessage, status: 500 }
+        return { data: [], status: 500, statusText: errorMessage }
     }
 }
 

@@ -45,6 +45,12 @@ export interface CertificadoResponse {
     code?: string
 }
 
+export interface CertificadoResponseGeneral {
+    data?: Certificado | Certificado[],
+    status?: number
+    statusText?: string
+}
+
 export interface PaginationType {
     currentPage: number
     limit: number
