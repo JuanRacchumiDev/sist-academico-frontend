@@ -8,8 +8,6 @@ export const getAll = async (): Promise<CertificadoResponse> => {
 
         const response = await apiClient.get(urlApi)
 
-        // console.log({ response })
-
         const { data: { result, data, message } } = response
 
         return {
@@ -19,7 +17,6 @@ export const getAll = async (): Promise<CertificadoResponse> => {
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -28,11 +25,7 @@ export const getAllPaginate = async (queryParams: string): Promise<CertificadoRe
     try {
         const urlApi = `/certificados/paginate?${queryParams}`
 
-        // console.log({ urlApi })
-
         const response = await apiClient.get(urlApi)
-
-        // console.log({ response })
 
         const { data: { result, data, message, pagination } } = response
 
@@ -44,7 +37,6 @@ export const getAllPaginate = async (queryParams: string): Promise<CertificadoRe
         }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
     }
 }
@@ -52,8 +44,6 @@ export const getAllPaginate = async (queryParams: string): Promise<CertificadoRe
 export const getById = async (id: number): Promise<CertificadoResponse> => {
     try {
         const urlApi = `${'/certificados/'}${id}`
-
-        console.log({ urlApi })
 
         const response = await apiClient.get(urlApi)
 
@@ -75,9 +65,6 @@ export const validar = async (codigoQR: string): Promise<CertificadoResponse> =>
     try {
         const urlApi = `/certificados/validar/${encodeURIComponent(codigoQR)}`;
         const response = await apiClient.get(urlApi);
-
-        // console.log('---- response validar ----')
-        // console.log({ response })
 
         const { data: { result, data, message } } = response;
 
@@ -104,15 +91,6 @@ export const downloadByCodigo = async (codigo: string) => {
         const response = await nestApiClient.get(urlApi, {
             responseType: 'blob'
         });
-
-        // const urlApi = `/certificados/descargar/${encodeURIComponent(codigo)}`;
-
-        // const response = await apiClient.get(urlApi, {
-        //     responseType: 'blob'
-        // });
-
-        // console.log('---- response downloadByCodigo ----')
-        // console.log({ response })
 
         const fileBlob = response.data;
         const contentDisposition = response.headers['content-disposition'];
@@ -141,13 +119,7 @@ export const downloadByCodigo = async (codigo: string) => {
 
 export const create = async (payload: Certificado): Promise<CertificadoResponseGeneral> => {
     try {
-        // console.log('certificadoRepository method: create')
-        // console.log({ payload })
-
         const response = await nestApiClient.post('/certificados', payload)
-
-        console.log('response create certificadoRepository')
-        console.log({ response })
 
         const { data, status, statusText } = response
 
@@ -159,20 +131,13 @@ export const create = async (payload: Certificado): Promise<CertificadoResponseG
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        // console.log('errorMessage', errorMessage)
         return { data: [], status: 500, statusText: errorMessage }
     }
 }
 
 export const createModular = async (payload: Certificado): Promise<CertificadoResponse> => {
     try {
-        // console.log('certificadoRepository method: create payload')
-        // console.log({ payload })
-
         const response = await apiClient.post('/certificados/modular', payload)
-
-        // console.log('response create certificadoRepository')
-        // console.log({ response })
 
         const { data: { result, message, data } } = response
 
@@ -184,8 +149,27 @@ export const createModular = async (payload: Certificado): Promise<CertificadoRe
 
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        // console.log('errorMessage', errorMessage)
         return { result: false, data: [], error: errorMessage, status: 500 }
+    }
+}
+
+export const update = async (id: number, payload: Certificado): Promise<CertificadoResponseGeneral> => {
+    try {
+        const urlApi = `/certificados/${id}`
+
+        const response = await nestApiClient.patch(urlApi, payload)
+
+        const { data, status, statusText } = response
+
+        return {
+            data,
+            status,
+            statusText
+        }
+
+    } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+        return { data: [], status: 500, statusText: errorMessage }
     }
 }
 

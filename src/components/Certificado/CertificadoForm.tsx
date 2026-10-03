@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useToast } from "../../context/ToastContext";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
 import {
   Certificado,
-  CertificadoResponse,
+  CertificadoResponseGeneral,
 } from "../../interfaces/ICertificado";
 
 // Componentes UI de Shadcn
@@ -60,7 +60,11 @@ import { Modulo } from "../../interfaces/IModulo";
 import { Plantilla } from "../../interfaces/IPlantilla";
 
 // Servicios
-import { createCertificado } from "../../services/certificadoService";
+import {
+  createCertificado,
+  getCertificadoById,
+  updateCertificado,
+} from "../../services/certificadoService";
 import {
   getDetalles,
   getDetalleByParams,
@@ -259,6 +263,9 @@ export const CertificadoForm = () => {
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
 
+  // Flag para evitar reseteos de campos cuando se están poblando datos iniciales en modo edición
+  const isInitialLoading = useRef(false);
+
   // Estados
   const [grupoPersonas, setGrupoPersonas] = useState<DetalleParametro[]>([]);
   const [personas, setPersonas] = useState<Persona[]>([]);
@@ -289,8 +296,7 @@ export const CertificadoForm = () => {
     invalid ? "border-red-500 focus:ring-red-500" : "focus:ring-blue-500";
 
   const handleGoBack = () => {
-    const urlBack = `/certificado/`;
-    navigate(urlBack);
+    navigate(`/certificado/`);
   };
 
   const form = useForm<TFormValues>({
@@ -328,6 +334,7 @@ export const CertificadoForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingData(true);
+      if (isEditMode) isInitialLoading.current = true;
 
       try {
         const [
@@ -349,21 +356,86 @@ export const CertificadoForm = () => {
           ...listInstituciones,
         ]);
         setTipoCertificados(listTipoCertificados);
+
+        if (isEditMode && id) {
+          const responseCertificado = await getCertificadoById(+id);
+
+          const { result, data } = responseCertificado;
+
+          if (result && data) {
+            const certificado = data as Certificado;
+
+            console.log({ certificado });
+
+            // Extraer grupo persona
+            const grupoPersonas = certificado.persona.grupos[0];
+            const { codigo: codigoGrupo, nombre_url: nombreGrupo } =
+              grupoPersonas;
+            console.log({ codigoGrupo });
+
+            // Cargar la lista de personas para este grupo
+            if (codigoGrupo) {
+              const listPersonas = await loadPersonas(nombreGrupo);
+              setPersonas(listPersonas);
+            }
+
+            // Precargar plantillas antes de resetear el formulario para que el Select encuentre la opción
+            const codigoTipoProg =
+              certificado.programa?.codigo_tipoprograma?.toString() || "";
+            const idInst =
+              certificado.plantilla?.id_institucion?.toString() || "none";
+
+            if (codigoTipoProg) {
+              const filters: Record<string, any> = {
+                codigo_tipoprograma: codigoTipoProg,
+              };
+
+              if (idInst && idInst !== "none") {
+                filters.id_institucion = idInst;
+              }
+
+              const responsePlantillas = await getPlantillas(filters);
+              console.log({ responsePlantillas });
+
+              const { result, data } = responsePlantillas;
+
+              if (result && data) {
+                setPlantillas(data as Plantilla[]);
+              }
+            }
+
+            form.reset({
+              idGrupoPersona: codigoGrupo.toString(),
+              idPersona: certificado.id_persona?.toString() || "",
+              nombreImpresion: certificado.nombre_impresion || "",
+              codigoTipoCertificado:
+                certificado.codigo_tipocertificado?.toString() || "",
+              idInstitucion:
+                certificado.plantilla?.id_institucion?.toString() || "none",
+              codigoTipoPrograma:
+                certificado.programa?.codigo_tipoprograma?.toString() || "",
+              idPrograma: certificado.id_programa?.toString() || "",
+              idPlantilla: certificado.id_plantilla?.toString() || "",
+            });
+          }
+        }
       } catch (error) {
         console.error("Error al obtener datos", error);
         showToast("error", "Error al cargar los datos del formulario.");
       } finally {
         setIsLoadingData(false);
+        isInitialLoading.current = false;
       }
     };
 
     fetchData();
-  }, [id]);
+  }, [id, isEditMode]);
 
   // Cargar plantillas desde el endpoint
   useEffect(() => {
+    if (isInitialLoading.current) return;
+
     const fetchPlantillas = async () => {
-      // Si no hay un tipo de programa seleccionado, limpiamos la lista
       if (!selectedTipoProgramaCodigo) {
         setPlantillas([]);
         form.setValue("idPlantilla", "");
@@ -385,9 +457,6 @@ export const CertificadoForm = () => {
 
         const response = await getPlantillas(filters);
 
-        // console.log("---- response plantillas ----");
-        // console.log({ response });
-
         const { result, data } = response;
 
         if (result && data) {
@@ -401,7 +470,9 @@ export const CertificadoForm = () => {
         setPlantillas([]);
       } finally {
         setIsLoadingPlantillas(false);
-        form.setValue("idPlantilla", "");
+        if (!isInitialLoading.current && !isEditMode) {
+          form.setValue("idPlantilla", "");
+        }
       }
     };
 
@@ -422,18 +493,20 @@ export const CertificadoForm = () => {
 
   // Actualizar automáticamente el nombre de impresión al seleccionar persona
   useEffect(() => {
-    if (selectedPersonaId) {
-      const personaSeleccionada = personas.find(
-        (p) => p.id?.toString() === selectedPersonaId.toString(),
-      );
-      if (personaSeleccionada?.nombre_completo) {
-        const nombreCapitalized = capitalize(
-          personaSeleccionada.nombre_completo,
+    if (!isEditMode && !id) {
+      if (selectedPersonaId && !isInitialLoading.current) {
+        const personaSeleccionada = personas.find(
+          (p) => p.id?.toString() === selectedPersonaId.toString(),
         );
+        if (personaSeleccionada?.nombre_completo) {
+          const nombreCapitalized = capitalize(
+            personaSeleccionada.nombre_completo,
+          );
 
-        form.setValue("nombreImpresion", nombreCapitalized, {
-          shouldValidate: true,
-        });
+          form.setValue("nombreImpresion", nombreCapitalized, {
+            shouldValidate: true,
+          });
+        }
       }
     }
   }, [selectedPersonaId, personas, form]);
@@ -452,7 +525,7 @@ export const CertificadoForm = () => {
 
       // Buscar el objeto del tipo de programa
       const selectTipoPrograma = tipoProgramas.find(
-        (tipo) => tipo.codigo.toString() === selectedTipoProgramaCodigo,
+        (tipo) => tipo.codigo?.toString() === selectedTipoProgramaCodigo,
       );
 
       // console.log({ selectTipoPrograma });
@@ -460,7 +533,7 @@ export const CertificadoForm = () => {
       if (selectTipoPrograma) {
         const { programas_por_tipo } = selectTipoPrograma;
 
-        setProgramas(programas_por_tipo as Programa[]);
+        setProgramas((programas_por_tipo || []) as Programa[]);
       } else {
         setProgramas([]);
       }
@@ -474,6 +547,8 @@ export const CertificadoForm = () => {
   // Efecto reactivo: Carga personas dinámicamente según el grupo seleccionado
   useEffect(() => {
     const fetchPersonasByGrupo = async () => {
+      if (isInitialLoading.current) return;
+
       if (!selectedGrupoId) {
         setPersonas([]);
         return;
@@ -484,7 +559,7 @@ export const CertificadoForm = () => {
         (grupo) => grupo.codigo.toString() === selectedGrupoId,
       );
 
-      const nombreGrupo = selectGrupo.nombre_url || selectedGrupoId;
+      const nombreGrupo = selectGrupo.nombre_url;
       // console.log({ nombreGrupo });
 
       setIsLoadingPersonas(true);
@@ -532,12 +607,23 @@ export const CertificadoForm = () => {
     };
 
     try {
-      const response = await createCertificado(payload);
+      let response: CertificadoResponseGeneral;
+
+      if (isEditMode && id) {
+        response = await updateCertificado(+id, payload);
+      } else {
+        response = await createCertificado(payload);
+      }
 
       const { status, statusText } = response;
 
-      if (status === 201) {
-        showToast("success", "Certificado registrado correctamente.");
+      if (status === 200 || status === 201) {
+        showToast(
+          "success",
+          isEditMode
+            ? "Certificado actualizado correctamente"
+            : "Certificado registrado correctamente.",
+        );
         handleGoBack();
       } else {
         showToast("error", statusText || "Error al guardar el certificado.");
@@ -583,15 +669,7 @@ export const CertificadoForm = () => {
           )}
 
           <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit, (errors) => {
-                console.log(
-                  "Errores de validación que impiden enviar el formulario:",
-                  errors,
-                );
-              })}
-              className="space-y-6"
-            >
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Sección 1: Información del Destinatario e Institución */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-1">
@@ -609,8 +687,10 @@ export const CertificadoForm = () => {
                         <Select
                           onValueChange={(val) => {
                             field.onChange(val);
-                            form.setValue("idPersona", "");
-                            form.setValue("nombreImpresion", "");
+                            if (!isInitialLoading.current) {
+                              form.setValue("idPersona", "");
+                              form.setValue("nombreImpresion", "");
+                            }
                           }}
                           value={field.value || ""}
                         >
@@ -652,6 +732,7 @@ export const CertificadoForm = () => {
                           valueKey="id"
                           searchKeys={["nombre_completo"]}
                           isInvalid={fieldState.invalid}
+                          isLoading={isLoadingPersonas}
                           renderOption={(alumno) => (
                             <span className="font-semibold text-gray-900">
                               {alumno.nombre_completo}
@@ -694,8 +775,10 @@ export const CertificadoForm = () => {
                         <Select
                           onValueChange={(val) => {
                             field.onChange(val);
-                            form.setValue("idPrograma", "");
-                            form.setValue("idModulo", "");
+                            if (!isInitialLoading.current) {
+                              form.setValue("idPrograma", "");
+                              form.setValue("idModulo", "");
+                            }
                           }}
                           value={field.value || ""}
                         >
@@ -765,8 +848,10 @@ export const CertificadoForm = () => {
                         <Select
                           onValueChange={(val) => {
                             field.onChange(val);
-                            form.setValue("idPrograma", "");
-                            form.setValue("idModulo", "");
+                            if (!isInitialLoading.current) {
+                              form.setValue("idPrograma", "");
+                              form.setValue("idModulo", "");
+                            }
                           }}
                           value={field.value || ""}
                         >
@@ -810,6 +895,7 @@ export const CertificadoForm = () => {
                           valueKey="id"
                           searchKeys={["titulo"]}
                           isInvalid={fieldState.invalid}
+                          isLoading={isLoadingProgramas}
                           renderOption={(programa) => (
                             <span className="font-semibold text-gray-900">
                               {programa.titulo}
@@ -821,54 +907,34 @@ export const CertificadoForm = () => {
                     )}
                   />
 
-                  {/* Campo Plantilla con desplegable dinámico y Botón de Previsualización */}
                   <FormField
                     control={form.control}
                     name="idPlantilla"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col w-full min-w-0">
-                        <RequiredLabel>Plantilla de Diseño</RequiredLabel>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 min-w-0">
-                            <Select
-                              onValueChange={field.onChange}
-                              value={field.value || ""}
-                              disabled={
-                                !selectedTipoProgramaCodigo ||
-                                isLoadingPlantillas
-                              }
-                            >
-                              <FormControl>
-                                <SelectTrigger
-                                  className={`w-full ${inputErrorClass(
-                                    fieldState.invalid,
-                                  )}`}
+                        <RequiredLabel>Plantilla</RequiredLabel>
+                        <div className="flex gap-2">
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Seleccione una plantilla" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-xl">
+                              {plantillas.map((plantilla) => (
+                                <SelectItem
+                                  key={plantilla.id}
+                                  value={plantilla.id?.toString() || ""}
+                                  className="h-auto whitespace-normal wrap-break-word py-2.5 cursor-pointer"
                                 >
-                                  <SelectValue
-                                    placeholder={
-                                      isLoadingPlantillas
-                                        ? "Cargando plantillas..."
-                                        : !selectedTipoProgramaCodigo
-                                          ? "Seleccione Tipo Programa"
-                                          : plantillas.length === 0
-                                            ? "No hay plantillas disponibles"
-                                            : "Seleccionar plantilla..."
-                                    }
-                                  />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent className="w-full">
-                                {plantillas.map((plantilla) => (
-                                  <SelectItem
-                                    value={plantilla.id!.toString()}
-                                    key={plantilla.id}
-                                  >
-                                    {plantilla.nombre}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
+                                  {plantilla.nombre}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
 
                           <Button
                             type="button"
@@ -876,10 +942,9 @@ export const CertificadoForm = () => {
                             size="icon"
                             disabled={!selectedPlantillaId}
                             onClick={handleOpenPreview}
-                            title="Ver vista previa de la plantilla"
-                            className="h-9 w-9 border-slate-200 text-slate-600 hover:text-blue-600 hover:bg-blue-50 shrink-0"
+                            title="Previsualizar Plantilla"
                           >
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-4 w-4 text-blue-600" />
                           </Button>
                         </div>
                         <FormMessage />

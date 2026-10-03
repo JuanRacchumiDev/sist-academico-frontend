@@ -13,7 +13,7 @@ import {
   CommandList,
 } from "../../components/ui/command";
 import { Button } from "../../components/ui/button";
-import { Check, ChevronsUpDown } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { FormControl, FormItem } from "../../components/ui/form";
 import { RequiredLabel } from "./RequiredLabel";
@@ -29,6 +29,7 @@ interface SearchableComboboxProps<T extends { [key: string]: any }> {
   searchKeys: (keyof T)[];
   disabled?: boolean;
   isInvalid?: boolean;
+  isLoading?: boolean;
   renderOption?: (option: T) => React.ReactNode;
 }
 
@@ -43,6 +44,7 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
   searchKeys,
   disabled,
   isInvalid,
+  isLoading,
   renderOption,
 }: SearchableComboboxProps<T>) => {
   const [open, setOpen] = useState(false);
@@ -75,9 +77,13 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
               disabled={disabled}
             >
               <span className="line-clamp-2 wrap-break-word pr-2 text-sm leading-snug flex-1">
-                {displayValue}
+                {isLoading ? "Cargando opciones..." : displayValue}
               </span>
-              <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 self-center ml-auto" />
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground ml-auto" />
+              ) : (
+                <ChevronsUpDown className="h-4 w-4 shrink-0 opacity-50 self-center ml-auto" />
+              )}
             </Button>
           </FormControl>
         </PopoverTrigger>
@@ -92,55 +98,65 @@ const SearchableCombobox = <T extends { [key: string]: any }>({
               className="h-9 px-3 border-b border-gray-200 focus:ring-0 w-full"
             />
             <CommandList className="max-h-[350px] overflow-y-auto w-full">
-              <CommandEmpty className="py-6 text-center text-sm">
-                No se encontraron resultados {label ? label.toLowerCase() : ""}
-              </CommandEmpty>
-              <CommandGroup className="p-1 w-full">
-                {Array.isArray(options) &&
-                  options.map((option) => {
-                    const optionValue = String(option[valueKey]);
+              {isLoading ? (
+                <div className="py-6 flex items-center justify-center gap-2 text-sm text-slate-500">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                  Cargando...
+                </div>
+              ) : (
+                <>
+                  <CommandEmpty className="py-6 text-center text-sm">
+                    No se encontraron resultados{" "}
+                    {label ? label.toLowerCase() : ""}
+                  </CommandEmpty>
+                  <CommandGroup className="p-1 w-full">
+                    {Array.isArray(options) &&
+                      options.map((option) => {
+                        const optionValue = String(option[valueKey]);
 
-                    const searchValue = searchKeys
-                      .map((key) => option[key])
-                      .join(" ")
-                      .toLowerCase();
+                        const searchValue = searchKeys
+                          .map((key) => option[key])
+                          .join(" ")
+                          .toLowerCase();
 
-                    return (
-                      <CommandItem
-                        key={optionValue}
-                        value={String(searchValue)}
-                        onSelect={() => {
-                          onChange(optionValue);
-                          setOpen(false);
-                        }}
-                        className={cn(
-                          "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
-                          "hover:bg-blue-50 hover:text-blue-700",
-                          value === option[valueKey] &&
-                            "bg-blue-50 font-medium text-blue-700",
-                        )}
-                      >
-                        <Check
-                          className={cn(
-                            "mr-2 h-4 w-4 shrink-0",
-                            value === option[valueKey]
-                              ? "opacity-100"
-                              : "opacity-0",
-                          )}
-                        />
-                        <div className="flex flex-col w-full whitespace-normal wrap-break-word">
-                          {renderOption ? (
-                            renderOption(option)
-                          ) : (
-                            <span className="block line-clamp-2">
-                              {option[displayKey] as string}
-                            </span>
-                          )}
-                        </div>
-                      </CommandItem>
-                    );
-                  })}
-              </CommandGroup>
+                        return (
+                          <CommandItem
+                            key={optionValue}
+                            value={String(searchValue)}
+                            onSelect={() => {
+                              onChange(optionValue);
+                              setOpen(false);
+                            }}
+                            className={cn(
+                              "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none",
+                              "hover:bg-blue-50 hover:text-blue-700",
+                              value === optionValue &&
+                                "bg-blue-50 font-medium text-blue-700",
+                            )}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4 shrink-0",
+                                value === optionValue
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            <div className="flex flex-col w-full whitespace-normal wrap-break-word">
+                              {renderOption ? (
+                                renderOption(option)
+                              ) : (
+                                <span className="block line-clamp-2">
+                                  {option[displayKey] as string}
+                                </span>
+                              )}
+                            </div>
+                          </CommandItem>
+                        );
+                      })}
+                  </CommandGroup>
+                </>
+              )}
             </CommandList>
           </Command>
         </PopoverContent>

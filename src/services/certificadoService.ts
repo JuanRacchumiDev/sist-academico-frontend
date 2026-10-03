@@ -5,6 +5,7 @@ import {
     getById,
     create,
     createModular,
+    update,
     preview,
     generate,
     destroy,
@@ -47,7 +48,7 @@ export const getCertificadosPaginate = async (
     }
 }
 
-export const getCertificadosById = async (id: number) => {
+export const getCertificadoById = async (id: number) => {
     const response = await getById(id)
 
     return {
@@ -130,6 +131,14 @@ export const createCertificado = async (payload: Certificado) => {
 
 export const createCertificadoModular = async (payload: Certificado) => {
     const response = await createModular(payload)
+
+    return {
+        ...response
+    }
+}
+
+export const updateCertificado = async (id: number, payload: Certificado) => {
+    const response = await update(id, payload)
 
     return {
         ...response
