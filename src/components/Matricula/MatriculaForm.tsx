@@ -809,8 +809,8 @@ export const MatriculaForm = () => {
   };
 
   return (
-    <Card className="shadow-xl border-none bg-white overflow-hidden rounded-xl">
-      <CardHeader className="border-b border-slate-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50/50">
+    <Card className="shadow-xl border-none bg-white">
+      <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
         <div className="space-y-1">
           <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
             {isEditMode ? "Editar Matrícula" : "Nuevo Registro de Matrícula"}
@@ -829,7 +829,7 @@ export const MatriculaForm = () => {
         </Button>
       </CardHeader>
 
-      <CardContent className="px-6 sm:px-8 relative space-y-8">
+      <CardContent className="px-6 sm:px-8 relative">
         {isLoadingData && (
           <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
             <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
@@ -837,27 +837,27 @@ export const MatriculaForm = () => {
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {/* SECCIÓN 01: INFORMACIÓN DE REGISTRO */}
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
-                  01
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5">
+                <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
+                  1
                 </span>
-                <h3 className="text-lg font-semibold text-slate-800">
+                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                   Información de registro
                 </h3>
-                <div className="h-px bg-gray-200 flex-1"></div>
+                <div className="h-px bg-slate-100 flex-1"></div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6 w-full">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
                 {/* Alumno */}
                 <FormField
                   control={form.control}
                   name="idPersona"
                   render={({ field, fieldState }) => (
                     <FormItem className="w-full">
-                      <RequiredLabel>Alumno</RequiredLabel>
+                      <RequiredLabel isRequired={true}>Alumno</RequiredLabel>
                       <SearchableCombobox<Persona>
                         placeholder="Buscar un alumno"
                         options={alumnos}
@@ -873,7 +873,7 @@ export const MatriculaForm = () => {
                           </span>
                         )}
                       />
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -883,31 +883,39 @@ export const MatriculaForm = () => {
                   control={form.control}
                   name="idInstitucion"
                   render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col w-full">
-                      <RequiredLabel>Institución</RequiredLabel>
+                    <FormItem className="w-full">
+                      <RequiredLabel isRequired={true}>
+                        Institución
+                      </RequiredLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value || ""}
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`w-full ${inputErrorClass(fieldState.invalid)}`}
+                            className={`w-full transition-all bg-white ${
+                              fieldState.invalid
+                                ? "border-red-400 focus:ring-red-100"
+                                : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                            }`}
+                            // className={`w-full ${inputErrorClass(fieldState.invalid)}`}
                           >
-                            <SelectValue placeholder="Seleccionar..." />
+                            <SelectValue placeholder="Seleccionar institución" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent className="w-full">
+                        <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                           {instituciones.map((inst) => (
                             <SelectItem
                               value={inst.id!.toString()}
                               key={inst.id}
+                              className="cursor-pointer hover:bg-blue-50 focus:bg-blue-100 data-[state=checked]:bg-blue-100 data-[state=checked]:font-semibold transition-colors"
                             >
                               {inst.nombre}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -918,7 +926,9 @@ export const MatriculaForm = () => {
                   name="fechaMatricula"
                   render={({ field, fieldState }) => (
                     <FormItem className="w-full">
-                      <RequiredLabel>Fecha Matrícula</RequiredLabel>
+                      <RequiredLabel isRequired={true}>
+                        Fecha Matrícula
+                      </RequiredLabel>
                       <Input
                         type="date"
                         min={minDateString}
@@ -942,15 +952,15 @@ export const MatriculaForm = () => {
 
             {/* SECCIÓN 02: SELECCIÓN DE PROGRAMAS */}
             <div className="space-y-6">
-              <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-4">
                 <div className="flex items-center gap-4 flex-1">
-                  <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
-                    02
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
+                    2
                   </span>
-                  <h3 className="text-lg font-semibold text-slate-800">
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                     Programas de Matrícula
                   </h3>
-                  <div className="h-px bg-gray-200 flex-1"></div>
+                  <div className="h-px bg-slate-100 flex-1"></div>
                 </div>
                 <Button
                   type="button"
@@ -983,9 +993,9 @@ export const MatriculaForm = () => {
                           name={`programas.${index}.idTipoPrograma`}
                           render={({ field: tipoField, fieldState }) => (
                             <FormItem className="w-full">
-                              <FormLabel className="text-slate-600">
-                                Tipo de Programa
-                              </FormLabel>
+                              <RequiredLabel isRequired={true}>
+                                Tipo de programa
+                              </RequiredLabel>
                               <Select
                                 onValueChange={(val) => {
                                   tipoField.onChange(parseInt(val, 10));
@@ -1031,9 +1041,9 @@ export const MatriculaForm = () => {
                           name={`programas.${index}.idPrograma`}
                           render={({ field: programaField, fieldState }) => (
                             <FormItem className="w-full">
-                              <FormLabel className="text-slate-600">
+                              <RequiredLabel isRequired={true}>
                                 Programa específico
-                              </FormLabel>
+                              </RequiredLabel>
                               <SearchableCombobox<Programa>
                                 placeholder={
                                   selectedTipoId
@@ -1052,7 +1062,7 @@ export const MatriculaForm = () => {
                                   programasFiltrados.length === 0
                                 }
                               />
-                              <FormMessage />
+                              <FormMessage className="text-xs font-medium text-red-500" />
                             </FormItem>
                           )}
                         />
@@ -1099,7 +1109,9 @@ export const MatriculaForm = () => {
                   name="numeroModulos"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <RequiredLabel>N° Total de Módulos</RequiredLabel>
+                      <RequiredLabel isRequired={true}>
+                        N° Total de Módulos
+                      </RequiredLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -1127,7 +1139,9 @@ export const MatriculaForm = () => {
                   name="montoPorModulo"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <RequiredLabel>Costo Unitario Módulo (S/.)</RequiredLabel>
+                      <RequiredLabel isRequired={true}>
+                        Costo Unitario Módulo (S/.)
+                      </RequiredLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -1212,7 +1226,9 @@ export const MatriculaForm = () => {
                     name="codigoFormaPagoMatricula"
                     render={({ field, fieldState }) => (
                       <FormItem className="flex flex-col w-full">
-                        <RequiredLabel>Forma de Pago Matrícula</RequiredLabel>
+                        <RequiredLabel isRequired={true}>
+                          Forma de Pago Matrícula
+                        </RequiredLabel>
                         <Select
                           onValueChange={field.onChange}
                           value={field.value || ""}
@@ -1221,7 +1237,7 @@ export const MatriculaForm = () => {
                             <SelectTrigger
                               className={`w-full ${inputErrorClass(fieldState.invalid)}`}
                             >
-                              <SelectValue placeholder="Seleccionar método..." />
+                              <SelectValue placeholder="Seleccionar forma pago" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="w-full">
@@ -1345,7 +1361,7 @@ export const MatriculaForm = () => {
                           >
                             <FormControl>
                               <SelectTrigger className="w-full bg-white">
-                                <SelectValue placeholder="Seleccionar método..." />
+                                <SelectValue placeholder="Seleccionar forma pago" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
@@ -1499,30 +1515,28 @@ export const MatriculaForm = () => {
                 </div>
 
                 {/* Botones perfectamente alineados verticalmente */}
-                <div className="flex items-center gap-2.5 w-full sm:w-auto">
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="flex-1 sm:flex-none px-6 h-10 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg focus:ring-2 focus:ring-blue-500 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
-                  >
-                    {isSubmitting ? (
-                      <Spinner className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Save className="h-4 w-4" />
-                    )}
-                    <span>
-                      {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
-                    </span>
-                  </Button>
+                <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
                   <Button
                     type="button"
                     variant="outline"
                     disabled={isSubmitting}
                     onClick={resetForm}
-                    className="flex-1 sm:flex-none px-4 h-10 bg-white border-slate-300 text-slate-700 hover:bg-slate-100 hover:text-slate-900 font-medium rounded-xl transition-colors shadow-sm focus:ring-2 focus:ring-slate-200"
+                    className="border-slate-200 text-slate-700 hover:bg-slate-50"
                   >
-                    <XCircle className="h-4 w-4 mr-1.5 text-slate-500" />
+                    <XCircle className="h-4 w-4 mr-2" />
                     Cancelar
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="bg-blue-600 hover:bg-blue-700 text-white transition-all min-w-[140px]"
+                  >
+                    {isSubmitting ? (
+                      <Spinner className="h-4 w-4 mr-2 border-2 border-white/20 border-t-white" />
+                    ) : (
+                      <Save className="h-4 w-4 mr-2" />
+                    )}
+                    <span>{isEditMode ? "Actualizar" : "Registrar"}</span>
                   </Button>
                 </div>
               </div>

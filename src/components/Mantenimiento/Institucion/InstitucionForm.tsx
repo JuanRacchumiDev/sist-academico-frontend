@@ -289,31 +289,36 @@ export const InstitucionForm = () => {
                   control={form.control}
                   name="codigoSede"
                   render={({ field, fieldState }) => (
-                    <FormItem className="flex flex-col">
-                      <RequiredLabel>Sede</RequiredLabel>
+                    <FormItem className="w-full">
+                      <RequiredLabel isRequired={true}>Sede</RequiredLabel>
                       <Select
                         onValueChange={field.onChange}
                         value={field.value ?? ""}
                       >
                         <FormControl>
                           <SelectTrigger
-                            className={`${inputErrorClass(fieldState.invalid)} w-full w-full-important`}
+                            className={`w-full transition-all bg-white ${
+                              fieldState.invalid
+                                ? "border-red-400 focus:ring-red-100"
+                                : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                            }`}
                           >
-                            <SelectValue placeholder="Seleccionar..." />
+                            <SelectValue placeholder="Seleccionar sede" />
                           </SelectTrigger>
                         </FormControl>
-                        <SelectContent>
+                        <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                           {sedes.map((sede) => (
                             <SelectItem
                               value={sede.codigo!.toString()}
                               key={sede.codigo!.toString()}
+                              className="cursor-pointer hover:bg-blue-50 focus:bg-blue-100 data-[state=checked]:bg-blue-100 data-[state=checked]:font-semibold transition-colors"
                             >
                               {sede.nombre}
                             </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -323,7 +328,7 @@ export const InstitucionForm = () => {
                   name="nombre"
                   render={({ field, fieldState }) => (
                     <FormItem>
-                      <RequiredLabel>Nombre</RequiredLabel>
+                      <RequiredLabel isRequired={true}>Nombre</RequiredLabel>
                       <FormControl>
                         <Input
                           placeholder="COLEGIO DE INGENIEROS DE TUMBES"
@@ -331,10 +336,14 @@ export const InstitucionForm = () => {
                           maxLength={60}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -352,10 +361,14 @@ export const InstitucionForm = () => {
                           maxLength={100}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -373,10 +386,14 @@ export const InstitucionForm = () => {
                           maxLength={13}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -394,10 +411,14 @@ export const InstitucionForm = () => {
                           maxLength={100}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -415,10 +436,14 @@ export const InstitucionForm = () => {
                           maxLength={9}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -436,10 +461,14 @@ export const InstitucionForm = () => {
                           maxLength={150}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
@@ -457,37 +486,41 @@ export const InstitucionForm = () => {
                           maxLength={150}
                           {...field}
                           value={field.value ?? ""}
-                          className={inputErrorClass(fieldState.invalid)}
+                          className={`transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus-visible:ring-red-100"
+                              : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                          }`}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs font-medium text-red-500" />
                     </FormItem>
                   )}
                 />
               </div>
 
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
-                >
-                  {isSubmitting ? (
-                    <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Save className="h-4 w-4 mr-2" />
-                  )}
-                  {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
-                </Button>
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
                 <Button
                   type="button"
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={resetForm}
-                  className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
+                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
                 >
-                  <XCircle className="h-4 w-4 mr-2 text-slate-500" />
+                  <XCircle className="h-4 w-4 mr-2" />
                   Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all min-w-[140px]"
+                >
+                  {isSubmitting ? (
+                    <Spinner className="h-4 w-4 mr-2 border-2 border-white/20 border-t-white" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  {isEditMode ? "Actualizar" : "Guardar"}
                 </Button>
               </div>
             </form>

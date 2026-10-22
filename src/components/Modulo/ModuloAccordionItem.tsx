@@ -146,7 +146,7 @@ export const ModuloAccordionItem: React.FC<ModuloAccordionItemProps> = ({
               <FormControl>
                 <Textarea
                   rows={3}
-                  placeholder="Escribe los temas detallados del módulo..."
+                  placeholder="Escribe los temas detallados del módulo"
                   {...textareaField}
                   value={textareaField.value || ""}
                   autoComplete="off"

@@ -459,7 +459,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                         <SelectTrigger
                           className={`w-full ${inputErrorClass(fieldState.invalid)}`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar módulo" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -517,7 +517,7 @@ export const PagoForm: React.FC<FormularioPagoProps> = ({
                         <SelectTrigger
                           className={`w-full ${inputErrorClass(fieldState.invalid)}`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar forma pago" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>

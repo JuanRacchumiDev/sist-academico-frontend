@@ -228,7 +228,6 @@ export const TipoEventoForm = () => {
                 )}
               />
 
-              {/* </div> */}
               <div className="flex justify-end space-x-4 pt-4">
                 <Button
                   type="submit"
@@ -251,11 +250,9 @@ export const TipoEventoForm = () => {
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={() => resetForm()}
-                  // onClick={() => navigate("/mantenimiento/tipo-evento")}
                   className="hover:bg-gray-200 hover: cursor-pointer transition-colors duration-300"
                 >
                   Cancelar
-                  {/* {isSubmitting ? "Cancelando..." : "Cancelar"} */}
                 </Button>
               </div>
             </form>

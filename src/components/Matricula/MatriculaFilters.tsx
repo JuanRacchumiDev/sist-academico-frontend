@@ -57,7 +57,7 @@ export const MatriculaFilters: React.FC<MatriculaFilterProps> = ({
             <Input
               type="text"
               name="nombreCompleto"
-              placeholder="Nombre del alumno..."
+              placeholder="Nombre del alumno"
               value={filters.nombreCompleto}
               onChange={handleInputChange}
               autoComplete="off"

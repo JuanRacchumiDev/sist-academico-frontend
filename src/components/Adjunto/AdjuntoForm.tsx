@@ -442,13 +442,11 @@ export const AdjuntoForm = () => {
                     name="idPrograma"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <RequiredLabel>
-                          <span className="text-xs font-medium text-slate-700">
-                            Programa académico
-                          </span>
+                        <RequiredLabel isRequired={true}>
+                          Programa académico Programa académico
                         </RequiredLabel>
                         <SearchableCombobox<Programa>
-                          placeholder="Buscar un programa..."
+                          placeholder="Buscar un programa"
                           options={programas}
                           value={field.value}
                           onChange={field.onChange}
@@ -463,7 +461,7 @@ export const AdjuntoForm = () => {
                             </span>
                           )}
                         />
-                        <FormMessage className="text-[11px] text-red-500" />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -473,11 +471,9 @@ export const AdjuntoForm = () => {
                       control={form.control}
                       name="idModulo"
                       render={({ field, fieldState }) => (
-                        <FormItem className="flex flex-col gap-1 w-full animate-in fade-in slide-in-from-top-1 duration-200">
-                          <RequiredLabel>
-                            <span className="text-xs font-medium text-slate-700">
-                              Módulo del Programa
-                            </span>
+                        <FormItem className="w-full">
+                          <RequiredLabel isRequired={true}>
+                            Módulo del Programa
                           </RequiredLabel>
                           <Select
                             onValueChange={field.onChange}
@@ -487,7 +483,7 @@ export const AdjuntoForm = () => {
                               <SelectTrigger
                                 className={`h-9 rounded-lg shadow-none w-full text-left ${inputErrorClass(fieldState.invalid)}`}
                               >
-                                <SelectValue placeholder="Seleccione el módulo correspondiente..." />
+                                <SelectValue placeholder="Seleccione el módulo" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="rounded-lg shadow-md border-slate-200 max-h-52">
@@ -502,7 +498,7 @@ export const AdjuntoForm = () => {
                               ))}
                             </SelectContent>
                           </Select>
-                          <FormMessage className="text-[11px] text-red-500 font-medium" />
+                          <FormMessage className="text-xs font-medium text-red-500" />
                         </FormItem>
                       )}
                     />
@@ -512,22 +508,24 @@ export const AdjuntoForm = () => {
                     control={form.control}
                     name="nombre"
                     render={({ field, fieldState }) => (
-                      <FormItem className="flex flex-col gap-1 w-full">
-                        <RequiredLabel>
-                          <span className="text-xs font-medium text-slate-700">
-                            Nombre o Título del Recurso
-                          </span>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Nombre o Título del Recurso
                         </RequiredLabel>
                         <FormControl>
                           <Input
-                            placeholder="Ej. Sílabo del curso, Grabación Clase 1, Carpeta Drive..."
+                            placeholder="Ej. Sílabo del curso, Grabación Clase 1, Carpeta Drive"
                             autoComplete="off"
                             maxLength={150}
                             {...field}
-                            className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(fieldState.invalid)}`}
+                            className={`transition-all bg-white ${
+                              fieldState.invalid
+                                ? "border-red-400 focus-visible:ring-red-100"
+                                : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                            }`}
                           />
                         </FormControl>
-                        <FormMessage className="text-[11px] text-red-500 font-medium" />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -761,7 +759,7 @@ export const AdjuntoForm = () => {
               </div>
 
               {/* Botones de acción */}
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
                 <Button
                   type="button"
                   variant="ghost"
@@ -770,29 +768,22 @@ export const AdjuntoForm = () => {
                     form.reset();
                     if (fileInputRef.current) fileInputRef.current.value = "";
                   }}
-                  className="w-full sm:w-auto h-9 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium px-4 text-xs transition-colors shadow-none"
+                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
                 >
-                  <XCircle className="h-3.5 w-3.5 mr-1.5" />
+                  <XCircle className="h-4 w-4 mr-2" />
                   Limpiar campos
                 </Button>
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full sm:w-auto h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 text-xs font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none shadow-none"
+                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all min-w-[140px]"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Spinner className="mr-1.5 h-3.5 w-3.5 animate-spin text-white" />
-                      Procesando carga...
-                    </>
+                    <Spinner className="h-4 w-4 mr-2 border-2 border-white/20 border-t-white" />
                   ) : (
-                    <>
-                      <Save className="h-3.5 w-3.5 mr-1.5" />
-                      {isEditMode
-                        ? "Actualizar Registro"
-                        : "Guardar y Publicar"}
-                    </>
+                    <Save className="h-4 w-4 mr-2" />
                   )}
+                  {isEditMode ? "Guardar Cambios" : "Registrar"}
                 </Button>
               </div>
             </form>

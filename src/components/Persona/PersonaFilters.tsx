@@ -47,7 +47,7 @@ export const PersonaFilters: React.FC<PersonaFilterProps> = ({ onSearch }) => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
             name="search"
-            placeholder="Ej. Juan Perez..."
+            placeholder="Ej. Juan Perez"
             autoComplete="off"
             value={filters.search}
             onChange={handleInputChange}

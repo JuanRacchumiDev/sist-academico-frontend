@@ -246,7 +246,7 @@ export const ModuloForm = () => {
                             </div>
                           )}
                         />
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -364,11 +364,9 @@ export const ModuloForm = () => {
                   variant="outline"
                   disabled={isSubmitting}
                   onClick={() => resetForm()}
-                  // onClick={() => navigate("/trabajador-social")}
                   className="hover:bg-gray-200 hover: cursor-pointer transition-colors duration-300"
                 >
                   Cancelar
-                  {/* {isSubmitting ? "Cancelando..." : "Cancelar"} */}
                 </Button>
               </div>
             </form>

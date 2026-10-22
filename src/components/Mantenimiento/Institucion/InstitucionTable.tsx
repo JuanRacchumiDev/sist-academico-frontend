@@ -55,7 +55,7 @@ export const InstitucionTable = () => {
       setIsLoading(true);
 
       const filters = {
-        search: filtersData.search,
+        nombre: filtersData.search,
         is_cliente: true,
       };
 

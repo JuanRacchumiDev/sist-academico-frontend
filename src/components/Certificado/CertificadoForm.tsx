@@ -34,6 +34,7 @@ import {
   ImageIcon,
   FileSpreadsheet,
   Eye,
+  XCircle,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { useNavigate, useParams } from "react-router-dom";
@@ -197,6 +198,27 @@ const loadTipoCertificados = async (): Promise<DetalleParametro[]> => {
   }
 };
 
+const loadSucursales = async(): Promise<Institucion[]> => {
+  let sucursales: Institucion[] = []
+
+  const queryParams = `is_cliente=false&estado=true`;
+
+  try {
+    const response = await getInstituciones(queryParams)
+
+    const { result, data } = response
+
+    if (result && data) {
+      sucursales = data as Institucion[]
+    }
+
+    return sucursales
+  } catch (error) {
+    console.error("Error al obtener instituciones", error);
+    return [];
+  }
+}
+
 const formSchema = z.object({
   idGrupoPersona: z
     .string({
@@ -242,6 +264,11 @@ const formSchema = z.object({
   nombreImpresion: z
     .string({ message: "El nombre de impresión es requerido" })
     .min(1, "El nombre de impresión es requerido"),
+  idSucursal: z
+    .string({
+      message: "La sucursal es requerida",
+    })
+    .min(1, "La sucursal es requerida"),
 });
 
 type TFormValues = z.infer<typeof formSchema>;
@@ -256,6 +283,7 @@ const defaultValues: TFormValues = {
   idModulo: "",
   idPlantilla: "",
   nombreImpresion: "",
+  idSucursal: "",
 };
 
 export const CertificadoForm = () => {
@@ -276,6 +304,7 @@ export const CertificadoForm = () => {
     [],
   );
   const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
+  const [sucursales, setSucursales] = useState<Institucion[]>([]);
 
   // Estados de carga
   const [isLoadingData, setIsLoadingData] = useState(false);
@@ -304,13 +333,11 @@ export const CertificadoForm = () => {
     defaultValues,
   });
 
-  // Suscripción a cambios del grupo seleccionado
   const selectedGrupoId = useWatch({
     control: form.control,
     name: "idGrupoPersona",
   });
 
-  // Suscripción a cambios del tipo de programas
   const selectedTipoProgramaCodigo = useWatch({
     control: form.control,
     name: "codigoTipoPrograma",
@@ -331,6 +358,11 @@ export const CertificadoForm = () => {
     name: "idPlantilla",
   });
 
+  const selectedSucursalId = useWatch({
+    control: form.control,
+    name: "idSucursal"
+  });
+
   useEffect(() => {
     const fetchData = async () => {
       setIsLoadingData(true);
@@ -342,11 +374,13 @@ export const CertificadoForm = () => {
           listTipoProgramas,
           listInstituciones,
           listTipoCertificados,
+          listSucursales,
         ] = await Promise.all([
           loadGrupoPersonas(),
           loadTipoProgramas(),
           loadInstituciones(),
           loadTipoCertificados(),
+          loadSucursales()
         ]);
 
         setGrupoPersonas(listGrupoPersonas);
@@ -356,6 +390,7 @@ export const CertificadoForm = () => {
           ...listInstituciones,
         ]);
         setTipoCertificados(listTipoCertificados);
+        setSucursales(listSucursales);
 
         if (isEditMode && id) {
           const responseCertificado = await getCertificadoById(+id);
@@ -416,6 +451,7 @@ export const CertificadoForm = () => {
                 certificado.programa?.codigo_tipoprograma?.toString() || "",
               idPrograma: certificado.id_programa?.toString() || "",
               idPlantilla: certificado.id_plantilla?.toString() || "",
+              idSucursal: certificado.id_sucursal?.toString() || ""
             });
           }
         }
@@ -455,6 +491,14 @@ export const CertificadoForm = () => {
           filters.id_institucion = selectedInstitucionId;
         }
 
+        // Si se seleccionó una sucursal
+        if (selectedSucursalId) {
+          filters.id_sucursal = selectedSucursalId;
+        }
+
+        console.log('---- filters plantillas ----')
+        console.log({filters})
+
         const response = await getPlantillas(filters);
 
         const { result, data } = response;
@@ -477,7 +521,7 @@ export const CertificadoForm = () => {
     };
 
     fetchPlantillas();
-  }, [selectedTipoProgramaCodigo, selectedInstitucionId, form]);
+  }, [selectedTipoProgramaCodigo, selectedInstitucionId, selectedSucursalId, form]);
 
   // Visualizador modal de plantilla
   const handleOpenPreview = () => {
@@ -594,17 +638,21 @@ export const CertificadoForm = () => {
       idPrograma,
       idPlantilla,
       nombreImpresion,
+      idSucursal,
     } = values;
 
     let payload: Certificado = {
       id_persona: +idPersona,
       codigo_tipocertificado: +codigoTipoCertificado,
-      id_sucursal: 1,
+      id_sucursal: +idSucursal,
       id_plantilla: +idPlantilla,
       id_programa: +idPrograma,
       nombre_impresion: nombreImpresion,
       estado: true,
     };
+
+    console.log('---- payload certificado ----')
+    console.log({payload})
 
     try {
       let response: CertificadoResponseGeneral;
@@ -614,6 +662,9 @@ export const CertificadoForm = () => {
       } else {
         response = await createCertificado(payload);
       }
+
+      console.log('---- response certificado ----')
+      console.log({response})
 
       const { status, statusText } = response;
 
@@ -639,13 +690,12 @@ export const CertificadoForm = () => {
       <Card className="shadow-lg border border-slate-200 bg-white rounded-xl">
         <CardHeader className="border-b border-slate-100 p-6 flex flex-row items-center justify-between bg-slate-50/50 rounded-t-xl">
           <div className="space-y-1">
-            <CardTitle className="text-xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
-              <Award className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
               {isEditMode
-                ? `Editar Certificado`
-                : `Nuevo Registro de Certificado`}
+                ? `Editar certificado`
+                : `Nuevo registro de certificado`}
             </CardTitle>
-            <CardDescription className="text-slate-500 text-xs font-medium">
+            <CardDescription className="text-slate-500 font-medium">
               {isEditMode
                 ? `Actualización de información del certificado`
                 : `Complete los campos necesarios para emitir un certificado`}
@@ -654,16 +704,16 @@ export const CertificadoForm = () => {
           <Button
             variant="ghost"
             onClick={handleGoBack}
-            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all text-xs"
+            className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
           >
-            <ArrowLeft className="h-4 w-4 mr-1.5" />
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Volver
           </Button>
         </CardHeader>
 
-        <CardContent className="p-6 sm:p-8 relative">
+        <CardContent className="pb-6 sm:pb-6 relative">
           {isLoadingData && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10 rounded-b-xl">
+            <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
               <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
             </div>
           )}
@@ -672,18 +722,25 @@ export const CertificadoForm = () => {
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Sección 1: Información del Destinatario e Institución */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-1">
-                  Información del Destinatario y Tipo
-                </h3>
-
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
+                    1
+                  </span>
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    Información del Destinatario y Tipo
+                  </h3>
+                  <div className="h-px bg-slate-100 flex-1"></div>
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Grupo Persona */}
                   <FormField
                     control={form.control}
                     name="idGrupoPersona"
                     render={({ field, fieldState }) => (
-                      <FormItem className="flex flex-col w-full min-w-0">
-                        <RequiredLabel>Grupo Persona</RequiredLabel>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Grupo Persona
+                        </RequiredLabel>
                         <Select
                           onValueChange={(val) => {
                             field.onChange(val);
@@ -698,7 +755,7 @@ export const CertificadoForm = () => {
                             <SelectTrigger
                               className={`w-full ${inputErrorClass(fieldState.invalid)}`}
                             >
-                              <SelectValue placeholder="Seleccionar grupo..." />
+                              <SelectValue placeholder="Seleccionar grupo" />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent className="w-full">
@@ -722,7 +779,7 @@ export const CertificadoForm = () => {
                     name="idPersona"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <RequiredLabel>Alumno</RequiredLabel>
+                        <RequiredLabel isRequired={true}>Alumno</RequiredLabel>
                         <SearchableCombobox<Persona>
                           placeholder="Buscar un alumno"
                           options={personas}
@@ -739,7 +796,7 @@ export const CertificadoForm = () => {
                             </span>
                           )}
                         />
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -749,15 +806,22 @@ export const CertificadoForm = () => {
                     control={form.control}
                     name="nombreImpresion"
                     render={({ field, fieldState }) => (
-                      <FormItem className="flex flex-col w-full min-w-0">
-                        <RequiredLabel>Nombre de Impresión</RequiredLabel>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Nombre de Impresión
+                        </RequiredLabel>
                         <FormControl>
                           <div className="relative">
                             <Type className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
                             <Input
                               {...field}
                               placeholder="Nombre para el certificado"
-                              className={`pl-9 w-full ${inputErrorClass(fieldState.invalid)}`}
+                              className={`transition-all bg-white ${
+                                fieldState.invalid
+                                  ? "border-red-400 focus-visible:ring-red-100"
+                                  : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                              }`}
+                              // className={`pl-9 w-full ${inputErrorClass(fieldState.invalid)}`}
                             />
                           </div>
                         </FormControl>
@@ -770,8 +834,10 @@ export const CertificadoForm = () => {
                     control={form.control}
                     name="codigoTipoCertificado"
                     render={({ field, fieldState }) => (
-                      <FormItem className="flex flex-col w-full min-w-0">
-                        <RequiredLabel>Tipo Certificado</RequiredLabel>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Tipo Certificado
+                        </RequiredLabel>
                         <Select
                           onValueChange={(val) => {
                             field.onChange(val);
@@ -784,25 +850,31 @@ export const CertificadoForm = () => {
                         >
                           <FormControl>
                             <SelectTrigger
-                              className={`w-full ${inputErrorClass(
-                                fieldState.invalid,
-                              )}`}
+                              className={`w-full transition-all bg-white ${
+                                fieldState.invalid
+                                  ? "border-red-400 focus:ring-red-100"
+                                  : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                              }`}
+                              // className={`w-full ${inputErrorClass(
+                              //   fieldState.invalid,
+                              // )}`}
                             >
-                              <SelectValue placeholder="Seleccionar tipo certificado..." />
+                              <SelectValue placeholder="Seleccionar tipo certificado" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="w-full">
+                          <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                             {tipoCertificados.map((tipo) => (
                               <SelectItem
                                 value={tipo.codigo!.toString()}
                                 key={tipo.codigo}
+                                className="cursor-pointer hover:bg-gray-100 transition-colors"
                               >
                                 {tipo.nombre}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -811,9 +883,15 @@ export const CertificadoForm = () => {
 
               {/* Sección 2: Información Académica y Plantilla */}
               <div className="space-y-4 pt-2">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground border-b pb-1">
-                  Contexto Académico y Diseño
-                </h3>
+                <div className="flex items-center gap-2.5">
+                  <span className="flex items-center justify-center w-5 h-5 rounded-full bg-slate-800 text-white text-[10px] font-semibold">
+                    2
+                  </span>
+                  <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                    Contexto Académico y Diseño
+                  </h3>
+                  <div className="h-px bg-slate-100 flex-1"></div>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* Institución */}
@@ -821,10 +899,12 @@ export const CertificadoForm = () => {
                     control={form.control}
                     name="idInstitucion"
                     render={({ field, fieldState }) => (
-                      <FormItem className="w-full min-w-0">
-                        <RequiredLabel>Institución</RequiredLabel>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Institución
+                        </RequiredLabel>
                         <SearchableCombobox<Institucion>
-                          placeholder="Buscar o seleccionar institución..."
+                          placeholder="Buscar o seleccionar institución"
                           options={instituciones}
                           value={field.value || ""}
                           onChange={field.onChange}
@@ -833,7 +913,7 @@ export const CertificadoForm = () => {
                           searchKeys={["nombre"]}
                           isInvalid={fieldState.invalid}
                         />
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -843,8 +923,10 @@ export const CertificadoForm = () => {
                     control={form.control}
                     name="codigoTipoPrograma"
                     render={({ field, fieldState }) => (
-                      <FormItem className="flex flex-col w-full min-w-0">
-                        <RequiredLabel>Tipo Programa</RequiredLabel>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Tipo Programa
+                        </RequiredLabel>
                         <Select
                           onValueChange={(val) => {
                             field.onChange(val);
@@ -857,25 +939,28 @@ export const CertificadoForm = () => {
                         >
                           <FormControl>
                             <SelectTrigger
-                              className={`w-full ${inputErrorClass(
-                                fieldState.invalid,
-                              )}`}
+                              className={`w-full transition-all bg-white ${
+                                fieldState.invalid
+                                  ? "border-red-400 focus:ring-red-100"
+                                  : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                              }`}
                             >
-                              <SelectValue placeholder="Seleccionar tipo programa..." />
+                              <SelectValue placeholder="Seleccionar tipo programa" />
                             </SelectTrigger>
                           </FormControl>
-                          <SelectContent className="w-full">
+                          <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                             {tipoProgramas.map((tipo) => (
                               <SelectItem
                                 value={tipo.codigo!.toString()}
                                 key={tipo.codigo}
+                                className="cursor-pointer hover:bg-gray-100 transition-colors"
                               >
                                 {tipo.nombre}
                               </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -885,7 +970,9 @@ export const CertificadoForm = () => {
                     name="idPrograma"
                     render={({ field, fieldState }) => (
                       <FormItem className="w-full">
-                        <RequiredLabel>Programa</RequiredLabel>
+                        <RequiredLabel isRequired={true}>
+                          Programa
+                        </RequiredLabel>
                         <SearchableCombobox<Programa>
                           placeholder="Buscar un programa"
                           options={programas}
@@ -902,7 +989,49 @@ export const CertificadoForm = () => {
                             </span>
                           )}
                         />
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="idSucursal"
+                    render={({ field, fieldState }) => (
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Sucursal
+                        </RequiredLabel>
+                        <div className="flex gap-2">
+                          <Select
+                            onValueChange={field.onChange}
+                            value={field.value}
+                          >
+                            <FormControl>
+                              <SelectTrigger
+                                className={`w-full transition-all bg-white ${
+                                  fieldState.invalid
+                                    ? "border-red-400 focus:ring-red-100"
+                                    : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                                }`}
+                              >
+                                <SelectValue placeholder="Seleccione una sucursal" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
+                              {sucursales.map((sucursal) => (
+                                <SelectItem
+                                  key={sucursal.id}
+                                  value={sucursal.id?.toString() || ""}
+                                  className="cursor-pointer hover:bg-gray-100 transition-colors"
+                                >
+                                  {sucursal.nombre}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -911,24 +1040,32 @@ export const CertificadoForm = () => {
                     control={form.control}
                     name="idPlantilla"
                     render={({ field, fieldState }) => (
-                      <FormItem className="flex flex-col w-full min-w-0">
-                        <RequiredLabel>Plantilla</RequiredLabel>
+                      <FormItem className="w-full">
+                        <RequiredLabel isRequired={true}>
+                          Plantilla
+                        </RequiredLabel>
                         <div className="flex gap-2">
                           <Select
                             onValueChange={field.onChange}
                             value={field.value}
                           >
                             <FormControl>
-                              <SelectTrigger className="w-full">
+                              <SelectTrigger
+                                className={`w-full transition-all bg-white ${
+                                  fieldState.invalid
+                                    ? "border-red-400 focus:ring-red-100"
+                                    : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                                }`}
+                              >
                                 <SelectValue placeholder="Seleccione una plantilla" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent className="max-w-[calc(100vw-2rem)] md:max-w-xl">
+                            <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                               {plantillas.map((plantilla) => (
                                 <SelectItem
                                   key={plantilla.id}
                                   value={plantilla.id?.toString() || ""}
-                                  className="h-auto whitespace-normal wrap-break-word py-2.5 cursor-pointer"
+                                  className="cursor-pointer hover:bg-gray-100 transition-colors"
                                 >
                                   {plantilla.nombre}
                                 </SelectItem>
@@ -947,7 +1084,7 @@ export const CertificadoForm = () => {
                             <Eye className="h-4 w-4 text-blue-600" />
                           </Button>
                         </div>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -955,36 +1092,29 @@ export const CertificadoForm = () => {
               </div>
 
               {/* Botones de Acción */}
-              <div className="flex justify-end pt-4 border-t">
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={resetForm}
                   disabled={isSubmitting}
-                  className="text-xs font-medium border-slate-200 text-slate-600 hover:bg-slate-50"
+                  className="border-slate-200 text-slate-700 hover:bg-slate-50"
                 >
-                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
-                  Limpiar
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Cancelar
                 </Button>
 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-5"
+                  className="bg-blue-600 hover:bg-blue-700 text-white transition-all min-w-[140px]"
                 >
                   {isSubmitting ? (
-                    <>
-                      <Spinner className="h-3.5 w-3.5 mr-2 animate-spin" />
-                      Guardando...
-                    </>
+                    <Spinner className="h-4 w-4 mr-2 border-2 border-white/20 border-t-white" />
                   ) : (
-                    <>
-                      <Save className="h-3.5 w-3.5 mr-1.5" />
-                      {isEditMode
-                        ? "Actualizar Certificado"
-                        : "Emitir Certificado"}
-                    </>
+                    <Save className="h-4 w-4 mr-2" />
                   )}
+                  {isEditMode ? "Guardar Cambios" : "Registrar"}
                 </Button>
               </div>
             </form>
@@ -1012,7 +1142,6 @@ export const CertificadoForm = () => {
                 alt={`Vista previa - ${previewPlantilla.nombre}`}
                 className="max-h-[450px] w-auto object-contain rounded shadow-sm"
                 onError={(e) => {
-                  // Manejo por si la imagen falla al cargar o no existe en el storage
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />

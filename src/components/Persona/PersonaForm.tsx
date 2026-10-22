@@ -68,25 +68,24 @@ const formSchema = z.object({
   apellidoMaterno: z.string().min(2, {
     message: "El apellido materno es requerido.",
   }),
-  fechaNacimiento: z
-    .date({
-      message: "La fecha de nacimiento es requerida",
-    })
-    .nullable()
-    .refine((val) => val !== null, {
-      message: "La fecha de nacimiento es requerida",
-    }),
+  fechaNacimiento: z.date().nullable().optional(),
+  // fechaNacimiento: z
+  //   .date({
+  //     message: "La fecha de nacimiento es requerida",
+  //   })
+  //   .nullable()
+  //   .refine((val) => val !== null, {
+  //     message: "La fecha de nacimiento es requerida",
+  //   })
+  //   .optional(),
   sexo: z.string().min(1, {
     message: "El sexo es requerido",
   }),
-  email: z.string().nullable().optional(),
+  email: z.string().email({
+    message: "Por favor ingrese un email válido",
+  }),
+  // email: z.string().nullable().optional(),
   telefono: z.string().nullable().optional(),
-  // email: z.string().email({
-  //   message: "Por favor ingrese un correo válido",
-  // }),
-  // telefono: z.string().min(2, {
-  //   message: "El teléfono es requerido.",
-  // }),
 });
 
 const defaultValues = {
@@ -135,13 +134,6 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
 
       try {
         let listTipoDocumentos: DetalleParametro[] = [];
-
-        // const filters: DetalleParametroFilters = {
-        //   parametro_clase: ParametroClase.TIPO_DOCUMENTO,
-        //   en_persona: true,
-        //   en_empresa: false,
-        //   estado: true,
-        // };
 
         const queryParmas = `parametro_clase=${ParametroClase.TIPO_DOCUMENTO}&en_persona=true&en_empresa=false&estado=true`;
 
@@ -276,8 +268,8 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
   };
 
   return (
-    <Card className="shadow-xl border-none bg-white overflow-hidden rounded-xl">
-      <CardHeader className="border-b border-gray-100 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-50/50">
+    <Card className="shadow-xl border-none bg-white">
+      <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
         <div className="space-y-1">
           <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
             {isEditMode
@@ -295,7 +287,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
           type="button"
           disabled={isSubmitting}
           onClick={handleGoBack}
-          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all font-medium"
+          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Volver
@@ -310,27 +302,29 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
         )}
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <div className="relative">
-              <div className="flex items-center gap-4 mb-6">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-50 text-blue-600 text-sm font-bold border border-blue-100">
+              <div className="flex items-center gap-4 mb-5">
+                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold">
                   01
                 </span>
                 <h3 className="text-lg font-bold text-slate-800">
                   Información Personal
                 </h3>
-                <div className="h-px bg-slate-100 flex-1"></div>
+                <div className="h-px bg-slate-200 flex-1"></div>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
               {/* Tipo de Documento */}
               <FormField
                 control={form.control}
                 name="codigoTipoDocumento"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col">
-                    <RequiredLabel>Tipo de Documento</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      Tipo de Documento
+                    </RequiredLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? ""}
@@ -344,14 +338,15 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                               : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
                           }`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar tipo" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="bg-white">
+                      <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                         {tipoDocumentos.map((tipo) => (
                           <SelectItem
                             value={tipo.codigo!.toString()}
                             key={tipo.codigo!.toString()}
+                            className="cursor-pointer hover:bg-blue-50 focus:bg-blue-100 data-[state=checked]:bg-blue-100 data-[state=checked]:font-semibold transition-colors"
                           >
                             {tipo.descripcion}
                           </SelectItem>
@@ -368,8 +363,10 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                 control={form.control}
                 name="numeroDocumento"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <RequiredLabel>N° de documento</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      N° de documento
+                    </RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="12345678"
@@ -483,7 +480,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                 name="nombres"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <RequiredLabel>Nombres</RequiredLabel>
+                    <RequiredLabel isRequired={true}>Nombres</RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="María Angélica"
@@ -509,7 +506,9 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                 name="apellidoPaterno"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <RequiredLabel>Apellido Paterno</RequiredLabel>
+                    <RequiredLabel isRequired={true}>
+                      Apellido Paterno
+                    </RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="Pérez"
@@ -535,7 +534,9 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                 name="apellidoMaterno"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <RequiredLabel>Apellido Materno</RequiredLabel>
+                    <RequiredLabel isRequired={true}>
+                      Apellido Materno
+                    </RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="Vallejos"
@@ -593,7 +594,9 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                 name="email"
                 render={({ field, fieldState }) => (
                   <FormItem>
-                    <RequiredLabel>Correo electrónico</RequiredLabel>
+                    <RequiredLabel isRequired={true}>
+                      Correo electrónico
+                    </RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="maria.lopez@empresa.com"
@@ -618,8 +621,8 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                 control={form.control}
                 name="sexo"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col">
-                    <RequiredLabel>Sexo</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>Sexo</RequiredLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? ""}
@@ -633,7 +636,7 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
                               : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
                           }`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar sexo" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="bg-white">
@@ -673,28 +676,28 @@ export const PersonaForm: React.FC<PersonaFormProps> = ({ nombreGrupo }) => {
               />
             </div>
 
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
-              >
-                {isSubmitting ? (
-                  <Spinner className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="h-4 w-4 mr-2" />
-                )}
-                {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
-              </Button>
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={resetForm}
-                className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
+                className="border-slate-200 text-slate-700 hover:bg-slate-50"
               >
-                <XCircle className="h-4 w-4 mr-2 text-slate-500" />
+                <XCircle className="h-4 w-4 mr-2" />
                 Cancelar
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="bg-blue-600 hover:bg-blue-700 text-white transition-all min-w-[140px]"
+              >
+                {isSubmitting ? (
+                  <Spinner className="h-4 w-4 mr-2 border-2 border-white/20 border-t-white" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                {isEditMode ? "Actualizar" : "Guardar"}
               </Button>
             </div>
           </form>

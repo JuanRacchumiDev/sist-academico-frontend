@@ -262,7 +262,7 @@ export const CertificadoFilters: React.FC<CertificadoFiltersProps> = ({
               name="search"
               value={filters.search || ""}
               onChange={handleInputChange}
-              placeholder="Nombre, DNI o código..."
+              placeholder="DNI o nombre"
               className="w-full h-9 px-3 py-1 bg-white border border-slate-200 rounded-md text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 placeholder:text-slate-400"
             />
           </div>

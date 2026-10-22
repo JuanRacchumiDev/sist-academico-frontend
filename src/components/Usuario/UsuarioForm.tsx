@@ -397,8 +397,10 @@ export const UsuarioForm = () => {
                 control={form.control}
                 name="idGrupoPersona"
                 render={({ field }) => (
-                  <FormItem className="flex flex-col gap-1 w-full">
-                    <RequiredLabel>Grupo Persona</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      Grupo Persona
+                    </RequiredLabel>
                     <Select
                       onValueChange={(val) => {
                         field.onChange(val);
@@ -417,19 +419,19 @@ export const UsuarioForm = () => {
                           <SelectValue placeholder="Seleccione un grupo" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="w-full rounded-lg shadow-md border-slate-200 max-h-52">
+                      <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                         {grupoPersonas.map((grupo) => (
                           <SelectItem
                             value={grupo.codigo!.toString()}
                             key={grupo.codigo}
-                            className="cursor-pointer text-xs focus:bg-slate-50 rounded-md py-1.5"
+                            className="cursor-pointer hover:bg-gray-100 transition-colors"
                           >
                             {grupo.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage className="text-[11px] text-red-500 font-medium" />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -439,13 +441,15 @@ export const UsuarioForm = () => {
                 control={form.control}
                 name="idPersona"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col gap-1 w-full">
-                    <RequiredLabel>Alumno / Persona</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      Alumno / Persona
+                    </RequiredLabel>
                     <SearchableCombobox<Persona>
                       placeholder={
                         isLoadingPersonas
                           ? "Cargando personas..."
-                          : "Seleccione una persona..."
+                          : "Seleccione una persona"
                       }
                       options={personas}
                       value={field.value}
@@ -461,7 +465,7 @@ export const UsuarioForm = () => {
                         </span>
                       )}
                     />
-                    <FormMessage className="text-[11px] text-red-500 font-medium" />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -480,34 +484,38 @@ export const UsuarioForm = () => {
                 control={form.control}
                 name="codigoPerfil"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col gap-1 w-full">
-                    <RequiredLabel>Perfil de Usuario</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      Perfil de Usuario
+                    </RequiredLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? ""}
                     >
                       <FormControl>
                         <SelectTrigger
-                          className={`h-9 rounded-lg shadow-none w-full text-left text-xs ${inputErrorClass(
-                            fieldState.invalid,
-                          )}`}
+                          className={`w-full transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus:ring-red-100"
+                              : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                          }`}
                         >
-                          <SelectValue placeholder="Seleccionar perfil..." />
+                          <SelectValue placeholder="Seleccionar perfil" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent className="rounded-lg shadow-md border-slate-200 max-h-52">
+                      <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                         {perfiles.map((perfil) => (
                           <SelectItem
                             value={perfil.codigo!.toString()}
                             key={perfil.codigo!.toString()}
-                            className="cursor-pointer text-xs focus:bg-slate-50 rounded-md py-1.5"
+                            className="cursor-pointer hover:bg-gray-100 transition-colors"
                           >
                             {perfil.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage className="text-[11px] text-red-500 font-medium" />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -518,7 +526,9 @@ export const UsuarioForm = () => {
                 name="name"
                 render={({ field, fieldState }) => (
                   <FormItem className="flex flex-col gap-1 w-full">
-                    <RequiredLabel>Nombre de Usuario</RequiredLabel>
+                    <RequiredLabel isRequired={true}>
+                      Nombre de Usuario
+                    </RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="jperez"
@@ -526,12 +536,14 @@ export const UsuarioForm = () => {
                         maxLength={30}
                         {...field}
                         value={field.value ?? ""}
-                        className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(
-                          fieldState.invalid,
-                        )}`}
+                        className={`transition-all bg-white ${
+                          fieldState.invalid
+                            ? "border-red-400 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                        }`}
                       />
                     </FormControl>
-                    <FormMessage className="text-[11px] text-red-500 font-medium" />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -541,8 +553,8 @@ export const UsuarioForm = () => {
                 control={form.control}
                 name="email"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col gap-1 w-full">
-                    <RequiredLabel>Email</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>Email</RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="jperez@gmail.com"
@@ -550,12 +562,14 @@ export const UsuarioForm = () => {
                         maxLength={60}
                         {...field}
                         value={field.value ?? ""}
-                        className={`h-9 rounded-lg shadow-none placeholder:text-slate-400 text-xs ${inputErrorClass(
-                          fieldState.invalid,
-                        )}`}
+                        className={`transition-all bg-white ${
+                          fieldState.invalid
+                            ? "border-red-400 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                        }`}
                       />
                     </FormControl>
-                    <FormMessage className="text-[11px] text-red-500 font-medium" />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -563,34 +577,29 @@ export const UsuarioForm = () => {
           </div>
 
           {/* Botones de acción inferiores */}
-          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 border-t border-slate-100">
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               disabled={isSubmitting}
               onClick={() => resetForm()}
-              className="w-full sm:w-auto h-9 rounded-lg text-slate-500 hover:text-slate-800 hover:bg-slate-50 font-medium px-4 text-xs transition-colors shadow-none"
+              className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
             >
-              <XCircle className="h-3.5 w-3.5 mr-1.5" />
+              <XCircle className="h-4 w-4 mr-2 text-slate-500" />
               Cancelar
             </Button>
 
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full sm:w-auto h-9 bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 text-xs font-medium transition-colors disabled:opacity-50 disabled:pointer-events-none shadow-none"
+              className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
             >
               {isSubmitting ? (
-                <>
-                  <Spinner className="mr-1.5 h-3.5 w-3.5 animate-spin text-white" />
-                  Procesando...
-                </>
+                <Spinner className="mr-2 h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Save className="h-3.5 w-3.5 mr-1.5" />
-                  {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
-                </>
+                <Save className="h-4 w-4 mr-2" />
               )}
+              {isEditMode ? "Actualizar" : "Registrar"}
             </Button>
           </div>
         </form>

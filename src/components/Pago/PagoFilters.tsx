@@ -55,7 +55,7 @@ export const PagoFilters: React.FC<PagoFilterProps> = ({ onSearch }) => {
             <Input
               type="text"
               name="search"
-              placeholder="Nombre del alumno..."
+              placeholder="Nombre del alumno"
               value={filters.search}
               onChange={handleInputChange}
               autoComplete="off"

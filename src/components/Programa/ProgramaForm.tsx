@@ -414,7 +414,7 @@ export const ProgramaForm = () => {
   };
 
   return (
-    <Card className="shadow-xl border-none bg-white rounded-xl">
+    <Card className="shadow-xl border-none bg-white">
       <CardHeader className="border-b border-gray-100 p-6 flex flex-row items-center justify-between bg-gray-50/50 rounded-t-xl">
         <div className="space-y-1">
           <CardTitle className="text-2xl font-extrabold text-slate-800 tracking-tight">
@@ -437,60 +437,53 @@ export const ProgramaForm = () => {
         </Button>
       </CardHeader>
 
-      <CardContent className="px-6 sm:px-8 py-6 relative">
+      <CardContent className="px-6 sm:px-8 pb-6 relative">
         {isLoadingData && (
-          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10 rounded-b-xl">
+          <div className="absolute inset-0 bg-white/70 backdrop-blur-sm flex items-center justify-center z-10">
             <Spinner className="h-8 w-8 text-blue-600 animate-spin" />
           </div>
         )}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Encabezado de Sección */}
-            <div className="relative">
-              <div className="flex items-center gap-4 mb-2">
-                <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-600 text-sm font-bold shadow-sm">
-                  01
-                </span>
-                <h3 className="text-lg font-semibold text-slate-800">
-                  Información de registro
-                </h3>
-                <div className="h-px bg-gray-200 flex-1"></div>
-              </div>
-            </div>
-
             {/* Grid de Inputs Principales */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5">
               {/* Segmento */}
               <FormField
                 control={form.control}
                 name="codigoSegmento"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col">
-                    <RequiredLabel>Segmento</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>Segmento</RequiredLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? ""}
                     >
                       <FormControl>
                         <SelectTrigger
-                          className={`${inputErrorClass(fieldState.invalid)} w-full`}
+                          className={`w-full transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus:ring-red-100"
+                              : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                          }`}
+                          // className={`${inputErrorClass(fieldState.invalid)} w-full`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar segmento" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                         {segmentos.map((segmento: any) => (
                           <SelectItem
                             value={segmento.codigo!.toString()}
                             key={segmento.codigo!.toString()}
+                            className="cursor-pointer hover:bg-blue-50 focus:bg-blue-100 data-[state=checked]:bg-blue-100 data-[state=checked]:font-semibold transition-colors"
                           >
                             {segmento.nombre}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -500,20 +493,27 @@ export const ProgramaForm = () => {
                 control={form.control}
                 name="codigoTipoPrograma"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col">
-                    <RequiredLabel>Tipo Programa</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      Tipo Programa
+                    </RequiredLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? ""}
                     >
                       <FormControl>
                         <SelectTrigger
-                          className={`${inputErrorClass(fieldState.invalid)} w-full`}
+                          className={`w-full transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus:ring-red-100"
+                              : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                          }`}
+                          // className={`${inputErrorClass(fieldState.invalid)} w-full`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar tipo programa" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                         {tipoProgramas.map((tipoPrograma: any) => (
                           <SelectItem
                             value={tipoPrograma.codigo!.toString()}
@@ -524,7 +524,7 @@ export const ProgramaForm = () => {
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -534,8 +534,8 @@ export const ProgramaForm = () => {
                 control={form.control}
                 name="titulo"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <RequiredLabel>Título</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>Título</RequiredLabel>
                     <FormControl>
                       <Input
                         placeholder="ADMINISTRACIÓN EJECUTIVA"
@@ -543,10 +543,15 @@ export const ProgramaForm = () => {
                         maxLength={100}
                         {...field}
                         value={field.value ?? ""}
-                        className={inputErrorClass(fieldState.invalid)}
+                        // className={inputErrorClass(fieldState.invalid)}
+                        className={`transition-all bg-white ${
+                          fieldState.invalid
+                            ? "border-red-400 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                        }`}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -556,8 +561,10 @@ export const ProgramaForm = () => {
                 control={form.control}
                 name="fechaInicio"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <RequiredLabel>Fecha Inicio</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>
+                      Fecha Inicio
+                    </RequiredLabel>
                     <FormControl>
                       <Input
                         type="date"
@@ -573,7 +580,12 @@ export const ProgramaForm = () => {
                             e.target.value ? parseISO(e.target.value) : null,
                           )
                         }
-                        className={inputErrorClass(fieldState.invalid)}
+                        className={`transition-all bg-white ${
+                          fieldState.invalid
+                            ? "border-red-400 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                        }`}
+                        // className={inputErrorClass(fieldState.invalid)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -586,8 +598,8 @@ export const ProgramaForm = () => {
                 control={form.control}
                 name="fechaFinal"
                 render={({ field, fieldState }) => (
-                  <FormItem>
-                    <RequiredLabel>Fecha Final</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>Fecha Final</RequiredLabel>
                     <FormControl>
                       <Input
                         type="date"
@@ -603,7 +615,12 @@ export const ProgramaForm = () => {
                             e.target.value ? parseISO(e.target.value) : null,
                           )
                         }
-                        className={inputErrorClass(fieldState.invalid)}
+                        className={`transition-all bg-white ${
+                          fieldState.invalid
+                            ? "border-red-400 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                        }`}
+                        // className={inputErrorClass(fieldState.invalid)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -616,26 +633,31 @@ export const ProgramaForm = () => {
                 control={form.control}
                 name="modalidad"
                 render={({ field, fieldState }) => (
-                  <FormItem className="flex flex-col">
-                    <RequiredLabel>Modalidad</RequiredLabel>
+                  <FormItem className="w-full">
+                    <RequiredLabel isRequired={true}>Modalidad</RequiredLabel>
                     <Select
                       onValueChange={field.onChange}
                       value={field.value ?? ""}
                     >
                       <FormControl>
                         <SelectTrigger
-                          className={`${inputErrorClass(fieldState.invalid)} w-full`}
+                          className={`w-full transition-all bg-white ${
+                            fieldState.invalid
+                              ? "border-red-400 focus:ring-red-100"
+                              : "border-slate-200 focus:ring-blue-100 focus:border-blue-500"
+                          }`}
+                          // className={`${inputErrorClass(fieldState.invalid)} w-full`}
                         >
-                          <SelectValue placeholder="Seleccionar..." />
+                          <SelectValue placeholder="Seleccionar modalidad" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="bg-white text-xs border border-slate-200 shadow-md outline-none">
                         <SelectItem value="VIRTUAL">VIRTUAL</SelectItem>
                         <SelectItem value="PRESENCIAL">PRESENCIAL</SelectItem>
                         <SelectItem value="MIXTA">MIXTA</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FormMessage />
+                    <FormMessage className="text-xs font-medium text-red-500" />
                   </FormItem>
                 )}
               />
@@ -661,7 +683,7 @@ export const ProgramaForm = () => {
                             className={inputErrorClass(fieldState.invalid)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -690,7 +712,7 @@ export const ProgramaForm = () => {
                             className={inputErrorClass(fieldState.invalid)}
                           />
                         </FormControl>
-                        <FormMessage />
+                        <FormMessage className="text-xs font-medium text-red-500" />
                       </FormItem>
                     )}
                   />
@@ -702,7 +724,7 @@ export const ProgramaForm = () => {
                 control={form.control}
                 name="horasAcademicas"
                 render={({ field, fieldState }) => (
-                  <FormItem>
+                  <FormItem className="w-full">
                     <label className="text-sm font-medium text-slate-700">
                       Horas académicas
                     </label>
@@ -718,7 +740,12 @@ export const ProgramaForm = () => {
                           const val = e.target.value;
                           field.onChange(val === "" ? null : parseInt(val, 10));
                         }}
-                        className={inputErrorClass(fieldState.invalid)}
+                        className={`transition-all bg-white ${
+                          fieldState.invalid
+                            ? "border-red-400 focus-visible:ring-red-100"
+                            : "border-slate-200 focus-visible:ring-blue-100 focus-visible:border-blue-500"
+                        }`}
+                        // className={inputErrorClass(fieldState.invalid)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -746,7 +773,7 @@ export const ProgramaForm = () => {
                       <FormControl className="mt-1.5">
                         <Textarea
                           {...field}
-                          placeholder="Detalle los temas, unidades o contenido general del programa..."
+                          placeholder="Detalle los temas, unidades o contenido general del programa"
                           rows={6}
                           className={`min-h-40 resize-y ${inputErrorClass(fieldState.invalid)}`}
                         />
@@ -844,28 +871,28 @@ export const ProgramaForm = () => {
             </div>
 
             {/* Acciones del Formulario */}
-            <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-6 border-t border-gray-100">
+            <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-100">
               <Button
                 type="button"
                 variant="outline"
                 disabled={isSubmitting}
                 onClick={resetForm}
-                className="w-full sm:w-auto border-slate-200 text-slate-700 hover:bg-slate-50 font-medium transition-all"
+                className="border-slate-200 text-slate-700 hover:bg-slate-50"
               >
-                <XCircle className="h-4 w-4 mr-2 text-slate-500" />
+                <XCircle className="h-4 w-4 mr-2" />
                 Cancelar
               </Button>
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-100 transition-all active:scale-[0.98]"
+                className="bg-blue-600 hover:bg-blue-700 text-white transition-all min-w-[140px]"
               >
                 {isSubmitting ? (
-                  <Spinner className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner className="h-4 w-4 mr-2 border-2 border-white/20 border-t-white" />
                 ) : (
                   <Save className="h-4 w-4 mr-2" />
                 )}
-                {isEditMode ? "Actualizar Datos" : "Confirmar Registro"}
+                {isEditMode ? "Actualizar" : "Guardar"}
               </Button>
             </div>
           </form>
