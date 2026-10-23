@@ -77,23 +77,6 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
     }
   };
 
-  // const handleDownloadPlan = async (event: React.MouseEvent) => {
-  //   event.preventDefault();
-  //   setIsDropdownOpen(false);
-  //   if (!programa.id) {
-  //     showToast("error", "Programa no disponible para descargar");
-  //     return;
-  //   }
-
-  //   showToast("info", "Iniciando descarga del plan de estudios");
-  //   try {
-  //     await downloadProgramaPlan(programa.id);
-  //   } catch (error) {
-  //     console.error("Error al iniciar la descarga:", error);
-  //     showToast("error", "Error al descargar el archivo.");
-  //   }
-  // };
-
   const actionText = programa.estado ? "Desactivar" : "Activar";
   const ActionIcon = programa.estado ? ToggleLeft : ToggleRight;
   const actionColor = programa.estado
@@ -191,19 +174,6 @@ export const ProgramaRow: React.FC<Props> = ({ programa, onRefresh }) => {
                 <Edit className="h-3.5 w-3.5 text-slate-400" />
                 <span>Ver/Editar detalle</span>
               </DropdownMenuItem>
-
-              {/* {programa.plan && (
-                <>
-                  <DropdownMenuSeparator className="bg-slate-100" />
-                  <DropdownMenuItem
-                    onClick={handleDownloadPlan}
-                    className="cursor-pointer hover:bg-slate-50 rounded-sm py-1 px-2 flex items-center gap-2 text-slate-700"
-                  >
-                    <Download className="h-3.5 w-3.5 text-slate-400" />
-                    <span>Descargar Plan</span>
-                  </DropdownMenuItem>
-                </>
-              )} */}
 
               {tieneModulos && (
                 <>

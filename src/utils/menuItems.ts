@@ -57,10 +57,17 @@ export const ADMIN_MENU_ITEMS = [
     },
     {
         id: "certificado",
-        icon: Award, // Cambiado de Paperclip a Award para ser único
+        icon: Award,
         label: "Certificado",
         active: false,
         path: "/certificado"
+    },
+    {
+        id: "plantilla",
+        icon: FileCheck,
+        label: "Plantilla",
+        active: false,
+        path: "/plantilla"
     },
     {
         id: "usuario",

@@ -198,26 +198,26 @@ const loadTipoCertificados = async (): Promise<DetalleParametro[]> => {
   }
 };
 
-const loadSucursales = async(): Promise<Institucion[]> => {
-  let sucursales: Institucion[] = []
+const loadSucursales = async (): Promise<Institucion[]> => {
+  let sucursales: Institucion[] = [];
 
   const queryParams = `is_cliente=false&estado=true`;
 
   try {
-    const response = await getInstituciones(queryParams)
+    const response = await getInstituciones(queryParams);
 
-    const { result, data } = response
+    const { result, data } = response;
 
     if (result && data) {
-      sucursales = data as Institucion[]
+      sucursales = data as Institucion[];
     }
 
-    return sucursales
+    return sucursales;
   } catch (error) {
     console.error("Error al obtener instituciones", error);
     return [];
   }
-}
+};
 
 const formSchema = z.object({
   idGrupoPersona: z
@@ -360,7 +360,7 @@ export const CertificadoForm = () => {
 
   const selectedSucursalId = useWatch({
     control: form.control,
-    name: "idSucursal"
+    name: "idSucursal",
   });
 
   useEffect(() => {
@@ -380,7 +380,7 @@ export const CertificadoForm = () => {
           loadTipoProgramas(),
           loadInstituciones(),
           loadTipoCertificados(),
-          loadSucursales()
+          loadSucursales(),
         ]);
 
         setGrupoPersonas(listGrupoPersonas);
@@ -429,6 +429,9 @@ export const CertificadoForm = () => {
                 filters.id_institucion = idInst;
               }
 
+              console.log("---- filters list plantillas ----");
+              console.log({ filters });
+
               const responsePlantillas = await getPlantillas(filters);
               console.log({ responsePlantillas });
 
@@ -451,7 +454,7 @@ export const CertificadoForm = () => {
                 certificado.programa?.codigo_tipoprograma?.toString() || "",
               idPrograma: certificado.id_programa?.toString() || "",
               idPlantilla: certificado.id_plantilla?.toString() || "",
-              idSucursal: certificado.id_sucursal?.toString() || ""
+              idSucursal: certificado.id_sucursal?.toString() || "",
             });
           }
         }
@@ -496,8 +499,8 @@ export const CertificadoForm = () => {
           filters.id_sucursal = selectedSucursalId;
         }
 
-        console.log('---- filters plantillas ----')
-        console.log({filters})
+        console.log("---- filters plantillas ----");
+        console.log({ filters });
 
         const response = await getPlantillas(filters);
 
@@ -521,7 +524,12 @@ export const CertificadoForm = () => {
     };
 
     fetchPlantillas();
-  }, [selectedTipoProgramaCodigo, selectedInstitucionId, selectedSucursalId, form]);
+  }, [
+    selectedTipoProgramaCodigo,
+    selectedInstitucionId,
+    selectedSucursalId,
+    form,
+  ]);
 
   // Visualizador modal de plantilla
   const handleOpenPreview = () => {
@@ -651,8 +659,8 @@ export const CertificadoForm = () => {
       estado: true,
     };
 
-    console.log('---- payload certificado ----')
-    console.log({payload})
+    console.log("---- payload certificado ----");
+    console.log({ payload });
 
     try {
       let response: CertificadoResponseGeneral;
@@ -663,8 +671,8 @@ export const CertificadoForm = () => {
         response = await createCertificado(payload);
       }
 
-      console.log('---- response certificado ----')
-      console.log({response})
+      console.log("---- response certificado ----");
+      console.log({ response });
 
       const { status, statusText } = response;
 

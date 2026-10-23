@@ -4,6 +4,7 @@ import { DetalleParametro } from "./IDetalleParametro"
 export interface Plantilla {
     id?: number
     id_institucion?: number
+    id_sucursal?: number
     codigo_tipoprograma?: number
     nombre?: string
     descripcion?: string
@@ -14,7 +15,8 @@ export interface Plantilla {
     disenio_default?: string
     estado?: boolean
     institucion?: Institucion
-    tipoPrograma?: DetalleParametro
+    sucursal?: Institucion
+    tipo_programa?: DetalleParametro
 }
 
 export interface PlantillaResponse {
@@ -25,6 +27,12 @@ export interface PlantillaResponse {
     status?: number
     pagination?: PaginationType
     code?: string
+}
+
+export interface PlantillaResponseGeneral {
+    data?: Plantilla | Plantilla[],
+    status?: number
+    statusText?: string
 }
 
 export interface PaginationType {

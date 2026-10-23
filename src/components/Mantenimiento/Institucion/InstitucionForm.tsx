@@ -38,7 +38,7 @@ import {
   getDetalleByParams,
   getDetalles,
 } from "@/services/detalleParametroService";
-import { MAX_FILE_SIZE } from "../../../params/constants";
+import { MAX_FILE_IMAGE_2M_SIZE } from "../../../params/constants";
 import {
   Select,
   SelectContent,
@@ -81,7 +81,7 @@ const formSchema = z.object({
     .nullable()
     .optional()
     .refine(
-      (file) => !file || file.size <= MAX_FILE_SIZE,
+      (file) => !file || file.size <= MAX_FILE_IMAGE_2M_SIZE,
       `El archivo debe ser menor a 2MB`,
     ),
   nombreDirector: z.string().nullable().optional(),

@@ -28,6 +28,8 @@ import { CertificadoListPage } from "./components/Certificado/Page/CertificadoLi
 import { CertificadoFormPage } from "./components/Certificado/Page/CertificadoFormPage";
 import { ValidarCertificadoPage } from "./components/Certificado/Page/ValidarCertificadoPage";
 import { MisCertificadosListPage } from "./components/Alumno/Page/MisCertificadosListPage";
+import { PlantillaListPage } from "./components/Plantilla/Page/PlantillaListPage";
+import { PlantillaFormPage } from "./components/Plantilla/Page/PlantillaFormPage";
 
 function App() {
   const [sideBarCollapsed, setSideBarCollapsed] = useState(false);
@@ -198,6 +200,16 @@ function App() {
                     <Route
                       path="/certificado/editar/:id"
                       element={<CertificadoFormPage />}
+                    />
+
+                    <Route path="/plantilla" element={<PlantillaListPage />} />
+                    <Route
+                      path="/plantilla/nuevo"
+                      element={<PlantillaFormPage />}
+                    />
+                    <Route
+                      path="/plantilla/editar/:id"
+                      element={<PlantillaFormPage />}
                     />
 
                     <Route

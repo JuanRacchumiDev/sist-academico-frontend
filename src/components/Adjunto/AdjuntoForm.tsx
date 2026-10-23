@@ -56,9 +56,10 @@ import { Modulo } from "@/interfaces/IModulo";
 import { Adjunto, TipoAdjunto } from "@/interfaces/IAdjunto";
 import SearchableCombobox from "../../components/Common/SearchableCombobox";
 import { formatInTimeZone } from "date-fns-tz";
-import { TIMEZONE_AMERICA_LIMA } from "@/params/constants";
-
-const MAX_FILE_SIZE = 5242880; // 5MB
+import {
+  TIMEZONE_AMERICA_LIMA,
+  MAX_FILE_IMAGE_5M_SIZE,
+} from "@/params/constants";
 
 const formSchema = z
   .object({
@@ -75,7 +76,7 @@ const formSchema = z
       .nullable()
       .optional()
       .refine(
-        (file) => !file || file.size <= MAX_FILE_SIZE,
+        (file) => !file || file.size <= MAX_FILE_IMAGE_5M_SIZE,
         `El archivo debe ser menor a 5MB`,
       ),
     url: z.string().optional(),

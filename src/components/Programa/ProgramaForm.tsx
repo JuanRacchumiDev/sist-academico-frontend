@@ -46,13 +46,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { getDetalles } from "../../services/detalleParametroService";
-import {
-  DetalleParametro,
-  DetalleParametroFilters,
-} from "../../interfaces/IDetalleParametro";
+import { DetalleParametro } from "../../interfaces/IDetalleParametro";
 import { ParametroClase } from "../../params/parametroClase";
 import {
-  MAX_FILE_SIZE,
+  MAX_FILE_IMAGE_2M_SIZE,
   TIPO_PROGRAMA_ESPECIALIZACION,
   TIPO_PROGRAMA_CAPACITACION,
 } from "../../params/constants";
@@ -127,7 +124,7 @@ const formSchema = z
       .nullable()
       .optional()
       .refine(
-        (file) => !file || file.size <= MAX_FILE_SIZE,
+        (file) => !file || file.size <= MAX_FILE_IMAGE_2M_SIZE,
         `El archivo debe ser menor a 2MB`,
       )
       .refine(

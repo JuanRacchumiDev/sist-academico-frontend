@@ -31,12 +31,6 @@ import { GraduationCap } from "lucide-react";
 
 const loadSegmentos = async () => {
   let listSegmentos: DetalleParametro[] = [];
-  // const filterSegmentos: DetalleParametroFilters = {
-  //   parametro_clase: ParametroClase.SEGMENTO,
-  //   en_persona: false,
-  //   en_empresa: false,
-  //   estado: true,
-  // };
 
   const queryParams = `parametro_clase=${ParametroClase.SEGMENTO}&en_persona=false&en_empresa=false&estado=true`;
 
@@ -53,13 +47,6 @@ const loadSegmentos = async () => {
 
 const loadTipoProgramas = async () => {
   let listTipoProgramas: DetalleParametro[] = [];
-
-  // const filterTipoProgramas: DetalleParametroFilters = {
-  //   parametro_clase: ParametroClase.TIPO_PROGRAMA,
-  //   en_persona: false,
-  //   en_empresa: false,
-  //   estado: true,
-  // };
 
   const queryParams = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=false&en_empresa=false&estado=true`;
 
