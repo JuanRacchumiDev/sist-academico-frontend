@@ -38,9 +38,9 @@ export const MatriculaTable = () => {
   });
 
   const [searchFilters, setSearchFilters] = useState<MatriculaFiltersData>({
+    search: "",
     fechaInicio: "",
-    fechaFinal: "",
-    nombreCompleto: "",
+    fechaFinal: ""
   });
 
   const handlePageChange = (page: number) => {
@@ -54,9 +54,9 @@ export const MatriculaTable = () => {
       setIsLoading(true);
 
       const filters = {
+        search: filtersData.search,
         fechaInicio: filtersData.fechaInicio,
-        fechaFinal: filtersData.fechaFinal,
-        nombreCompleto: filtersData.nombreCompleto,
+        fechaFinal: filtersData.fechaFinal
       };
 
       try {

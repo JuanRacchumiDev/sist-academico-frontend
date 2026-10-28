@@ -33,9 +33,6 @@ const loadTipoProgramas = async (): Promise<DetalleParametro[]> => {
 
     const response = await getDetalles(queryParams);
 
-    // console.log("--- response loadTipoProgramas ---");
-    // console.log({ response });
-
     const { result, data } = response;
 
     if (result && data) {

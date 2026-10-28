@@ -27,45 +27,11 @@ import { DetalleParametro } from "@/interfaces/IDetalleParametro";
 import { getInstituciones } from "@/services/institucionService";
 import { getDetalles } from "@/services/detalleParametroService";
 
-const loadInstituciones = async () => {
-  let listInstituciones: Institucion[] = [];
-
-  const queryParams = "";
-  const responseInstituciones = await getInstituciones(queryParams);
-
-  const { result, data } = responseInstituciones;
-
-  if (result && data) {
-    listInstituciones = data as Institucion[];
-  }
-
-  return listInstituciones;
-};
-
-const loadTipoProgramas = async () => {
-  let listTipoProgramas: DetalleParametro[] = [];
-
-  const queryParams = `parametro_clase=${ParametroClase.TIPO_PROGRAMA}&en_persona=false&en_empresa=false&estado=true`;
-
-  const responseTipoProgramas = await getDetalles(queryParams);
-
-  const { result: resultTipoProgramas, data: dataTipoProgramas } =
-    responseTipoProgramas;
-
-  if (resultTipoProgramas && dataTipoProgramas) {
-    listTipoProgramas = dataTipoProgramas as DetalleParametro[];
-  }
-
-  return listTipoProgramas;
-};
-
 export const PlantillaTable = () => {
   const [plantillas, setPlantillas] = useState<Plantilla[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [limit] = useState(10);
-  const [instituciones, setInstituciones] = useState<Institucion[]>([]);
-  const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
 
   const [paginationInfo, setPaginationInfo] = useState<
     Omit<PaginationType, "currentPage" | "limit">
@@ -77,20 +43,11 @@ export const PlantillaTable = () => {
   });
 
   const [searchFilters, setSearchFilters] = useState<PlantillaFiltersData>({
-    id_institucion: "",
     codigo_tipoprograma: "",
-    nombre: "",
+    id_sucursal: "",
+    id_institucion: "",
+    search: "",
   });
-
-  useEffect(() => {
-    const loadCatalogos = async () => {
-      const dataInstituciones = await loadInstituciones();
-      const dataTipoProgramas = await loadTipoProgramas();
-      setInstituciones(dataInstituciones);
-      setTipoProgramas(dataTipoProgramas);
-    };
-    loadCatalogos();
-  }, []);
 
   const handlePageChange = (page: number) => {
     if (page > 0 && page <= paginationInfo.totalPages) {
@@ -101,10 +58,12 @@ export const PlantillaTable = () => {
   const fetchData = useCallback(
     async (pageToFetch: number, filtersData: PlantillaFiltersData) => {
       setIsLoading(true);
+
       const filters = {
-        id_institucion: filtersData.id_institucion,
         codigo_tipoprograma: filtersData.codigo_tipoprograma,
-        nombre: filtersData.nombre,
+        id_sucursal: filtersData.id_sucursal,
+        id_institucion: filtersData.id_institucion,
+        search: filtersData.search,
       };
 
       try {
@@ -117,6 +76,7 @@ export const PlantillaTable = () => {
 
         if (result && data) {
           setPlantillas(data as Plantilla[]);
+
           if (newPagination) {
             setPaginationInfo({
               totalPages: newPagination.totalPages || 1,
@@ -188,32 +148,32 @@ export const PlantillaTable = () => {
   };
 
   return (
-    // Ajuste de separaciones internas y reducción de sombras duplicadas
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
-        <PlantillaFilters
-          onSearch={handleSearchSubmit}
-          instituciones={instituciones}
-          tipoProgramas={tipoProgramas}
-        />
+        <PlantillaFilters onSearch={handleSearchSubmit} />
 
-        <div className="overflow-x-auto border-t border-slate-100">
-          <Table className="w-full text-left border-collapse">
+        {/* Cambiamos overflow-x-hidden por overflow-x-auto para evitar recortes forzados */}
+        <div className="w-full overflow-x-auto border-t border-slate-100">
+          {/* Cambiamos table-fixed por table-auto */}
+          <Table className="w-full table-auto text-left border-collapse">
             <TableHeader>
               <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
-                <TableHead className="w-[32%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                  Sucursal
+                </TableHead>
+                <TableHead className="py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Institución
                 </TableHead>
-                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Tipo programa
                 </TableHead>
-                <TableHead className="w-[15%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
+                <TableHead className="py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Nombre
                 </TableHead>
-                <TableHead className="w-[7%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
+                <TableHead className="py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-center">
                   Estado
                 </TableHead>
-                <TableHead className="w-[8%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
+                <TableHead className="py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider text-right">
                   Acciones
                 </TableHead>
               </TableRow>
@@ -221,14 +181,14 @@ export const PlantillaTable = () => {
 
             <TableBody>
               {isLoading ? (
-                <TableSpinner colSpan={5} />
+                <TableSpinner colSpan={6} />
               ) : plantillas.length > 0 ? (
                 plantillas.map((plantilla) => (
                   <PlantillaRow key={plantilla.id} plantilla={plantilla} />
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     <div className="flex flex-col items-center justify-center text-slate-400 space-y-1">
                       <span className="text-xs font-medium text-slate-600">
                         No se encontraron registros
@@ -245,7 +205,7 @@ export const PlantillaTable = () => {
         </div>
       </div>
 
-      {/* Sección inferior de paginación más integrada y limpia */}
+      {/* Sección inferior de paginación */}
       <div className="flex items-center justify-between px-3 pb-3">
         <div className="text-[11px] text-slate-500 font-medium">
           Mostrando{" "}

@@ -41,12 +41,9 @@ export const CertificadoTable = () => {
   });
 
   const [searchFilters, setSearchFilters] = useState<CertificadoFiltersData>({
-    id_tipocertificado: "",
+    id_sucursal: "",
     id_institucion: "",
     id_programa: "",
-    id_modulo: "",
-    fechaInicio: "",
-    fechaFinal: "",
     search: "",
   });
 
@@ -61,12 +58,9 @@ export const CertificadoTable = () => {
       setIsLoading(true);
 
       const filters = {
-        id_tipocertificado: filtersData.id_tipocertificado,
+        id_sucursal: filtersData.id_sucursal,
         id_institucion: filtersData.id_institucion,
         id_programa: filtersData.id_programa,
-        id_modulo: filtersData.id_modulo,
-        fechaInicio: filtersData.fechaInicio,
-        fechaFinal: filtersData.fechaFinal,
         search: filtersData.search,
       };
 

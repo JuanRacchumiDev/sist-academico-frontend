@@ -81,7 +81,7 @@ export const PersonaRow: React.FC<Props> = ({ persona, grupo }) => {
         key={persona.id}
         className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700 max-w-[200px] truncate">
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700 whitespace-normal">
           {persona.nombre_completo}
         </TableCell>
         <TableCell className="py-2 px-3 text-xs text-slate-500">
@@ -90,7 +90,7 @@ export const PersonaRow: React.FC<Props> = ({ persona, grupo }) => {
         <TableCell className="py-2 px-3 text-xs text-slate-600 font-mono">
           {persona.numero_documento}
         </TableCell>
-        <TableCell className="py-2 px-3 text-xs text-slate-500 max-w-[180px] truncate">
+        <TableCell className="py-2 px-3 text-xs text-slate-500 whitespace-normal">
           {persona.email}
         </TableCell>
         <TableCell className="py-2 px-3 text-xs text-slate-500">

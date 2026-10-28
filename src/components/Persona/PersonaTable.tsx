@@ -145,15 +145,13 @@ export const PersonaTable: React.FC<PersonaTableProps> = ({ nombreGrupo }) => {
   };
 
   return (
-    // Ajuste de separaciones internas y reducción de sombras duplicadas
     <div className="w-full space-y-3">
       <div className="bg-white overflow-hidden">
         <PersonaFilters onSearch={handleSearchSubmit} />
 
-        <div className="overflow-x-auto border-t border-slate-100">
-          <Table className="w-full text-left border-collapse">
+        <div className="w-full overflow-x-auto border-t border-slate-100">
+          <Table className="w-full table-auto text-left border-collapse">
             <TableHeader>
-              {/* Relleno py-4 reducido a py-2.5 para optimizar filas de cabecera */}
               <TableRow className="bg-slate-50/75 hover:bg-slate-50/75 border-b border-slate-200">
                 <TableHead className="w-[32%] py-2.5 px-3 text-slate-500 font-medium text-[11px] uppercase tracking-wider">
                   Nombres y apellidos

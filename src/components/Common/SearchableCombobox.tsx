@@ -20,13 +20,13 @@ import { RequiredLabel } from "./RequiredLabel";
 
 interface SearchableComboboxProps<T extends { [key: string]: any }> {
   label?: string;
-  placeholder: string;
-  options: T[];
-  value: string;
+  placeholder?: string;
+  options?: T[];
+  value?: string;
   onChange: (value: string) => void;
-  displayKey: keyof T;
-  valueKey: keyof T;
-  searchKeys: (keyof T)[];
+  displayKey?: keyof T;
+  valueKey?: keyof T;
+  searchKeys?: (keyof T)[];
   disabled?: boolean;
   isInvalid?: boolean;
   isLoading?: boolean;

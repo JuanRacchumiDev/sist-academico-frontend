@@ -27,6 +27,7 @@ import { Button } from "../ui/button";
 import {
   ArrowLeft,
   CheckCircle2,
+  ImageIcon,
   Save,
   UploadCloud,
   XCircle,
@@ -49,6 +50,29 @@ import {
 } from "../ui/select";
 import SearchableCombobox from "../Common/SearchableCombobox";
 import { Input } from "../ui/input";
+
+interface PlantillaTemp {
+  plantilla: {
+    institucion: {
+      id: number;
+    };
+    sucursal: {
+      id: number;
+    };
+    tipoPrograma: {
+      codigo: number;
+    };
+    nombre: string;
+    disenioDefault: string;
+    tipoDisenio: string;
+    pathImagenFondo: string;
+    pathImagenPublica: string;
+    pathPdfFondo: string;
+  };
+  hasImagenFondo?: boolean;
+  hasImagenPublica?: boolean;
+  hasPdfFondo?: boolean;
+}
 
 const loadInstituciones = async () => {
   let listInstituciones: Institucion[] = [];
@@ -182,12 +206,23 @@ export const PlantillaForm = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
   const { showToast } = useToast();
+
   const [instituciones, setInstituciones] = useState<Institucion[]>([]);
   const [sucursales, setSucursales] = useState<Institucion[]>([]);
   const [tipoProgramas, setTipoProgramas] = useState<DetalleParametro[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(false);
 
   const isEditMode = !!id;
+
+  // Estados para almacenar las rutas y flags de archivos existentes en el backend
+  const [fileStatus, setFileStatus] = useState({
+    hasImagenFondo: false,
+    pathImagenFondo: "",
+    hasImagenPublica: false,
+    pathImagenPublica: "",
+    hasPdfFondo: false,
+    pathPdfFondo: "",
+  });
 
   const handleGoBack = () => {
     const urlBack = `/plantilla/`;
@@ -220,19 +255,31 @@ export const PlantillaForm = () => {
 
           console.log({ responsePlantilla });
 
-          const { result, data } = responsePlantilla;
+          const { status, statusText, data } = responsePlantilla;
 
-          if (result && data) {
-            const plantilla = data as Plantilla;
+          if ((status === 200 || status === 201) && statusText === "OK") {
+            const plantillaTemp = data as PlantillaTemp;
+            const { plantilla, hasImagenFondo, hasImagenPublica, hasPdfFondo } =
+              plantillaTemp;
 
             form.reset({
-              idInstitucion: plantilla.id_institucion?.toString() ?? "",
-              idSucursal: plantilla.id_sucursal?.toString() ?? "",
+              idInstitucion: plantilla.institucion?.id.toString() ?? "",
+              idSucursal: plantilla.sucursal?.id.toString() ?? "",
               codigoTipoPrograma:
-                plantilla.codigo_tipoprograma?.toString() ?? "",
+                plantilla.tipoPrograma?.codigo.toString() ?? "",
               nombre: plantilla.nombre ?? "",
-              disenioDefault: plantilla.disenio_default ?? "",
-              tipoDisenio: plantilla.tipo_disenio ?? "",
+              disenioDefault: plantilla.disenioDefault ?? "",
+              tipoDisenio: plantilla.tipoDisenio ?? "",
+            });
+
+            // Guardar el estado de los archivos adjuntos
+            setFileStatus({
+              hasImagenFondo: !!hasImagenFondo,
+              pathImagenFondo: plantilla.pathImagenFondo ?? "",
+              hasImagenPublica: !!hasImagenPublica,
+              pathImagenPublica: plantilla.pathImagenPublica ?? "",
+              hasPdfFondo: !!hasPdfFondo,
+              pathPdfFondo: plantilla.pathPdfFondo ?? "",
             });
           }
         }
@@ -245,7 +292,10 @@ export const PlantillaForm = () => {
     };
 
     fetchData();
-  }, [id, isEditMode, form]);
+  }, [id, isEditMode, form, showToast]);
+
+  const STORAGE_URL =
+    import.meta.env.VITE_NEST_API_URL || "http://localhost:3004";
 
   const resetForm = () => {
     form.reset(defaultValues);
@@ -267,10 +317,6 @@ export const PlantillaForm = () => {
         imgPublica,
         pdfFondo,
       } = values;
-
-      if (isEditMode) {
-        formData.append("_method", "PATCH");
-      }
 
       if (idInstitucion) {
         formData.append("id_institucion", idInstitucion);
@@ -580,7 +626,7 @@ export const PlantillaForm = () => {
                 Archivos y Recursos Multimedia
               </legend>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-5 mt-3">
-                {/* IMAGEN DE FONDO (IMG) */}
+                {/* 1. IMAGEN DE FONDO (IMG) */}
                 <FormField
                   control={form.control}
                   name="imgFondo"
@@ -588,9 +634,24 @@ export const PlantillaForm = () => {
                     const selectedFile = field.value as File | null;
                     return (
                       <FormItem className="flex flex-col justify-between">
-                        <div>
-                          <RequiredLabel>Imagen de Fondo</RequiredLabel>
-                          <FormControl className="mt-1.5">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <RequiredLabel>Imagen de Fondo</RequiredLabel>
+                            {fileStatus.hasImagenFondo && (
+                              <a
+                                href={`${STORAGE_URL}/${fileStatus.pathImagenFondo}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-[11px] font-semibold transition-colors"
+                                title="Ver archivo actual"
+                              >
+                                <ImageIcon className="w-3.5 h-3.5" />
+                                Ver actual
+                              </a>
+                            )}
+                          </div>
+
+                          <FormControl>
                             <div className="relative">
                               <input
                                 type="file"
@@ -653,7 +714,7 @@ export const PlantillaForm = () => {
                   }}
                 />
 
-                {/* IMAGEN PÚBLICA (IMG) */}
+                {/* 2. IMAGEN PÚBLICA (IMG) */}
                 <FormField
                   control={form.control}
                   name="imgPublica"
@@ -661,9 +722,24 @@ export const PlantillaForm = () => {
                     const selectedFile = field.value as File | null;
                     return (
                       <FormItem className="flex flex-col justify-between">
-                        <div>
-                          <RequiredLabel>Imagen Pública</RequiredLabel>
-                          <FormControl className="mt-1.5">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <RequiredLabel>Imagen Pública</RequiredLabel>
+                            {fileStatus.hasImagenPublica && (
+                              <a
+                                href={`${STORAGE_URL}/${fileStatus.pathImagenPublica}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-[11px] font-semibold transition-colors"
+                                title="Ver archivo actual"
+                              >
+                                <ImageIcon className="w-3.5 h-3.5" />
+                                Ver actual
+                              </a>
+                            )}
+                          </div>
+
+                          <FormControl>
                             <div className="relative">
                               <input
                                 type="file"
@@ -726,7 +802,7 @@ export const PlantillaForm = () => {
                   }}
                 />
 
-                {/* FONDO PDF (PDF) */}
+                {/* 3. FONDO PDF (PDF) */}
                 <FormField
                   control={form.control}
                   name="pdfFondo"
@@ -734,9 +810,24 @@ export const PlantillaForm = () => {
                     const selectedFile = field.value as File | null;
                     return (
                       <FormItem className="flex flex-col justify-between">
-                        <div>
-                          <RequiredLabel>Fondo en PDF</RequiredLabel>
-                          <FormControl className="mt-1.5">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <RequiredLabel>Fondo en PDF</RequiredLabel>
+                            {fileStatus.hasPdfFondo && (
+                              <a
+                                href={`${STORAGE_URL}/${fileStatus.pathPdfFondo}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-md text-[11px] font-semibold transition-colors"
+                                title="Ver archivo actual"
+                              >
+                                <ImageIcon className="w-3.5 h-3.5" />
+                                Ver PDF actual
+                              </a>
+                            )}
+                          </div>
+
+                          <FormControl>
                             <div className="relative">
                               <input
                                 type="file"

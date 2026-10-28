@@ -58,28 +58,24 @@ export const getAllPaginate = async (queryParams: string): Promise<PlantillaResp
     }
 }
 
-export const getById = async (id: number): Promise<PlantillaResponse> => {
+export const getById = async (id: number): Promise<PlantillaResponseGeneral> => {
     try {
         const urlApi = `${'/plantillas/'}${id}`
 
         console.log({ urlApi })
 
-        const response = await apiClient.get(urlApi)
+        // const response = await apiClient.get(urlApi)
+        const response = await nestApiClient.get(urlApi)
 
         console.log('---- response getById plantilla ----')
         console.log({ response })
 
-        const { data: { result, message, data } } = response
+        const { data, status, statusText } = response
 
-        return {
-            result,
-            data,
-            message
-        }
+        return { data, status, statusText }
     } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
-        console.log('errorMessage', errorMessage)
-        return { result: false, data: [], error: errorMessage, status: 500 }
+        return { data: [], status: 500, statusText: errorMessage }
     }
 }
 
@@ -109,7 +105,7 @@ export const update = async (
     try {
         const urlApi = `${'/plantillas/'}${id}`
 
-        const response = await nestApiClient.post(urlApi, payload, config)
+        const response = await nestApiClient.patch(urlApi, payload, config)
 
         console.log({ response })
 

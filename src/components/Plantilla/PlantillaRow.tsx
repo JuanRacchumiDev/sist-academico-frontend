@@ -75,18 +75,21 @@ export const PlantillaRow: React.FC<Props> = ({ plantilla }) => {
 
   return (
     <>
-      {/* Relleno py-3 reducido a py-2 (Compact layout) y cambio de hover-color a slate sutil */}
       <TableRow
         key={plantilla.id}
         className="hover:bg-slate-50/80 hover:cursor-pointer transition-colors duration-150 border-b border-slate-100"
       >
-        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700 max-w-[200px] truncate">
-          {plantilla.institucion?.nombre}
+        {/* Se removió max-w-[200px] y se añadió whitespace-normal */}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700 whitespace-normal">
+          {plantilla.sucursal?.nombre || "-"}
         </TableCell>
-        <TableCell className="py-2 px-3 text-xs text-slate-500">
-          {plantilla.tipo_programa?.nombre}
+        <TableCell className="py-2 px-3 text-xs font-medium text-slate-700 whitespace-normal">
+          {plantilla.institucion?.nombre || "Sin institución"}
         </TableCell>
-        <TableCell className="py-2 px-3 text-xs text-slate-600 font-mono">
+        <TableCell className="py-2 px-3 text-xs text-slate-500 whitespace-normal">
+          {plantilla.tipo_programa?.nombre || "-"}
+        </TableCell>
+        <TableCell className="py-2 px-3 text-xs text-slate-600 font-mono whitespace-normal">
           {plantilla.nombre}
         </TableCell>
         <TableCell className="py-2 px-3 text-center">
@@ -98,7 +101,6 @@ export const PlantillaRow: React.FC<Props> = ({ plantilla }) => {
             )}
           </div>
         </TableCell>
-        {/* Altura de los botones de acciones alineados */}
         <TableCell className="py-2 px-3 text-right">
           <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
             <DropdownMenuTrigger asChild>
